@@ -1,0 +1,76 @@
+name: "Val :: Unit tests"
+
+on:
+  push:
+    branches:
+      - main
+      - 'release-[0-9]+\.[0-9]+'
+  pull_request:
+    branches:
+      - main
+      - 'release-[0-9]+\.[0-9]+'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit-tests:
+    name: "${{ matrix.test-name }}"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    container: python:3.12-slim-bookworm
+    strategy:
+      fail-fast: false
+      matrix:
+        test-name:
+          - asr_unit_tests
+          - chat_history_unit_tests
+          - deployment_scripts_unit_tests
+          - docsum_unit_tests
+          - edp_unit_tests
+          - embeddings_unit_tests
+          - fingerprint_invariants_unit_tests
+          - ingestion_unit_tests
+          - language_detection_unit_tests
+          - late_chunking_unit_tests
+          - llm_guard_dataprep_guardrail_unit_tests
+          - llm_guard_input_guardrail_unit_tests
+          - llm_guard_output_guardrail_unit_tests
+          - llms_unit_tests
+          - prompt_template_unit_tests
+          - reranks_unit_tests
+          - retrievers_unit_tests
+          - system_fingerprint_unit_tests
+          - text_compression_unit_tests
+          - text_extractor_unit_tests
+          - text_splitter_unit_tests
+          - tts_unit_tests
+          - vectorstores_unit_tests
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install test prerequisites
+        run: |
+          apt-get update
+          apt-get -y install libgl1-mesa-glx git sudo build-essential
+
+      - name: Install required Python packages
+        run: |
+          pip install --upgrade pip
+          pip install uv
+          echo "$HOME/.local/bin:$PATH" >> "$GITHUB_PATH"
+          uv tool install tox --with tox-uv --with tox-gh
+
+      - name: Run unit tests
+        uses: ./.github/actions/unit-tests
+        with:
+          test-name: ${{ matrix.test-name }}
