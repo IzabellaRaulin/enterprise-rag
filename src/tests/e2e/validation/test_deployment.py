@@ -3,11 +3,12 @@
 # Copyright (C) 2024-2026 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-"""E2E tests validating NRI balloon CPU policy configuration for inference pods.
+"""E2E tests validating Enterprise RAG deployment invariants.
 
-Covers two requirements: no CPU core collisions between pods, and pods receiving
-only physical cores (no hyperthread siblings). All tests skip when
-kubernetes_cpu_policy != nri-balloons.
+Groups deployment-level checks that inspect the live cluster: NRI balloon CPU
+policy for inference pods, and cluster-wide Pod Security Standards labelling of
+namespaces. Each group carries its own skip condition, so an unrelated feature
+being disabled never masks the others.
 """
 
 import logging
@@ -15,6 +16,7 @@ import re
 from collections import defaultdict
 
 import allure
+import kr8s
 import pytest
 
 from tests.e2e.validation.buildcfg import cfg
@@ -22,8 +24,11 @@ from tests.e2e.validation.constants import LLM_INFERENCE_NAMESPACE
 
 logger = logging.getLogger(__name__)
 
-if cfg.get("kubernetes_cpu_policy") != "nri-balloons":
-    pytestmark = pytest.mark.skip(reason="NRI balloons not enabled (kubernetes_cpu_policy != 'nri-balloons')")
+# NRI balloon tests only apply when the NRI balloons CPU policy is enabled.
+nri_balloons_only = pytest.mark.skipif(
+    cfg.get("kubernetes_cpu_policy") != "nri-balloons",
+    reason="NRI balloons not enabled (kubernetes_cpu_policy != 'nri-balloons')",
+)
 
 NRI_ANN_PREFIX = "balloon.balloons.resource-policy.nri.io/"
 
@@ -131,6 +136,7 @@ def balloon_pod_data(k8s_helper):
     }
 
 
+@nri_balloons_only
 @pytest.mark.smoke
 @allure.testcase("IEASG-T698")
 def test_nri_cpu_no_collisions(balloon_pod_data):
@@ -187,6 +193,7 @@ def test_nri_cpu_no_collisions(balloon_pod_data):
     )
 
 
+@nri_balloons_only
 @pytest.mark.smoke
 @allure.testcase("IEASG-T700")
 def test_nri_physical_cores_only(balloon_pod_data):
@@ -252,5 +259,63 @@ def test_nri_physical_cores_only(balloon_pod_data):
 
     assert violations == [], (
         "Pods received hyperthread siblings instead of unique physical cores:\n"
+        + "\n".join(violations)
+    )
+
+
+# Namespaces that legitimately carry no Pod Security Standards enforce label and
+# are excluded from the scan. Kubernetes built-ins are owned by the cluster
+# bootstrap, and local-path-storage is deployed by kubespray with no hook to
+# label it before the provisioner starts (a documented limitation). Extend this
+# blacklist with a justified entry when a run surfaces another exception, rather
+# than narrowing the scan.
+PSS_NAMESPACE_BLACKLIST = {
+    "kube-system",
+    "kube-public",
+    "kube-node-lease",
+    "default",
+    "local-path-storage",
+}
+
+PSS_ENFORCE_LABEL = "pod-security.kubernetes.io/enforce"
+VALID_PSS_PROFILES = ("privileged", "baseline", "restricted")
+
+
+@pytest.mark.skipif(
+    not cfg.get("enforce_pss", True),
+    reason="enforce_pss is disabled for this deployment",
+)
+@pytest.mark.smoke
+@allure.testcase("IEASG-T723")
+def test_namespaces_have_pss_labels():
+    """Verify every namespace in the cluster carries a valid PSS enforce label.
+
+    With enforce_pss on (the platform default), every namespace the installer
+    creates — across the platform, inference and RAG layers — is stamped by its
+    role with pod-security.kubernetes.io/enforce set to one of privileged,
+    baseline or restricted. This scans all namespaces and fails any that are
+    missing the enforce label or carry an unexpected value, so a role that forgets
+    to label its namespace is caught on every run.
+
+    The scan is deliberately cluster-wide and blacklist-driven: everything is
+    checked except the namespaces in PSS_NAMESPACE_BLACKLIST. When a run surfaces
+    a namespace that legitimately cannot be labelled, add it there with a reason
+    instead of restricting the scan to a known-good set.
+    """
+    violations = []
+    for ns in kr8s.get("namespaces"):
+        if ns.name in PSS_NAMESPACE_BLACKLIST:
+            continue
+        labels = ns.metadata.get("labels") or {}
+        profile = labels.get(PSS_ENFORCE_LABEL)
+        if profile not in VALID_PSS_PROFILES:
+            violations.append(
+                f"{ns.name}: {PSS_ENFORCE_LABEL}={profile!r} "
+                f"(expected one of {VALID_PSS_PROFILES})"
+            )
+
+    assert violations == [], (
+        "Namespaces missing a valid Pod Security Standards enforce label "
+        "(add a justified exception to PSS_NAMESPACE_BLACKLIST if intended):\n"
         + "\n".join(violations)
     )
