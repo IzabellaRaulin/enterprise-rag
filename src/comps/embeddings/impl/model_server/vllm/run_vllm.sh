@@ -6,9 +6,22 @@
 ENV_FILE=docker/.env
 echo "Reading configuration from $ENV_FILE..."
 
-# Check if docker compose is available (prerequisite)
-if ! command -v docker compose &> /dev/null; then
-  echo "Error: 'docker compose' is not installed or not available in the PATH."
+# Detect container runtime: docker -> nerdctl -> error
+if command -v docker &> /dev/null; then
+    CONTAINER_CLI="docker"
+elif command -v nerdctl &> /dev/null; then
+    CONTAINER_CLI="nerdctl"
+else
+    echo "Error: No container runtime found. Install docker or nerdctl (containerd)."
+    echo "After kubespray localhost deployment, docker is not available."
+    echo "Install nerdctl: https://github.com/containerd/nerdctl"
+    exit 1
+fi
+echo "Info: Using container runtime: $CONTAINER_CLI"
+
+# Both docker and nerdctl expose 'compose' as a subcommand.
+if ! $CONTAINER_CLI compose version &> /dev/null; then
+  echo "Error: '$CONTAINER_CLI compose' is not available. Install the compose plugin/subcommand."
   exit 1
 fi
 
@@ -41,4 +54,11 @@ else
     exit 1
 fi
 
-docker compose -f docker/docker-compose.yaml up --build -d embedding-vllm-model-server
+if [ "$CONTAINER_CLI" = "nerdctl" ]; then
+    # nerdctl compose logs the underlying 'nerdctl run' argv at INFO level,
+    # which includes secret -e KEY=VALUE pairs (HF_TOKEN, proxy creds). Drop it.
+    $CONTAINER_CLI compose -f docker/docker-compose.yaml up --build -d embedding-vllm-model-server \
+        2> >(grep -v -E '^INFO\[[0-9]+\][[:space:]]+Running \[' >&2)
+else
+    $CONTAINER_CLI compose -f docker/docker-compose.yaml up --build -d embedding-vllm-model-server
+fi
