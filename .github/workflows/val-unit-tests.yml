@@ -15,16 +15,21 @@ permissions:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # Only supersede PR runs; every push to main/release keeps its own result.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   unit-tests:
     name: "${{ matrix.test-name }}"
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     defaults:
       run:
         shell: bash
-    container: python:3.12-slim-bookworm
+    # Runs as root: some tox envs apt-install system packages in commands_pre.
+    container: python:3.12-slim-bookworm@sha256:392307d22300de8b5986851a12d9176dfc0fc073e65bf6523ebd7dcbeb23564e
+    env:
+      DEBIAN_FRONTEND: noninteractive
     strategy:
       fail-fast: false
       matrix:
@@ -61,16 +66,40 @@ jobs:
       - name: Install test prerequisites
         run: |
           apt-get update
-          apt-get -y install libgl1-mesa-glx git sudo build-essential
+          apt-get -y install --no-install-recommends libgl1 build-essential
 
-      - name: Install required Python packages
+      # Versions must match [tox] requires in src/tox.ini, otherwise tox
+      # provisions a second copy of itself in .tox/.tox on every run.
+      - name: Install uv
+        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          version: "0.8.17"
+          enable-cache: true
+          cache-python: true
+          cache-suffix: ${{ matrix.test-name }}
+
+      - name: Install tox
         run: |
-          pip install --upgrade pip
-          pip install uv
-          echo "$HOME/.local/bin:$PATH" >> "$GITHUB_PATH"
-          uv tool install tox --with tox-uv --with tox-gh
+          uv tool install tox==4.30.2 --with tox-uv==1.28.0 --with uv==0.8.17
+          uv tool dir --bin >> "$GITHUB_PATH"
 
       - name: Run unit tests
-        uses: ./.github/actions/unit-tests
-        with:
-          test-name: ${{ matrix.test-name }}
+        working-directory: src
+        env:
+          TEST_NAME: ${{ matrix.test-name }}
+        run: tox run -e "${TEST_NAME}"
+
+  # Single stable check for branch protection, independent of matrix entries.
+  unit-tests-result:
+    name: "Unit tests result"
+    if: always()
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check unit test results
+        env:
+          RESULT: ${{ needs.unit-tests.result }}
+        run: |
+          echo "unit-tests: ${RESULT}"
+          [[ "${RESULT}" == "success" ]]
