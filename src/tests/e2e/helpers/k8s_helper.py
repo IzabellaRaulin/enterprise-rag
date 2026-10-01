@@ -40,7 +40,7 @@ class K8sHelper:
 
     def retrieve_admin_password(self, secret_name, namespace):
         """Retrieve the admin password from the keycloak secret"""
-        logger.debug(f"Retrieving the admin password from the '{secret_name}' secret")
+        logger.debug(f"Retrieving the admin password from namespace '{namespace}'")
         secrets = kr8s.get("secrets", namespace=namespace)
         for secret in secrets:
             if secret.name == secret_name:

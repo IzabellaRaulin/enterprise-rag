@@ -24,7 +24,7 @@ export const determineServiceReadiness = (
   const baseStatus = statusValue.split(";")[0];
 
   if (isStatefulSet && baseStatus === "Not ready") {
-    const readyMatch = statusValue.match(/(\d+)\s+ready/);
+    const readyMatch = statusValue.match(/\b(\d+)\s+ready/);
     if (readyMatch) {
       const readyReplicas = parseInt(readyMatch[1], 10);
       if (readyReplicas > 0) {

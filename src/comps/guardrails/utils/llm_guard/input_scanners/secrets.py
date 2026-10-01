@@ -450,7 +450,7 @@ class Secrets(Scanner):
         if mode == REDACT_PARTIAL:
             redacted_value = f"{value[:2]}..{value[-2:]}"
         elif mode == REDACT_HASH:
-            redacted_value = hashlib.md5(value.encode()).hexdigest()  # nosec
+            redacted_value = hashlib.sha256(value.encode()).hexdigest()
         elif mode == REDACT_ALL:
             redacted_value = "******"
         else:

@@ -25,6 +25,6 @@ class SidekiqDetector(RegexBasedDetector):
             ),
             # Sidekiq Sensitive URL
             re.compile(
-                r"""(?i)\b(http(?:s??):\/\/)([a-f0-9]{8}:[a-f0-9]{8})@(?:gems.contribsys.com|enterprise.contribsys.com)(?:[\/|\#|\?|:]|$)"""
+                r"""(?i)\b(http(?:s??):\/\/)([a-f0-9]{8}:[a-f0-9]{8})@(?:gems\.contribsys\.com|enterprise\.contribsys\.com)(?:[\/|\#|\?|:]|$)"""
             ),
         ]

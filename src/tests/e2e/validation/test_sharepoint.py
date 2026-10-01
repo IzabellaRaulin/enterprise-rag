@@ -9,6 +9,7 @@ import os
 import shutil
 import tempfile
 import uuid
+from urllib.parse import urlparse
 
 import pytest
 
@@ -441,7 +442,7 @@ def test_sp_get_file_url(edp_helper):
 
     # Verify that it is a valid URL
     assert file_url.startswith("https://"), f"Invalid file URL: {file_url}"
-    assert "sharepoint.com" in file_url, f"File URL does not point to SharePoint: {file_url}"
+    assert urlparse(file_url).hostname.endswith(".sharepoint.com"), f"File URL does not point to SharePoint: {file_url}"
 
 
 @allure.testcase("IEASG-T542")

@@ -579,7 +579,7 @@ async def test_sso_admin_open_file_points_to_sharepoint(sso_admin_helper):
         new_url = new_page.url
 
         logger.info(f"Open button navigated to: {new_url}")
-        assert "sharepoint.com" in new_url or "sharepoint" in new_url.lower(), (
+        assert "sharepoint" in new_url.lower(), (
             f"Expected SharePoint URL, got {new_url}"
         )
 

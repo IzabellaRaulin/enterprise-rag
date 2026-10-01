@@ -296,9 +296,9 @@ def infer_endpoint(model_name: str):
             ],
         })
 
-    except Exception as exc:
+    except Exception:
         logger.exception("Inference failed")
-        return jsonify({"error": str(exc)}), 500
+        return jsonify({"error": "Inference failed"}), 500
 
 
 # Entrypoint

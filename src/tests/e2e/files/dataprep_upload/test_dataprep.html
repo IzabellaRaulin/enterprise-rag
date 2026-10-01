@@ -79,7 +79,9 @@
         const email = document.getElementById('email').value;
         const messageDiv = document.getElementById('formMessage');
 
-        messageDiv.innerHTML = `<p>Thank you, ${name}! We will contact you at ${email} shortly.</p>`;
+        const p = document.createElement('p');
+        p.textContent = `Thank you, ${name}! We will contact you at ${email} shortly.`;
+        messageDiv.replaceChildren(p);
         this.reset(); // Reset the form fields
     }
 </script>
