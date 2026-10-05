@@ -10,6 +10,7 @@ resource descriptions, version info, and deployment configuration (with sensitiv
 """
 
 import subprocess # nosec B404
+import shlex
 import os
 import datetime
 import glob
@@ -102,7 +103,7 @@ class EnterpriseRAGDebugger:
         self.logger.info(f"[*] Logging initialized. Output saved to: {log_file}")
 
     def run_command(self, cmd, ignore_errors=False):
-        """Helper to execute shell commands and return output."""
+        """Helper to execute a command (given as an argument list) and return output."""
         try:
             # Set up environment with kubeconfig if available
             env = os.environ.copy()
@@ -110,14 +111,14 @@ class EnterpriseRAGDebugger:
                 env["KUBECONFIG"] = self.kubeconfig_path
 
             result = subprocess.run(
-                cmd, shell=True, check=True, capture_output=True, text=True, env=env
+                cmd, check=True, capture_output=True, text=True, env=env
             )
             return result.stdout.strip()
         except subprocess.CalledProcessError as e:
             if ignore_errors:
-                self.logger.debug(f"  [!] Command failed (ignored): {cmd} -> {e.stderr.strip()}")
+                self.logger.debug(f"  [!] Command failed (ignored): {shlex.join(cmd)} -> {e.stderr.strip()}")
                 return None
-            self.logger.error(f"  [!] Command failed: {cmd}")
+            self.logger.error(f"  [!] Command failed: {shlex.join(cmd)}")
             self.logger.error(f"  [!] Error: {e.stderr.strip()}")
             return None
 
@@ -218,22 +219,22 @@ class EnterpriseRAGDebugger:
 
     def get_all_namespaces(self):
         """Get list of all namespaces in the cluster."""
-        cmd = "kubectl get namespaces -o jsonpath='{.items[*].metadata.name}'"
+        cmd = ["kubectl", "get", "namespaces", "-o", "jsonpath={.items[*].metadata.name}"]
         output = self.run_command(cmd)
         return output.split() if output else []
 
     def get_nodes(self):
         """Get list of all node names in the cluster."""
-        cmd = "kubectl get nodes -o jsonpath='{.items[*].metadata.name}'"
+        cmd = ["kubectl", "get", "nodes", "-o", "jsonpath={.items[*].metadata.name}"]
         output = self.run_command(cmd)
         return output.split() if output else []
 
     def get_pods(self, namespace=None):
         """Get list of all pod names, optionally filtered by namespace."""
         if namespace:
-            cmd = f"kubectl get pods -n {namespace} -o jsonpath='{{.items[*].metadata.name}}'"
+            cmd = ["kubectl", "get", "pods", "-n", namespace, "-o", "jsonpath={.items[*].metadata.name}"]
         else:
-            cmd = "kubectl get pods --all-namespaces -o json"
+            cmd = ["kubectl", "get", "pods", "--all-namespaces", "-o", "json"]
             result = self.run_command(cmd)
             if result:
                 data = json.loads(result)
@@ -260,9 +261,10 @@ class EnterpriseRAGDebugger:
 
     def _save_pod_logs(self, namespace, pod_name, log_path, is_previous=False):
         suffix = "previous" if is_previous else "current"
-        prev_flag = "--previous" if is_previous else ""
 
-        cmd = f"kubectl logs {pod_name} -n {namespace} {prev_flag} --all-containers"
+        cmd = ["kubectl", "logs", pod_name, "-n", namespace, "--all-containers"]
+        if is_previous:
+            cmd.append("--previous")
 
         try:
             # Set up environment with kubeconfig if available
@@ -270,7 +272,7 @@ class EnterpriseRAGDebugger:
             if self.kubeconfig_path:
                 env["KUBECONFIG"] = self.kubeconfig_path
 
-            process = subprocess.run(cmd, shell=True, capture_output=True, env=env)
+            process = subprocess.run(cmd, capture_output=True, env=env)
             if process.returncode == 0 and len(process.stdout) > 0:
                 filename = f"{pod_name}_{suffix}.log"
                 full_path = os.path.join(log_path, filename)
@@ -295,7 +297,7 @@ class EnterpriseRAGDebugger:
         all_resources = self.KUBECTL_RESOURCES + self.SENSITIVE_RESOURCES
 
         for resource in all_resources:
-            output = self.run_command(f"kubectl get {resource} -A -o wide", ignore_errors=True)
+            output = self.run_command(["kubectl", "get", resource, "-A", "-o", "wide"], ignore_errors=True)
             if output:
                 resource_file = os.path.join(self.kubectl_get_path, f"{resource}.txt")
                 with open(resource_file, "w") as f:
@@ -309,7 +311,7 @@ class EnterpriseRAGDebugger:
         self.logger.info("[*] Collecting kubectl get -o yaml per resource type...")
 
         for resource in self.KUBECTL_RESOURCES:
-            output = self.run_command(f"kubectl get {resource} -A -o yaml", ignore_errors=True)
+            output = self.run_command(["kubectl", "get", resource, "-A", "-o", "yaml"], ignore_errors=True)
             if output:
                 resource_file = os.path.join(self.kubectl_getyaml_path, f"{resource}.txt")
                 with open(resource_file, "w") as f:
@@ -323,7 +325,7 @@ class EnterpriseRAGDebugger:
         self.logger.info("[*] Collecting kubectl describe per resource type...")
 
         for resource in self.KUBECTL_RESOURCES:
-            output = self.run_command(f"kubectl describe {resource} -A", ignore_errors=True)
+            output = self.run_command(["kubectl", "describe", resource, "-A"], ignore_errors=True)
             if output:
                 resource_file = os.path.join(self.kubectl_describe_path, f"{resource}.txt")
                 with open(resource_file, "w") as f:
@@ -415,7 +417,7 @@ class EnterpriseRAGDebugger:
 
         # Get helm release secrets as JSON
         releases_json = self.run_command(
-            "kubectl get secrets -A -l owner=helm -o json", ignore_errors=True
+            ["kubectl", "get", "secrets", "-A", "-l", "owner=helm", "-o", "json"], ignore_errors=True
         )
         if not releases_json:
             self.logger.warning("  [!] No helm releases found in cluster")
@@ -554,7 +556,7 @@ class EnterpriseRAGDebugger:
         self.logger.info("[*] Checking prerequisites...")
 
         # Check if kubectl is installed
-        result = subprocess.run("kubectl version --client", shell=True, capture_output=True, text=True)
+        result = subprocess.run(["kubectl", "version", "--client"], capture_output=True, text=True)
         if result.returncode != 0:
             self._log_error("  [!] PREREQUISITE ERROR: kubectl is not installed or not in PATH.\n  [!] Please install kubectl: https://kubernetes.io/docs/tasks/tools/")
             sys.exit(1)
@@ -564,7 +566,7 @@ class EnterpriseRAGDebugger:
         if self.kubeconfig_path:
             env["KUBECONFIG"] = self.kubeconfig_path
 
-        result = subprocess.run("kubectl cluster-info", shell=True, capture_output=True, text=True, env=env)
+        result = subprocess.run(["kubectl", "cluster-info"], capture_output=True, text=True, env=env)
         if result.returncode != 0:
             error_lines = ["  [!] PREREQUISITE ERROR: kubectl is not configured or cluster is unreachable."]
             if self.kubeconfig_path:
