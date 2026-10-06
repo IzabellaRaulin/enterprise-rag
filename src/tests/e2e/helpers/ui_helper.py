@@ -18,7 +18,7 @@ This module follows SOLID principles:
 import logging
 from typing import Optional, Tuple
 
-from playwright.async_api import Page
+from playwright.async_api import Error as PlaywrightError, Page
 
 logger = logging.getLogger(__name__)
 
@@ -1790,7 +1790,14 @@ class AudioUIHelper:
             return
         
         async def handle_tts_route(route):
-            response = await route.fetch()
+            # Playwright's default 30s fetch timeout is too short for CPU TTS on
+            # long responses; match the 120s playback wait used by the tests.
+            try:
+                response = await route.fetch(timeout=120000)
+            except PlaywrightError as e:
+                logger.error(f"TTS API request failed: {e}")
+                await route.abort()
+                return
             body = await response.body()
             
             # Check audio format by magic bytes

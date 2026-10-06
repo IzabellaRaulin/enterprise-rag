@@ -57,12 +57,12 @@ if _skip_marks:
 
 TTS_TEST_QUESTIONS = [
     {
-        "question": "What is machine learning?",
+        "question": "In one sentence, what is machine learning?",
         "min_response_length": 50,  # Minimum bot response length
         "min_tts_duration": 1.0,    # Minimum TTS audio duration in seconds
     },
     {
-        "question": "Explain artificial intelligence briefly.",
+        "question": "In one sentence, explain artificial intelligence.",
         "min_response_length": 30,
         "min_tts_duration": 0.5,
     },
@@ -412,13 +412,12 @@ async def test_tts_no_button_while_pending(audio_chat_ui_helper):
     else:
         logger.info("Play button correctly hidden during pending response")
     
-    # Wait for response to complete
-    bot_message = audio_chat_ui_helper.page.locator(audio_chat_ui_helper.audio.BOT_MESSAGE_SELECTOR).last
-    await bot_message.wait_for(state="visible", timeout=60000)
-    await audio_chat_ui_helper.page.wait_for_timeout(3000)
-    
+    # Wait for streaming to complete (bot message becomes visible as soon as streaming starts)
+    response = await audio_chat_ui_helper.wait_for_response(timeout=60000)
+    assert response, "Should receive a bot response"
+
     # Now button should be visible
-    final_visible = await audio_chat_ui_helper.audio.is_play_speech_button_visible(timeout=5000)
+    final_visible = await audio_chat_ui_helper.audio.is_play_speech_button_visible(timeout=10000)
     assert final_visible, "Play button should be visible after response completes"
     
     logger.info("Test completed: Play button visibility timing verified")
@@ -459,7 +458,7 @@ async def test_tts_audio_matches_bot_response_text(audio_chat_ui_helper, unified
     audio_api = AudioApiHelper(keycloak_helper)
     
     # Use a simple question that will get a meaningful response
-    test_question = "What is artificial intelligence?"
+    test_question = "In one sentence, what is artificial intelligence?"
     
     try:
         # Step 1: Prepare audio to speak via virtual mic
