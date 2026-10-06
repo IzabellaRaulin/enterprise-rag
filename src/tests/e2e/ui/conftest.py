@@ -629,7 +629,8 @@ async def browser(playwright_instance):
     # This is required for AudioQnA tests that use the microphone
     firefox_prefs = {
         "permissions.default.microphone": 1,  # Auto-grant microphone permission
-        "media.navigator.streams.fake": True,  # Use fake media streams
+        # Fake streams emit a synthetic beep; use the real (PulseAudio virtual) mic when available
+        "media.navigator.streams.fake": not pulseaudio_available(),
         "media.navigator.permission.disabled": True,  # Disable permission prompts
         "dom.webnotifications.enabled": False,  # Disable notifications
         "dom.push.enabled": False,  # Disable push notifications

@@ -524,13 +524,14 @@ async def test_tts_audio_matches_bot_response_text(audio_chat_ui_helper, unified
         await audio_chat_ui_helper.page.wait_for_timeout(500)
         
         # Step 9: Click play-speech-button to trigger TTS
+        # Interception must be installed before the click so the Audio element is tracked
         logger.info("Step 9: Clicking play-speech-button")
+        await audio_chat_ui_helper.audio.setup_tts_interception()
         turn_id = await audio_chat_ui_helper.audio.click_first_play_speech_button()
         assert turn_id is not None, "Should find and click play speech button"
-        
+
         # Step 10: Wait for TTS playback to complete
         logger.info("Step 10: Waiting for TTS playback to complete")
-        await audio_chat_ui_helper.audio.setup_tts_interception()
         await audio_chat_ui_helper.audio.wait_for_tts_playback_complete(timeout=120000)
         
         # Buffer after playback ends
@@ -548,7 +549,6 @@ async def test_tts_audio_matches_bot_response_text(audio_chat_ui_helper, unified
         logger.info("Step 12: Transcribing captured TTS audio via ASR")
         tts_audio_data = AudioData(
             audio_bytes=captured_audio,
-            text="",  # Unknown - we're transcribing
             voice="captured_tts",
             sample_rate=16000
         )
