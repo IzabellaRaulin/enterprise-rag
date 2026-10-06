@@ -7,4 +7,7 @@ COPY Dockerfile .
 
 # CMD from base Dockerfile
 WORKDIR /
+# Run as the same non-root user as the base image (explicit for image scanners)
+USER 65532:65532
+
 ENTRYPOINT ["/manager"]
