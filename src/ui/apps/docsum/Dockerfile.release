@@ -2,5 +2,8 @@ FROM docsum-ui-base:latest
 
 COPY compliance /compliance
 
+# Run as the non-root nginx user (same as the base image)
+USER nginx
+
 # CMD from base Dockerfile
 CMD ["nginx", "-g", "daemon off;"]
