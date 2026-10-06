@@ -3,12 +3,16 @@
 
 
 import os
+import shutil
+import subprocess
 
 from comps.cores.mega.logger import get_erag_logger
 from comps.text_extractor.utils.file_loaders.load_html import LoadHtml
 
 
 logger = get_erag_logger(f"{__file__.split('comps/')[1].split('/', 1)[0]}_microservice")
+
+ASCIIDOCTOR_BIN = shutil.which("asciidoctor") or "/usr/bin/asciidoctor"
 
 
 class LoadAsciiDoc(LoadHtml):
@@ -20,7 +24,7 @@ class LoadAsciiDoc(LoadHtml):
         dir_path = os.path.dirname(self.file_path)
         adoc_html_output_file = os.path.join(dir_path, "temp_output.html")
         try:
-            os.system(f"asciidoctor -b html5 -o {adoc_html_output_file} {self.file_path}")
+            subprocess.run([ASCIIDOCTOR_BIN, "-b", "html5", "-o", adoc_html_output_file, self.file_path], check=True)
             logger.info(f"Converted adoc to html. Created temporary file: {adoc_html_output_file}")
 
             original_file_path = self.file_path
