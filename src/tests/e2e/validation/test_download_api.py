@@ -56,7 +56,12 @@ def test_download_presigned_url_generation(edp_helper, ingested_test_file):
     assert response.status_code == 200, f"Failed to generate presigned download URL. Response: {response.text}"
     url = response.json().get("url")
     assert url, "Presigned URL is empty"
-    assert "X-Amz-Signature" in url, "Presigned URL does not contain a signature"
+    if cfg.get("edp_rbac_enabled"):
+        # RBAC mode: the URL is bare; authorization is enforced via the bearer token
+        # at request time, not via a query-string signature.
+        assert "X-Amz-Signature" not in url, "RBAC presigned URL must not carry a query signature"
+    else:
+        assert "X-Amz-Signature" in url, "Presigned URL does not contain a signature"
 
 
 @pytest.mark.smoke
@@ -75,6 +80,59 @@ def test_download_file_content(edp_helper, ingested_test_file):
     assert download_response.text == DOWNLOAD_TEST_FILE_CONTENT, (
         f"Downloaded content does not match. Expected: '{DOWNLOAD_TEST_FILE_CONTENT}', "
         f"Got: '{download_response.text}'"
+    )
+
+
+@allure.testcase("IEASG-T724")
+def test_download_denied_without_authorization(edp_helper, tmp_path):
+    """Security: NO bucket should serve an object without authentication/signature. For every
+    bucket, upload a probe, take the GET presigned URL, strip its query (any X-Amz-* signature) and
+    GET the bare URL with no Authorization header — as a plain browser tab would — and confirm the
+    object store rejects it (401/403). A 200 for any bucket means ingested documents are readable
+    anonymously by name, which is a security defect."""
+    buckets = ["default", "secondary", "only-admin"]
+    leaked = []
+    for bucket in buckets:
+        file_name = f"anon_download_probe_{bucket}.txt"
+        file_path = tmp_path / file_name
+        file_path.write_text(f"anonymous-download probe for {bucket}")
+        edp_helper.upload_file_and_wait_for_ingestion(str(file_path), bucket=bucket)
+        response = edp_helper.generate_presigned_url(file_name, method="GET", bucket=bucket)
+        assert response.status_code == 200, f"[{bucket}] admin GET presigned generation failed: {response.text}"
+        bare_url = response.json()["url"].split("?")[0]  # drop any signature query params
+        download_response = requests.get(bare_url, verify=False)  # no signature, no Authorization header
+        if download_response.status_code not in (401, 403):
+            leaked.append(f"{bucket} (HTTP {download_response.status_code})")
+    assert not leaked, (
+        f"Objects downloadable without authorization/signature from bucket(s): {', '.join(leaked)}; "
+        f"no bucket must serve objects anonymously by name"
+    )
+
+
+@allure.testcase("IEASG-T727")
+def test_download_admin_bucket_file_as_admin(edp_helper, tmp_path):
+    """Positive RBAC case: an admin can download a file stored in the admin-only bucket. Upload a
+    file with distinctive content to only-admin, then download it as admin via the authorized path
+    (bearer token attached) and confirm the content matches. RBAC-only."""
+    if not cfg.get("edp_rbac_enabled"):
+        pytest.skip("EDP RBAC is disabled; the only-admin bucket is not meaningful")
+
+    content = "admin-only download positive-case probe"
+    file_name = "admin_download_probe.txt"
+    file_path = tmp_path / file_name
+    file_path.write_text(content)
+    edp_helper.upload_file_and_wait_for_ingestion(str(file_path), bucket="only-admin")
+
+    response = edp_helper.generate_presigned_url(file_name, method="GET", bucket="only-admin")
+    assert response.status_code == 200, f"Admin GET presigned generation failed: {response.text}"
+    download_response = requests.get(
+        response.json()["url"], verify=False, headers=_get_auth_header_for_s3(edp_helper))
+    assert download_response.status_code == 200, (
+        f"Admin failed to download a file from the admin-only bucket: "
+        f"{download_response.status_code} {download_response.text}"
+    )
+    assert download_response.text == content, (
+        f"Downloaded content does not match. Expected: '{content}', Got: '{download_response.text}'"
     )
 
 

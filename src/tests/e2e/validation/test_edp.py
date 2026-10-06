@@ -492,6 +492,52 @@ def test_edp_rbac(edp_helper, chatqa_api_helper, temporarily_remove_regular_user
     assert "944" in chatqa_api_helper.get_text(response)
 
 
+@allure.testcase("IEASG-T729")
+def test_edp_regular_user_cannot_download_admin_bucket_file(
+        edp_helper, tmp_path, temporarily_remove_regular_user_required_actions):
+    """RBAC negative: a regular (non-admin) user must not be able to obtain a GET presigned URL for
+    a file in the admin-only bucket. Complements test_edp_regular_user_has_no_access_to_api (which
+    covers list/upload/delete-link but not file download)."""
+    if not cfg.get("edp_rbac_enabled"):
+        pytest.skip("EDP RBAC is disabled; the only-admin bucket is not meaningful")
+
+    file_name = f"regular_user_denied_{uuid.uuid4().hex[:8]}.txt"
+    file_path = tmp_path / file_name
+    file_path.write_text("regular user must not read this admin-only file")
+    edp_helper.upload_file_and_wait_for_ingestion(str(file_path), bucket="only-admin")
+    response = edp_helper.generate_presigned_url(file_name, method="GET", bucket="only-admin", as_user=True)
+    assert response.status_code == 403, (
+        f"Regular user must not download admin-bucket files; got {response.status_code}: {response.text}"
+    )
+
+
+@allure.testcase("IEASG-T730")
+def test_edp_regular_user_can_download_from_default_bucket(
+        edp_helper, tmp_path, temporarily_remove_regular_user_required_actions):
+    """RBAC positive: a regular (non-admin) user can download a file from a bucket they may read
+    (default). Verifies non-admin download is not over-blocked."""
+    if not cfg.get("edp_rbac_enabled"):
+        pytest.skip("EDP RBAC is disabled")
+
+    content = "regular-user readable default-bucket file"
+    file_name = f"regular_user_download_{uuid.uuid4().hex[:8]}.txt"
+    file_path = tmp_path / file_name
+    file_path.write_text(content)
+    edp_helper.upload_file_and_wait_for_ingestion(str(file_path), bucket="default")
+    response = edp_helper.generate_presigned_url(file_name, method="GET", bucket="default", as_user=True)
+    assert response.status_code == 200, (
+        f"Regular user should get a presigned URL for a readable default-bucket file; "
+        f"got {response.status_code}: {response.text}"
+    )
+    headers = {}
+    user_headers = edp_helper.get_headers(as_user=True)
+    if "authorization" in user_headers:
+        headers["authorization"] = user_headers["authorization"]
+    download = requests.get(response.json()["url"], verify=False, headers=headers)
+    assert download.status_code == 200, f"Regular user failed to download a readable file: {download.status_code}"
+    assert download.text == content, "Downloaded content does not match"
+
+
 TEXT_EXTRACTOR_POD_LABEL_SELECTOR = "app.kubernetes.io/name=edp-ingestion"
 
 
