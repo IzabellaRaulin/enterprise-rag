@@ -7,4 +7,7 @@ COPY Dockerfile .
 
 # CMD from base Dockerfile
 WORKDIR /home/user/comps/query_rewrite
+# Run as the same non-root user as the base image (explicit for image scanners)
+USER user
+
 CMD ["python", "erag_query_rewrite_microservice.py"]

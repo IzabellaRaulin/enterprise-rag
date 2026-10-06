@@ -4,4 +4,7 @@ COPY compliance /compliance
 
 # CMD from base Dockerfile
 WORKDIR /home/user/comps/docsum
+# Run as the same non-root user as the base image (explicit for image scanners)
+USER user
+
 CMD ["python", "erag_docsum_microservice.py"]

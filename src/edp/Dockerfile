@@ -13,7 +13,7 @@ COPY --from=ghcr.io/astral-sh/uv:0.8.0 /uv /uvx /bin/
 
 ARG python_version
 RUN apt-get update -y && \
-    apt-get install -y --only-upgrade openssl=3.5.7-1~deb13u3 libssl3t64=3.5.7-1~deb13u3 openssl-provider-legacy=3.5.7-1~deb13u3 && \
+    apt-get install -y --no-install-recommends --only-upgrade openssl=3.5.7-1~deb13u3 libssl3t64=3.5.7-1~deb13u3 openssl-provider-legacy=3.5.7-1~deb13u3 && \
     apt-get install -y --no-install-recommends qpdf && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 RUN rm -f /usr/bin/dmesg /usr/bin/base64 /usr/bin/perl

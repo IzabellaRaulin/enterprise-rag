@@ -8,4 +8,7 @@ COPY uv.lock .
 
 # CMD from base Dockerfile
 WORKDIR /home/user/comps/system_fingerprint
+# Run as the same non-root user as the base image (explicit for image scanners)
+USER user
+
 ENTRYPOINT ["python", "erag_system_fingerprint_microservice.py"]

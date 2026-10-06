@@ -8,4 +8,7 @@ COPY uv.lock .
 
 # CMD from base Dockerfile
 WORKDIR /home/ovms/
+# Run as the same non-root user as the base image (explicit for image scanners)
+USER 1000
+
 ENTRYPOINT ["./entrypoint.sh"]

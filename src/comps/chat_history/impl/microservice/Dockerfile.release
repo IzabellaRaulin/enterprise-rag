@@ -8,4 +8,7 @@ COPY uv.lock .
 
 # CMD from base Dockerfile
 WORKDIR /home/user/comps/chat_history
+# Run as the same non-root user as the base image (explicit for image scanners)
+USER user
+
 ENTRYPOINT ["python", "erag_chat_history_microservice.py"]

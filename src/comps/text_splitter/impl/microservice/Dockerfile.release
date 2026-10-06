@@ -8,4 +8,7 @@ COPY uv.lock .
 
 # CMD from base Dockerfile
 WORKDIR /home/user/comps/text_splitter
+# Run as the same non-root user as the base image (explicit for image scanners)
+USER user
+
 CMD ["python", "erag_text_splitter_microservice.py"]

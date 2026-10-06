@@ -16,7 +16,7 @@ ENV LANG=C.UTF-8
 ARG python_version
 
 RUN apt-get update -y && \
-    apt-get install -y --only-upgrade openssl=3.5.7-1~deb13u3 libssl3t64=3.5.7-1~deb13u3 openssl-provider-legacy=3.5.7-1~deb13u3 && \
+    apt-get install -y --no-install-recommends --only-upgrade openssl=3.5.7-1~deb13u3 libssl3t64=3.5.7-1~deb13u3 openssl-provider-legacy=3.5.7-1~deb13u3 && \
     apt-get install build-essential -y && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 

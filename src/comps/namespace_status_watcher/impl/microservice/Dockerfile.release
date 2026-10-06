@@ -8,4 +8,7 @@ COPY uv.lock .
 
 # CMD from base Dockerfile
 WORKDIR /home/user/comps/namespace_status_watcher
+# Run as the same non-root user as the base image (explicit for image scanners)
+USER user
+
 CMD ["python", "erag_namespace_status_watcher_microservice.py"]

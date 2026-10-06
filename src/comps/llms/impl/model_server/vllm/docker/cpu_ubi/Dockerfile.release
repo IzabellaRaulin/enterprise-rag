@@ -7,4 +7,7 @@ COPY Dockerfile .
 
 # CMD from base Dockerfile
 WORKDIR /workspace
+# Run as the same non-root user as the base image (explicit for image scanners)
+USER 1001
+
 ENTRYPOINT ["python3", "-m", "vllm.entrypoints.openai.api_server"]
