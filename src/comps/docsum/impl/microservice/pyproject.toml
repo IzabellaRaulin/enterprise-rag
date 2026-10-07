@@ -34,6 +34,7 @@ test = [
 
 [dependency-groups]
 security-overrides = [
-  "pillow>=12.1.1",
+  "pillow>=12.3.0",
   "protobuf>=6.33.5",
+  "urllib3>=2.8.0,<3.0.0",
 ]

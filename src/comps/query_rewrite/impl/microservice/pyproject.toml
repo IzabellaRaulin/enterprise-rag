@@ -22,7 +22,7 @@ dependencies = [
     "requests>=2.32.0",
     "setuptools==80.10.2",
     "shortuuid==1.0.13",
-    "urllib3>=2.6.3,<3.0.0",
+    "urllib3>=2.8.0,<3.0.0",
     "uvicorn==0.30.1",
 ]
 

@@ -437,6 +437,7 @@ test = [
 security-overrides = [
     { name = "pillow" },
     { name = "protobuf" },
+    { name = "urllib3" },
 ]
 
 [package.metadata]
@@ -465,8 +466,9 @@ provides-extras = ["test"]
 
 [package.metadata.requires-dev]
 security-overrides = [
-    { name = "pillow", specifier = ">=12.1.1" },
+    { name = "pillow", specifier = ">=12.3.0" },
     { name = "protobuf", specifier = ">=6.33.5" },
+    { name = "urllib3", specifier = ">=2.8.0,<3.0.0" },
 ]
 
 [[package]]

@@ -14,7 +14,7 @@ dependencies = [
     "mcp==1.28.1",
     "python-dotenv==1.2.2",
     "h11==0.16.0",
-    "anyio==4.9.0",
+    "anyio>=4.14.2,<5.0.0",
     "validators==0.34.0",
 ]
 
@@ -32,5 +32,6 @@ asyncio_mode = "auto"
 
 [dependency-groups]
 security-overrides = [
-    "urllib3>=2.6.3",
+    "urllib3>=2.8.0",
+    "pyjwt>=2.14.0",
 ]
