@@ -24,6 +24,8 @@ SUPPORTED_MODELS = {"microsoft/speecht5_tts",
                     "Qwen/Qwen3-TTS-12Hz-1.7B-VoiceDesign"}
 
 SPEECH_T5_SUPPORTED_VOICES = { "awb": 0, "bdl": 1138, "clb": 2271, "jmk": 3403, "ksp": 4535, "rms": 5667, "slt": 6799 }
+# Commit of the Hub's refs/convert/parquet branch; datasets>=4 cannot run the repo's loading script.
+SPEAKER_EMBEDDINGS_REVISION = "36e87b347a6a70f0420445b02ec40c55556f9ed7"
 
 
 class TTSModel:
@@ -58,7 +60,7 @@ class TTSModel:
             "microsoft/speecht5_hifigan"
         ).to(DEVICE)
 
-        self.embeddings_dataset = load_dataset("Matthijs/cmu-arctic-xvectors", split="validation")
+        self.embeddings_dataset = load_dataset("Matthijs/cmu-arctic-xvectors", revision=SPEAKER_EMBEDDINGS_REVISION, split="validation")
 
         self.speaker_embeddings_cache = {}
         for voice, idx in SPEECH_T5_SUPPORTED_VOICES.items():
