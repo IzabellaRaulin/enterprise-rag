@@ -1175,3 +1175,18 @@ func fingerprint(t *testing.T, containers []corev1.Container) string {
 	}
 	return fmt.Sprintf("%x", hasher.Sum32())
 }
+
+func TestHandleStatusUpdateReturnsCollectStatusError(t *testing.T) {
+	r, graph := newRenderReconciler(t, "unused", "")
+	deployment := &appsv1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:            "llm-svc-deployment",
+			Namespace:       graph.Namespace,
+			OwnerReferences: []metav1.OwnerReference{{Kind: "GMConnector", Name: graph.Name}},
+		},
+	}
+
+	if _, err := r.handleStatusUpdate(context.Background(), deployment); err == nil {
+		t.Fatal("expected the status collection error to be returned so the update is retried, got nil")
+	}
+}

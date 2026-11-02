@@ -945,8 +945,8 @@ func (r *GMConnectorReconciler) handleStatusUpdate(ctx context.Context, deployme
 			if err == nil {
 				ue := r.collectResourceStatus(graph, ctx)
 				if ue != nil {
-					_log.Error(err, "Failed to get graph before update status", "name", graph.Name)
-					return reconcile.Result{}, err
+					_log.Error(ue, "Failed to update graph status", "name", graph.Name)
+					return reconcile.Result{}, ue
 				}
 			}
 		}
