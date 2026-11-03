@@ -7,7 +7,7 @@ import { z } from "zod";
 import { LINK_ERROR_MESSAGES } from "@/utils/constants";
 
 const validationSchema = z
-  .string({ required_error: LINK_ERROR_MESSAGES.GENERIC })
+  .string({ error: LINK_ERROR_MESSAGES.GENERIC })
   .min(1, LINK_ERROR_MESSAGES.GENERIC)
   .url(LINK_ERROR_MESSAGES.GENERIC)
   .regex(new RegExp("^https?://", "i"), LINK_ERROR_MESSAGES.GENERIC)

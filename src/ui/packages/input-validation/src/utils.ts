@@ -22,7 +22,7 @@ const getValidationErrorMessage = (
   defaultMessage: string = "Validation error",
 ): string => {
   if (error instanceof ZodError) {
-    return error.errors[0]?.message || defaultMessage;
+    return error.issues[0]?.message || defaultMessage;
   }
   return defaultMessage;
 };

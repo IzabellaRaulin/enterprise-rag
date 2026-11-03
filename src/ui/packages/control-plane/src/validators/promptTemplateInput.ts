@@ -89,9 +89,12 @@ const validationSchema = z.object({
     .refine(containsUnexpectedPlaceholders, {
       message: "Prompt Templates contain unexpected placeholders",
     })
-    .refine(containsRequiredPlaceholders, (joined) => ({
-      message: getContainsRequiredPlaceholdersErrorMessage({ value: joined }),
-    }))
+    .refine(containsRequiredPlaceholders, {
+      error: (issue) =>
+        getContainsRequiredPlaceholdersErrorMessage({
+          value: issue.input as string,
+        }),
+    })
     .refine(containsDuplicatePlaceholders, {
       message: "Prompt Templates contain duplicated placeholders",
     }),

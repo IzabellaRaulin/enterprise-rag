@@ -21,18 +21,24 @@ import {
 
 const validationSchema = z
   .instanceof(File)
-  .refine(isFileExtensionSupported(SUPPORTED_FILE_EXTENSIONS), (file) => ({
-    message: getUnsupportedFileExtensionMsg({ value: file }),
-  }))
-  .refine(isMIMETypeSupported(SUPPORTED_FILES_MIME_TYPES), (file) => ({
-    message: getUnsupportedFileMIMETypeMsg({ value: file }),
-  }))
-  .refine(noInvalidCharactersInFileName, (file) => ({
-    message: getFilenameInvalidCharactersMsg({ value: file }),
-  }))
-  .refine(individualFileSizeWithinLimit(CLIENT_MAX_BODY_SIZE), (file) => ({
-    message: getFileSizeWithinLimitMsg(CLIENT_MAX_BODY_SIZE)({ value: file }),
-  }));
+  .refine(isFileExtensionSupported(SUPPORTED_FILE_EXTENSIONS), {
+    error: (issue) =>
+      getUnsupportedFileExtensionMsg({ value: issue.input as File }),
+  })
+  .refine(isMIMETypeSupported(SUPPORTED_FILES_MIME_TYPES), {
+    error: (issue) =>
+      getUnsupportedFileMIMETypeMsg({ value: issue.input as File }),
+  })
+  .refine(noInvalidCharactersInFileName, {
+    error: (issue) =>
+      getFilenameInvalidCharactersMsg({ value: issue.input as File }),
+  })
+  .refine(individualFileSizeWithinLimit(CLIENT_MAX_BODY_SIZE), {
+    error: (issue) =>
+      getFileSizeWithinLimitMsg(CLIENT_MAX_BODY_SIZE)({
+        value: issue.input as File,
+      }),
+  });
 
 export const validateFileInput = async (file: File) => {
   await validationSchema.parseAsync(file);

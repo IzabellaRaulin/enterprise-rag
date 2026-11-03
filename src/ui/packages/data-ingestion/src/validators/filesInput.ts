@@ -19,18 +19,18 @@ import {
 const validationSchema = z.array(
   z
     .instanceof(File)
-    .refine(
-      isFileExtensionSupported(SUPPORTED_FILE_EXTENSIONS_BASE),
-      (file) => ({
-        message: getUnsupportedFileExtensionMsg({ value: file }),
-      }),
-    )
-    .refine(isMIMETypeSupported(SUPPORTED_FILES_MIME_TYPES_BASE), (file) => ({
-      message: getUnsupportedFileMIMETypeMsg({ value: file }),
-    }))
-    .refine(noInvalidCharactersInFileName, (file) => ({
-      message: getFilenameInvalidCharactersMsg({ value: file }),
-    })),
+    .refine(isFileExtensionSupported(SUPPORTED_FILE_EXTENSIONS_BASE), {
+      error: (issue) =>
+        getUnsupportedFileExtensionMsg({ value: issue.input as File }),
+    })
+    .refine(isMIMETypeSupported(SUPPORTED_FILES_MIME_TYPES_BASE), {
+      error: (issue) =>
+        getUnsupportedFileMIMETypeMsg({ value: issue.input as File }),
+    })
+    .refine(noInvalidCharactersInFileName, {
+      error: (issue) =>
+        getFilenameInvalidCharactersMsg({ value: issue.input as File }),
+    }),
 );
 
 export const validateFileInput = async (files: File[] | FileList) => {
