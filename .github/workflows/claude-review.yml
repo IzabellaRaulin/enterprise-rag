@@ -4,11 +4,12 @@
 # so members show as CONTRIBUTOR). The agent has no shell or file-write tools, so diff content cannot
 # run commands, push, or edit files. Review only - no approval is granted.
 # Diffs the API refuses (HTTP 406, too large) fail the run instead of being reviewed.
-# AI_SYS_BOT_GH_TOKEN (required) posts reviews as sys-aibot.
+# AI_SYS_BOT_GH_TOKEN (required) posts reviews as sys-aibot and sets ready-for-review on Verdict: LGTM
+# (removed on any other outcome, and by the unlabel job when a draft or bot event skips the review).
 name: claude-review
 on:
   pull_request_target:
-    types: [opened, synchronize, reopened, ready_for_review]
+    types: [opened, synchronize, reopened, ready_for_review, converted_to_draft]
 permissions:
   contents: read
   pull-requests: write
@@ -60,3 +61,38 @@ jobs:
         run: |
           f="$RUNNER_TEMP/claude-execution-output.json"
           [ ! -f "$f" ] || jq -r '.. | objects | select(.type? == "result") | .result // .error // empty' "$f" | head -c 3000
+      - name: label verdict
+        if: always()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.AI_SYS_BOT_GH_TOKEN }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          api="repos/$GITHUB_REPOSITORY/issues/$PR"
+          body=$(gh api "$api/comments" --paginate --slurp | jq -r --arg run "actions/runs/$GITHUB_RUN_ID" \
+            '[.[][] | select(.user.login == "sys-aibot" and (.body | contains($run)))] | last | .body // ""')
+          labels=$(gh api "$api/labels" --jq '.[].name')
+          if grep -qxF 'Verdict: LGTM' <<< "$body"; then
+            gh api -X POST "$api/labels" -f 'labels[]=ready-for-review' --silent
+          elif grep -qxF ready-for-review <<< "$labels"; then
+            gh api -X DELETE "$api/labels/ready-for-review" --silent
+          fi
+
+  unlabel:
+    if: github.event.pull_request.draft || endsWith(github.actor, '[bot]')
+    concurrency:
+      group: claude-review-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        with:
+          egress-policy: audit
+      - shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.AI_SYS_BOT_GH_TOKEN }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          api="repos/$GITHUB_REPOSITORY/issues/$PR"
+          labels=$(gh api "$api/labels" --jq '.[].name')
+          ! grep -qxF ready-for-review <<< "$labels" || gh api -X DELETE "$api/labels/ready-for-review" --silent
