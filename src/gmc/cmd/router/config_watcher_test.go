@@ -712,7 +712,7 @@ func TestFallbackEmptyWhenNothingCached(t *testing.T) {
 }
 
 func TestInjectTopLevelOverwrites(t *testing.T) {
-	out := injectTopLevel([]byte(`{"a": 1, "b": 2}`), map[string]interface{}{"b": 9, "c": 3})
+	out := injectTopLevel([]byte(`{"a": 1, "b": 2}`), map[string]interface{}{"b": 9, "c": 3}, nil)
 	var got map[string]interface{}
 	assert.NoError(t, json.Unmarshal(out, &got))
 	assert.EqualValues(t, 1, got["a"])
@@ -722,7 +722,7 @@ func TestInjectTopLevelOverwrites(t *testing.T) {
 
 func TestInjectTopLevelNonObjectUnchanged(t *testing.T) {
 	req := []byte(`["not", "an", "object"]`)
-	out := injectTopLevel(req, map[string]interface{}{"a": 1})
+	out := injectTopLevel(req, map[string]interface{}{"a": 1}, nil)
 	assert.Equal(t, req, out)
 }
 
@@ -732,7 +732,8 @@ func TestInjectTopLevelKeepsRequestSummaryType(t *testing.T) {
 	// pipeline ran whatever the store held.
 	out := injectTopLevel(
 		[]byte(`{"summary_type": "stuff", "texts": ["x"]}`),
-		map[string]interface{}{"summary_type": "refine", "max_new_tokens": 512})
+		map[string]interface{}{"summary_type": "refine", "max_new_tokens": 512},
+		map[string]interface{}{"summary_type": "stuff"})
 
 	var got map[string]interface{}
 	assert.NoError(t, json.Unmarshal(out, &got))
@@ -745,11 +746,42 @@ func TestInjectTopLevelSuppliesSummaryTypeWhenAbsent(t *testing.T) {
 	// With no summary_type in the request the stored value is the default.
 	out := injectTopLevel(
 		[]byte(`{"texts": ["x"]}`),
-		map[string]interface{}{"summary_type": "refine"})
+		map[string]interface{}{"summary_type": "refine"}, nil)
 
 	var got map[string]interface{}
 	assert.NoError(t, json.Unmarshal(out, &got))
 	assert.Equal(t, "refine", got["summary_type"])
+}
+
+func TestInjectTopLevelKeepsRequestStream(t *testing.T) {
+	out := injectTopLevel(
+		[]byte(`{"stream": "this_should_be_a_boolean"}`),
+		map[string]interface{}{"stream": true},
+		map[string]interface{}{"stream": "this_should_be_a_boolean"})
+
+	var got map[string]interface{}
+	assert.NoError(t, json.Unmarshal(out, &got))
+	assert.Equal(t, "this_should_be_a_boolean", got["stream"])
+}
+
+func TestInjectTopLevelStoreWinsOverUpstreamStreamDefault(t *testing.T) {
+	out := injectTopLevel(
+		[]byte(`{"docs": [], "stream": true}`),
+		map[string]interface{}{"stream": false}, nil)
+
+	var got map[string]interface{}
+	assert.NoError(t, json.Unmarshal(out, &got))
+	assert.Equal(t, false, got["stream"])
+}
+
+func TestWithEntryRequestReadsEntryParameters(t *testing.T) {
+	ctx := withEntryRequest(context.Background(),
+		[]byte(`{"texts": ["x"], "parameters": {"stream": false}}`),
+		http.Header{"Content-Type": []string{JSONContentType}})
+	assert.Equal(t, map[string]interface{}{"stream": false}, callerParamsFromContext(ctx))
+
+	ctx = withEntryRequest(context.Background(), []byte(`not json`), http.Header{})
+	assert.Nil(t, callerParamsFromContext(ctx))
 }
 
 func TestInjectTopLevelStoreStillWinsForGuardConfig(t *testing.T) {
@@ -761,6 +793,11 @@ func TestInjectTopLevelStoreStillWinsForGuardConfig(t *testing.T) {
 		map[string]interface{}{
 			"input_guardrail_params": map[string]interface{}{
 				"ban_substrings": map[string]interface{}{"enabled": true},
+			},
+		},
+		map[string]interface{}{
+			"input_guardrail_params": map[string]interface{}{
+				"ban_substrings": map[string]interface{}{"enabled": false},
 			},
 		})
 
@@ -775,7 +812,8 @@ func TestInjectTopLevelStoreStillWinsForCaps(t *testing.T) {
 	// max_new_tokens is a resource cap an operator sets, not a caller's choice.
 	out := injectTopLevel(
 		[]byte(`{"max_new_tokens": 99999}`),
-		map[string]interface{}{"max_new_tokens": 1024})
+		map[string]interface{}{"max_new_tokens": 1024},
+		map[string]interface{}{"max_new_tokens": 99999})
 
 	var got map[string]interface{}
 	assert.NoError(t, json.Unmarshal(out, &got))

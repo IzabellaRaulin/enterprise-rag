@@ -6,11 +6,14 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"io"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -263,4 +266,103 @@ func TestLeafStepInjectedOncePerPipeline(t *testing.T) {
 			assert.Equal(t, "hi", got["query"])
 		})
 	}
+}
+
+func multipartUpload(t *testing.T, parameters string) (string, string) {
+	t.Helper()
+	var buf bytes.Buffer
+	mw := multipart.NewWriter(&buf)
+	fw, err := mw.CreateFormFile("files", "doc.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, _ = fw.Write([]byte("text"))
+	if err := mw.WriteField(Parameters, parameters); err != nil {
+		t.Fatal(err)
+	}
+	if err := mw.Close(); err != nil {
+		t.Fatal(err)
+	}
+	return buf.String(), mw.FormDataContentType()
+}
+
+func TestMcGraphHandlerCallerParamsReachLeaf(t *testing.T) {
+	uploadBody, uploadType := multipartUpload(t, `{"summary_type": "stuff"}`)
+	cases := []struct {
+		name        string
+		body        string
+		contentType string
+		key         string
+		want        interface{}
+	}{
+		{"caller stream wins", `{"texts": ["x"], "parameters": {"stream": "this_should_be_a_boolean"}}`, JSONContentType, "stream", "this_should_be_a_boolean"},
+		{"stored stream beats upstream default", `{"texts": ["x"]}`, JSONContentType, "stream", false},
+		{"multipart caller summary_type wins", uploadBody, uploadType, "summary_type", "stuff"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			upstream := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, _ *http.Request) {
+				_, _ = io.WriteString(rw, `{"docs": [], "stream": true}`)
+			}))
+			defer upstream.Close()
+			upstreamURL, err := apis.ParseURL(upstream.URL)
+			if err != nil {
+				t.Fatal(err)
+			}
+			leafURL, received, closeFn := echoService(t)
+			defer closeFn()
+
+			w := newTestWatcher("docsum")
+			w.applyEntry("docsum._global.docsum", []byte(`{"stream": false, "summary_type": "refine"}`), 1, time.Now())
+			useTestWatcher(t, w)
+
+			docsum := leafStep("DocSum", leafURL, "docsum")
+			docsum.Data = "$response"
+			prevGraph := mcGraph
+			t.Cleanup(func() { mcGraph = prevGraph })
+			mcGraph = &mcv1alpha3.GMConnector{
+				Spec: mcv1alpha3.GMConnectorSpec{
+					Nodes: map[string]mcv1alpha3.Router{
+						"root": {
+							RouterType: mcv1alpha3.Sequence,
+							Steps:      []mcv1alpha3.Step{leafStep("TextExtractor", upstreamURL.String(), ""), docsum},
+						},
+					},
+				},
+			}
+
+			req := httptest.NewRequest("POST", "/", strings.NewReader(tc.body))
+			req.Header.Set("Content-Type", tc.contentType)
+			mcGraphHandler(httptest.NewRecorder(), req)
+
+			var got map[string]interface{}
+			assert.NoError(t, json.Unmarshal(recvWithTimeout(t, received), &got))
+			assert.Equal(t, tc.want, got[tc.key])
+		})
+	}
+}
+
+func TestEnsembleRejectsMultipartEntry(t *testing.T) {
+	url, received, closeFn := echoService(t)
+	defer closeFn()
+
+	graph := mcv1alpha3.GMConnector{
+		Spec: mcv1alpha3.GMConnectorSpec{
+			Nodes: map[string]mcv1alpha3.Router{
+				"root": {
+					RouterType: mcv1alpha3.Ensemble,
+					Steps:      []mcv1alpha3.Step{leafStep("Llm", url, "llm")},
+				},
+			},
+		},
+	}
+
+	body, contentType := multipartUpload(t, `{"summary_type": "stuff"}`)
+	headers := http.Header{"Content-Type": []string{contentType}}
+	ctx := withEntryRequest(context.Background(), []byte(body), headers)
+	respBody, statusCode, err := routeStep(ctx, "root", graph, []byte(body), []byte(body), headers)
+	assert.Error(t, err)
+	assert.Equal(t, http.StatusBadRequest, statusCode)
+	closeResponse(t, respBody)
+	assert.Empty(t, received)
 }

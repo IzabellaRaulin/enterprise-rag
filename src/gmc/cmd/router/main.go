@@ -188,6 +188,33 @@ func routeDepth(ctx context.Context) int {
 	return 0
 }
 
+// Carried on the context rather than re-parsed per step: later steps get JSON
+// headers, so a multipart entry body cannot be read back from initInput there.
+type entryRequestCtxKey struct{}
+
+func withEntryRequest(ctx context.Context, body []byte, headers http.Header) context.Context {
+	initReqData, err := entryRequestData(body, headers)
+	if err != nil {
+		return ctx
+	}
+	return context.WithValue(ctx, entryRequestCtxKey{}, initReqData)
+}
+
+func entryRequestFor(ctx context.Context, body []byte, headers http.Header) (map[string]interface{}, error) {
+	if initReqData, ok := ctx.Value(entryRequestCtxKey{}).(map[string]interface{}); ok {
+		return initReqData, nil
+	}
+	// Reached by direct routeStep callers, and by a body mcGraphHandler could not
+	// parse, so the pipeline handler reports the parse error with its status code.
+	return entryRequestData(body, headers)
+}
+
+func callerParamsFromContext(ctx context.Context) map[string]interface{} {
+	initReqData, _ := ctx.Value(entryRequestCtxKey{}).(map[string]interface{})
+	params, _ := initReqData[Parameters].(map[string]interface{})
+	return params
+}
+
 // fanoutCtxKey carries one request's ensemble fan-out budget. The budget is
 // shared by every node the request reaches, because a per-node limit does not
 // bound the tree: nested Ensemble nodes each open their own group, so the
@@ -711,6 +738,17 @@ func isMultipartBody(headers http.Header) bool {
 	return err == nil && mediaType == MultipartContentType
 }
 
+func entryRequestData(body []byte, headers http.Header) (map[string]interface{}, error) {
+	if isMultipartBody(headers) {
+		return multipartInitParams(body, headers.Get("Content-Type"))
+	}
+	initReqData := make(map[string]interface{})
+	if err := json.Unmarshal(body, &initReqData); err != nil {
+		return nil, err
+	}
+	return initReqData, nil
+}
+
 func multipartInitParams(body []byte, contentType string) (map[string]interface{}, error) {
 	_, mediaParams, err := mime.ParseMediaType(contentType)
 	if err != nil {
@@ -1097,8 +1135,13 @@ func handleEnsemblePipeline(
 ) (io.ReadCloser, int, error) {
 	currentNode := graph.Spec.Nodes[nodeName]
 
-	initReqData := make(map[string]interface{})
-	if err := json.Unmarshal(initInput, &initReqData); err != nil {
+	if isMultipartBody(headers) {
+		err := errors.New("an Ensemble node cannot take a multipart entry request")
+		otlpr.WithContext(log, ctx).Error(err, "Rejecting multipart request")
+		return nil, http.StatusBadRequest, err
+	}
+	initReqData, err := entryRequestFor(ctx, initInput, headers)
+	if err != nil {
 		otlpr.WithContext(log, ctx).Error(err, "Error unmarshaling initReqData:")
 		return nil, 500, err
 	}
@@ -1303,16 +1346,13 @@ func handleSequencePipeline(
 	var responseBytes []byte
 	var err error
 
-	initReqData := make(map[string]interface{})
-
 	multipartEntry := isMultipartBody(headers)
-	if multipartEntry {
-		if initReqData, err = multipartInitParams(initInput, headers.Get("Content-Type")); err != nil {
-			otlpr.WithContext(log, ctx).Error(err, "Error reading multipart entry request:")
+	initReqData, err := entryRequestFor(ctx, initInput, headers)
+	if err != nil {
+		otlpr.WithContext(log, ctx).Error(err, "Error reading entry request:")
+		if multipartEntry {
 			return nil, http.StatusBadRequest, err
 		}
-	} else if err = json.Unmarshal(initInput, &initReqData); err != nil {
-		otlpr.WithContext(log, ctx).Error(err, "Error unmarshaling initReqData:")
 		return nil, 500, err
 	}
 	// Steps after the entry step are called with the previous step's JSON response,
@@ -1557,6 +1597,7 @@ func mcGraphHandler(w http.ResponseWriter, req *http.Request) {
 
 		// ---------------------- RouterAllSteps
 		allStepsCtx, spanRouterAllSteps := mainTracer.Start(ctx, "router all steps") // this context will be used for callClient instrumenation (POSTs)
+		allStepsCtx = withEntryRequest(allStepsCtx, inputBytes, req.Header)
 		responseBody, statusCode, err := routeStep(allStepsCtx, defaultNodeName, *mcGraph, inputBytes, inputBytes, req.Header)
 
 		pipeLatencyMilliseconds := float64(time.Since(routerRequestStartTime)) / float64(time.Millisecond)
