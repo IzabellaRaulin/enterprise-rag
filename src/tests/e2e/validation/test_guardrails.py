@@ -10,19 +10,6 @@ import pytest
 
 from tests.e2e.validation.constants import DATAPREP_UPLOAD_DIR
 from tests.e2e.helpers.guard_helper import GuardType, GuardQuestions as questions
-from tests.e2e.validation.buildcfg import cfg
-
-# Guard tests drive the chatqna pipeline: assert_blocked/assert_allowed call
-# call_chatqa, so they only make sense on a pipeline that exposes a chatqna
-# endpoint. Skip the whole module on pipeline types (e.g. docsum) that have no
-# chatqna to scan. Mirrors the guard-disabling fixture's gate in
-# tests/e2e/conftest.py.
-GUARD_PIPELINE_TYPES = ("chatqna", "audioqna")
-
-if cfg.get("pipeline_type") not in GUARD_PIPELINE_TYPES:
-    pytestmark = pytest.mark.skip(
-        reason=f"Guard tests require a chatqna pipeline; pipeline_type="
-               f"{cfg.get('pipeline_type')!r} has no chatqna to scan")
 
 
 @pytest.fixture(autouse=True)

@@ -25,7 +25,7 @@ from tests.e2e.helpers.chat_history_helper import ChatHistoryHelper
 from tests.e2e.helpers.docsum_helper import DocSumHelper
 from tests.e2e.helpers.edp_helper import EdpHelper
 from tests.e2e.helpers.fingerprint_api_helper import FingerprintApiHelper
-from tests.e2e.helpers.guard_helper import GuardHelper
+from tests.e2e.helpers.guard_helper import GuardHelper, deployed_guard_types
 from tests.e2e.helpers.istio_helper import IstioHelper
 from tests.e2e.helpers.k8s_helper import K8sHelper
 from tests.e2e.helpers.keycloak_helper import KeycloakHelper
@@ -413,11 +413,6 @@ def disable_guards_at_startup(guard_helper, suppress_logging, temporarily_remove
     Note that suppress_logging fixture is deliberately placed here to ensure that it is executed
     before this fixture (otherwise we'd see a lot of unwanted logs at startup).
     """
-    # Guard helper targets the chatqna pipeline scope; skip on other pipeline types
-    if cfg.get("pipeline_type") not in ("chatqna", "audioqna"):
-        yield
-        return
-
     logger.info("Disabling all guards using permanent validation user")
     guard_helper.disable_all_guards()
     yield
@@ -536,8 +531,8 @@ def generic_api_helper():
 
 
 @pytest.fixture(scope="session")
-def guard_helper(chatqa_api_helper, fingerprint_api_helper):
-    return GuardHelper(chatqa_api_helper, fingerprint_api_helper)
+def guard_helper(chatqa_api_helper, fingerprint_api_helper, k8s_helper):
+    return GuardHelper(chatqa_api_helper, fingerprint_api_helper, deployed_guard_types(k8s_helper))
 
 
 @pytest.fixture(scope="session")

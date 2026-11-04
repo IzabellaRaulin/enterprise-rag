@@ -7,6 +7,7 @@ import logging
 import time
 from enum import Enum
 
+import pytest
 import requests
 
 from comps.system_fingerprint.utils.object_document_mapper import (
@@ -122,6 +123,18 @@ def _disabled_defaults(guard_type, scanner):
     disabled rather than skipped.
     """
     return _fully_specified(guard_type, scanner, {"enabled": False})
+
+
+def deployed_guard_types(k8s_helper):
+    """Returns the chatqa guard types the deployed pipeline graph declares, none when it is absent."""
+    graph = k8s_helper.get_gmconnector(CHATQNA_PIPELINE)
+    if graph is None:
+        logger.warning(f"No '{CHATQNA_PIPELINE}' pipeline is deployed; treating all guards as not deployed")
+        return ()
+    params_kinds = {step.get("internalService", {}).get("config", {}).get("paramsKind")
+                    for node in graph.raw["spec"]["nodes"].values() for step in node["steps"]}
+    logger.info(f"Pipeline '{CHATQNA_PIPELINE}' declares parameter kinds: {sorted(filter(None, params_kinds))}")
+    return tuple(guard_type for guard_type in CHATQNA_GUARD_TYPES if guard_type.value in params_kinds)
 
 
 class GuardQuestions:
@@ -384,9 +397,10 @@ class GuardQuestions:
 
 class GuardHelper:
 
-    def __init__(self, chatqa_api_helper, fingerprint_api_helper):
+    def __init__(self, chatqa_api_helper, fingerprint_api_helper, deployed_guards=CHATQNA_GUARD_TYPES):
         self.chatqa_api_helper = chatqa_api_helper
         self.fingerprint_api_helper = fingerprint_api_helper
+        self.deployed_guards = tuple(deployed_guards)
 
     def setup(self, guard_type, name, parameters):
         """Configure one chatqa scanner, sending every field the scanner has.
@@ -401,6 +415,8 @@ class GuardHelper:
         assert guard_type in CHATQNA_GUARD_TYPES, (
             f"{guard_type.value} is not a chatqa guard; use setup_dataprep for "
             f"the dataprep scope")
+        if guard_type not in self.deployed_guards:
+            pytest.skip(f"{guard_type.value} is not deployed in this pipeline")
         payload = [
             {
                 "name": guard_type.value,
@@ -546,7 +562,7 @@ class GuardHelper:
             f"{GUARD_CONFIG_READ_RETRIES} attempts: {last_error}") from last_exception
 
     def disable_all_guards(self):
-        """Reset all input and output guards to their disabled defaults.
+        """Reset the deployed input and output guards to their disabled defaults.
 
         Writing only ``enabled: False`` would disable the scanners but leave
         every other field at the value the finished test set, and the write
@@ -556,7 +572,7 @@ class GuardHelper:
         (a threshold, an is_blocked, a match_type) from whatever ran before it.
         """
         logger.info("Disabling all guards")
-        for guard_type in CHATQNA_GUARD_TYPES:
+        for guard_type in self.deployed_guards:
             config = self._read_config_when_ready(guard_type.value)
             scanners = config.json()["values"][GUARD_READ_FIELDS[guard_type]].keys()
             change_arguments_body = [{

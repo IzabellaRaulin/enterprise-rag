@@ -30,6 +30,9 @@ _VolumeSnapshotClass = kr8s.objects.new_class(
     "VolumeSnapshotClass", "snapshot.storage.k8s.io/v1", asyncio=False, namespaced=False,
     plural="volumesnapshotclasses",
 )
+_GMConnector = kr8s.objects.new_class(
+    "GMConnector", "gmc.erag.intel.com/v1alpha3", asyncio=False, namespaced=True
+)
 
 
 class ResourceNotFound(Exception):
@@ -87,6 +90,18 @@ class K8sHelper:
         no volume contents, so its absence is worth failing on separately.
         """
         return list(kr8s.get(_VolumeSnapshotClass))
+
+    def get_gmconnector(self, name):
+        """Returns the GMConnector graph of that name from any namespace, or None when the cluster has none."""
+        logger.debug(f"Getting GMConnector '{name}'")
+        try:
+            graphs = [graph for graph in kr8s.get(_GMConnector, namespace=kr8s.ALL) if graph.name == name]
+        except kr8s.ServerError as error:
+            if getattr(error.response, "status_code", None) != 404:
+                raise
+            logger.warning(f"The cluster does not serve the GMConnector kind: {error}")
+            return None
+        return graphs[0] if graphs else None
 
     def list_pvcs(self, namespace):
         """List all PersistentVolumeClaims in a namespace"""
