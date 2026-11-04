@@ -1,0 +1,84 @@
+---
+name: Dependency Review
+
+# Actions are pinned to full commit SHAs (the trailing `# vX.Y.Z` is the tag
+# that SHA corresponded to) and every tool to an exact version -- no floating
+# tags. Version bumps are therefore explicit, reviewable changes to this file.
+#
+# Blocks pull requests that introduce a new dependency whose license is not
+# compatible with Apache-2.0. Data comes from the dependency graph, so only
+# manifests and lockfiles the dependency graph understands are covered.
+
+on:
+  pull_request:
+    branches:
+      - main
+      - 'release-[0-9]+\.[0-9]+'
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  dependency-review:
+    name: Dependency Review (licenses)
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Harden the runner (audit all outbound calls)
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        with:
+          egress-policy: audit
+
+      # The dependency graph reports a version bump as the old version removed
+      # plus the new version added, and the action license-checks every added
+      # entry. A package that is both removed and added in this PR *with the
+      # same license* is therefore a bump of an existing dependency, so it is
+      # passed to the action as license-exempt, so existing exceptions (AGPL
+      # pymupdf, ...) and license-detector noise do not fail every bump. A bump
+      # that changes the license (e.g. a relicense to AGPL, SSPL or BUSL) is
+      # still checked. Exemptions are version-less purls, which the action
+      # matches on type + name for every manifest, so a name is exempted only
+      # if all of its added entries kept their license. Packages that are
+      # genuinely new -- including new transitive dependencies pulled in by a
+      # bump -- are still checked.
+      - name: Find bumped (pre-existing) dependencies
+        id: bumped
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          gh api "repos/${GITHUB_REPOSITORY}/dependency-graph/compare/${BASE_SHA}...${HEAD_SHA}" \
+            > changes.json
+          # Strips the trailing `@version` only, so npm scopes (`@types/...`) survive.
+          purls=$(jq -r '
+            def name_only: .package_url // empty | sub("@[^@/]*$"; "");
+            [.[] | select(.change_type == "removed") | [name_only, .license]] as $removed
+            | [.[] | select(.change_type == "added")
+                | {name: name_only, kept: ([name_only, .license] | IN($removed[]))}]
+            | group_by(.name) | map(select(all(.kept)) | .[0].name)
+            | join(",")' changes.json)
+          echo "Bumped with unchanged license, not license-checked: ${purls:-none}" | tr ',' '\n'
+          echo "purls=${purls}" >> "$GITHUB_OUTPUT"
+
+      # ASF Category A licenses plus MPL-2.0 (Category B). A dependency whose
+      # license cannot be determined is only warned about, not failed.
+      - name: Dependency Review
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+        with:
+          license-check: true
+          vulnerability-check: false
+          allow-licenses: >-
+            Apache-2.0,
+            MIT, MIT-0, MIT-CMU, X11,
+            BSD-2-Clause, BSD-2-Clause-Views, BSD-3-Clause, 0BSD,
+            ISC, Zlib, BSL-1.0, NCSA, UPL-1.0, PostgreSQL, W3C, HPND,
+            PSF-2.0, Python-2.0, CNRI-Python,
+            Unicode-DFS-2016, Unicode-3.0,
+            BlueOak-1.0.0, Unlicense, CC0-1.0, CC-BY-4.0,
+            MPL-2.0
+          allow-dependencies-licenses: ${{ steps.bumped.outputs.purls }}
