@@ -350,6 +350,32 @@ def test_edp_retrieve_invalid_parameters(edp_helper):
             f"Internal details leaked for payload {payload}. Response: {response.text}"
 
 
+QUARTER_RANGE_QUERIES = {
+    "en": "Zorbelix quarterly report from Q1-Q3 2024",
+    "pl": "Raport kwartalny Zorbelix z I-III kwartał 2024",
+}
+
+
+@allure.testcase("DSPTV-T394")
+def test_edp_retrieve_filters_by_quarter_range(edp_helper, test_language):
+    """Ingest PDFs created inside and outside Q1-Q3 2024 and retrieve with a quarter-range query.
+    Expect only the PDF created inside the range to be retrieved"""
+    in_range_pdf = "test_quarter_range_inside.pdf"
+    out_of_range_pdf = "test_quarter_range_outside.pdf"
+
+    with edp_helper.ephemeral_upload(os.path.join(DATAPREP_UPLOAD_DIR, in_range_pdf)), \
+            edp_helper.ephemeral_upload(os.path.join(DATAPREP_UPLOAD_DIR, out_of_range_pdf)):
+        response = edp_helper.retrieve({
+            "query": QUARTER_RANGE_QUERIES[test_language],
+            "metadata_extraction_mode": "regex_only",
+        })
+        assert response.status_code == 200, f"Failed to retrieve documents. Response: {response.text}"
+        retrieved = {doc["metadata"].get("object_name") for doc in response.json()["docs"]["retrieved_docs"]}
+
+    assert in_range_pdf in retrieved, f"PDF created inside the range was not retrieved: {retrieved}"
+    assert out_of_range_pdf not in retrieved, f"PDF created outside the range was retrieved: {retrieved}"
+
+
 @allure.testcase("DSPTV-T80")
 def test_edp_responsiveness_while_uploading_file(edp_helper):
     """

@@ -177,8 +177,7 @@ class DateNormalizer:
         elif operator == 'quarter':
             # "Q3 2024" or "IV kwartał 2024" → specific quarter
             if isinstance(value, (tuple, list)) and len(value) == 2:
-                # Parse quarter number (handles both Arabic and Roman numerals)
-                quarter = self._parse_quarter_number(value[0], value[0])
+                quarter = self._parse_quarter_number(value[0])
                 try:
                     year = int(value[1])
                 except (ValueError, TypeError):
@@ -214,10 +213,8 @@ class DateNormalizer:
         elif operator == 'quarter_range':
             # Flexible quarter range 
             if isinstance(value, (tuple, list)) and len(value) >= 3:
-                # Parse quarter numbers (handle Roman numerals from Polish patterns)
-                start_q = self._parse_quarter_number(value[0], value[1] if len(value) > 3 else None)
-                end_q = self._parse_quarter_number(value[2] if len(value) == 3 else value[2], 
-                                                   value[3] if len(value) > 3 else None)
+                start_q = self._parse_quarter_number(value[0])
+                end_q = self._parse_quarter_number(value[1])
                 year = int(value[-1])  # Year is always last
                 
                 if start_q and end_q:
@@ -418,30 +415,13 @@ class DateNormalizer:
         end = datetime(year, end_month, last_day, 23, 59, 59, tzinfo=timezone.utc)
         return int(start.timestamp()), int(end.timestamp())
     
-    def _parse_quarter_number(self, arabic: Optional[str], roman: Optional[str]) -> Optional[int]:
+    def _parse_quarter_number(self, value: str) -> Optional[int]:
         """Parse quarter number from Arabic (1-4) or Roman (I-IV) numerals."""
-        # Try Arabic numeral first
-        if arabic and str(arabic).isdigit():
-            q = int(arabic)
-            if 1 <= q <= 4:
-                return q
-        
-        # Try Roman numeral (check arabic param first as it might contain Roman)
-        value_to_check = arabic if arabic else roman
-        if value_to_check:
-            value_str = str(value_to_check).upper().strip()
-            q = ROMAN_TO_INT.get(value_str)
-            if q:
-                return q
-        
-        # Also check roman param
-        if roman:
-            value_str = str(roman).upper().strip()
-            q = ROMAN_TO_INT.get(value_str)
-            if q:
-                return q
-        
-        return None
+        value = str(value).upper().strip()
+        if value.isdigit():
+            q = int(value)
+            return q if 1 <= q <= 4 else None
+        return ROMAN_TO_INT.get(value)
     
     def _last_quarter_range(self) -> Tuple[int, int]:
         """Get timestamp range for previous quarter."""
