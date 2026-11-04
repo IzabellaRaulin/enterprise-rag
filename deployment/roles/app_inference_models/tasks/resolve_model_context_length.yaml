@@ -7,10 +7,10 @@
 #
 # The LLM is reached through the AI gateway, which serves its own /v1/models list
 # without max_model_len, so DocSum cannot discover it at runtime. The script asks the
-# KServe workload service through the apiserver proxy instead.
+# model server from inside its KServe workload pod instead.
 #
-# Best effort: when the value cannot be resolved (OVMS does not report it, or the
-# proxy is blocked), llm_max_model_len stays empty and DocSum skips pre-validation -
+# Best effort: when the value cannot be resolved (OVMS does not report it, or no
+# workload pod answers), llm_max_model_len stays empty and DocSum skips pre-validation -
 # oversized 'stuff' requests are then rejected by the model server itself.
 
 - name: "app_inference_models | Run resolve_model_context_length script"

@@ -8,15 +8,16 @@ Resolve the context length (max_model_len) of a deployed LLM.
 DocSum pre-validates 'stuff' summaries against the model's context length. It reads
 that number from the LLM's /v1/models, but in this deployment the LLM is reached
 through the AI gateway, which serves its own model list without max_model_len. Only
-the model server itself reports it, so this script asks the KServe workload service
-directly - through the Kubernetes apiserver proxy, since the installer host has no
-route into the cluster network.
+the model server itself reports it, so this script asks it from inside a KServe
+workload pod (kubectl exec, then localhost). The apiserver proxy is no route there: the
+host-network apiserver speaks plaintext, which mesh-wide STRICT mTLS rejects whenever
+the model pod runs on another node than the apiserver.
 
 Outputs a single JSON object to stdout:
   {"model_context_length": <int|null>, "source": "<source>", "reason": "<why null>"}
 
 Exits 0 even when the value cannot be resolved: DocSum then skips pre-validation, so
-an unreported context length (OVMS, a blocked proxy) must not fail an install.
+an unreported context length (OVMS, no reachable pod) must not fail an install.
 """
 
 import argparse
@@ -28,24 +29,29 @@ import sys
 NAME_PATTERN = re.compile(r"^[a-z0-9]([-a-z0-9.]*[a-z0-9])?$")
 
 WORKLOAD_SVC_SUFFIX = "-kserve-workload-svc"
-WORKLOAD_SVC_PORT = 8000
+WORKLOAD_CONTAINER = "main"
+LOCAL_MODELS_URL = "http://127.0.0.1:8000/v1/models"
 
 
-def build_models_path(namespace, model_name):
-    """Build the apiserver proxy path to the model server's /v1/models."""
-    service = f"{model_name}{WORKLOAD_SVC_SUFFIX}:{WORKLOAD_SVC_PORT}"
-    return f"/api/v1/namespaces/{namespace}/services/{service}/proxy/v1/models"
+def build_exec_argv(kubectl, namespace, model_name, timeout):
+    """Build the kubectl exec that prints /v1/models from inside a workload pod."""
+    fetch = (
+        "import sys, urllib.request; "
+        f"sys.stdout.write(urllib.request.urlopen('{LOCAL_MODELS_URL}', timeout={timeout}).read().decode())"
+    )
+    return [kubectl, "exec", "-n", namespace, f"svc/{model_name}{WORKLOAD_SVC_SUFFIX}", "-c", WORKLOAD_CONTAINER, "--", "python3", "-c", fetch]
 
 
 def fetch_models(kubectl, namespace, model_name, timeout):
     """Return the parsed /v1/models listing, or a reason why it is unavailable."""
-    argv = [kubectl, "get", "--raw", build_models_path(namespace, model_name)]
+    argv = build_exec_argv(kubectl, namespace, model_name, timeout)
     try:
         result = subprocess.run(argv, capture_output=True, text=True, timeout=timeout, check=False)  # nosec B603
     except (OSError, subprocess.TimeoutExpired) as error:
         return None, f"could not run kubectl: {error}"
     if result.returncode != 0:
-        return None, f"model server not reachable through the apiserver proxy: {result.stderr.strip()}"
+        last_line = (result.stderr.strip().splitlines() or [""])[-1]
+        return None, f"model server not reachable from its workload pod: {last_line}"
     try:
         return json.loads(result.stdout), None
     except json.JSONDecodeError as error:
