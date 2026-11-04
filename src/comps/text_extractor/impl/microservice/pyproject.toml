@@ -37,6 +37,7 @@ dependencies = [
     "sentence_transformers>=5.6.1,<6.0.0",
     "shortuuid>=1.0.13,<2.0.0",
     "unstructured[all-docs]>=0.24.0,<1.0.0",
+    "en-core-web-sm", # spaCy model unstructured/nlp/tokenize.py pins; else installed at runtime
     "pdfminer-six>=20260107", # dependency of all-docs
     "pypdf>=6.19.0,<7.0.0", # dependency of unstructured/all-docs; security update
     "pyasn1>=0.6.4,<1.0.0", # dependency of unstructured
@@ -89,6 +90,8 @@ torch = [
 torchvision = [
     { index = "torchvision-cpu" },
 ]
+# Keep in step with the wheel unstructured/nlp/tokenize.py pins.
+en-core-web-sm = { url = "https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl" }
 
 [[tool.uv.index]]
 name = "pytorch-cpu"

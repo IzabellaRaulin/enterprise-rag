@@ -697,6 +697,14 @@ wheels = [
 ]
 
 [[package]]
+name = "en-core-web-sm"
+version = "3.8.0"
+source = { url = "https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl" }
+wheels = [
+    { url = "https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl", hash = "sha256:1932429db727d4bff3deed6b34cfc05df17794f4a52eeb26cf8928f7c1a0fb85" },
+]
+
+[[package]]
 name = "et-xmlfile"
 version = "2.0.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1069,6 +1077,7 @@ dependencies = [
     { name = "cairosvg" },
     { name = "docarray", extra = ["image", "proto"] },
     { name = "docling" },
+    { name = "en-core-web-sm" },
     { name = "fastapi" },
     { name = "h11" },
     { name = "huggingface-hub" },
@@ -1149,6 +1158,7 @@ requires-dist = [
     { name = "docarray", extras = ["proto", "image"], specifier = ">=0.40.0,<1.0.0" },
     { name = "docarray", extras = ["proto", "image"], marker = "extra == 'test'", specifier = ">=0.40.0,<1.0.0" },
     { name = "docling", specifier = ">=2.132.0,<3.0.0" },
+    { name = "en-core-web-sm", url = "https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl" },
     { name = "fastapi", specifier = ">=0.136.3,<1.0.0" },
     { name = "fastapi", marker = "extra == 'test'", specifier = ">=0.136.3,<1.0.0" },
     { name = "h11", specifier = ">=0.16.0,<1.0.0" },
