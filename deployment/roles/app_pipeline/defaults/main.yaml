@@ -64,7 +64,6 @@ fingerprint_namespace: "fingerprint"  # app_fingerprint
 nats_namespace: "nats"             # app_nats
 keycloak_namespace: "keycloak"     # core/keycloak
 erag_keycloak_realm: "EnterpriseRAG"     # app_keycloak_config
-edp_late_chunking_enabled: false             # app_edp
 vector_databases_enabled: false                    # app_vector_databases
 ui_domain_name: "solutions.ai"         # app_ui
 ui_keycloak_realm: "EnterpriseRAG"      # app_ui

@@ -293,11 +293,6 @@ celery:
         configMapKeyRef:
           name: edp-configmap
           key: TEXT_SPLITTER_ENDPOINT
-    - name: LATE_CHUNKING_ENDPOINT
-      valueFrom:
-        configMapKeyRef:
-          name: edp-configmap
-          key: LATE_CHUNKING_ENDPOINT
     - name: EMBEDDING_ENDPOINT
       valueFrom:
         configMapKeyRef:
@@ -353,11 +348,6 @@ celery:
         configMapKeyRef:
           name: edp-configmap
           key: DPGUARD_ENABLED
-    - name: LATE_CHUNKING_ENABLED
-      valueFrom:
-        configMapKeyRef:
-          name: edp-configmap
-          key: LATE_CHUNKING_ENABLED
     - name: BATCH_SIZE
       valueFrom:
         configMapKeyRef:
@@ -555,11 +545,6 @@ backend:
         configMapKeyRef:
           name: edp-configmap
           key: TEXT_SPLITTER_ENDPOINT
-    - name: LATE_CHUNKING_ENABLED
-      valueFrom:
-        configMapKeyRef:
-          name: edp-configmap
-          key: LATE_CHUNKING_ENABLED
     - name: "EMBEDDING_ENDPOINT"
       valueFrom:
         configMapKeyRef:
@@ -633,53 +618,6 @@ backend:
     limits:
       cpu: "1"
       memory: "2Gi"
-
-lateChunking:
-  enabled: false
-  nameOverride: "edp-late-chunking"
-  name: "enterprise-rag-late-chunking"
-  repository: "docker.io/intel"
-  tag: latest
-  pullPolicy: Always
-  replicas: 1
-  environment:
-    - name: OMP_NUM_THREADS
-      valueFrom:
-        resourceFieldRef:
-          resource: limits.cpu
-  config:
-    chunk_size: "512"
-    chunk_overlap: "0"
-    embedding_service_endpoint: "http://embedding-svc.chatqna.svc:6000/v1/embeddings"
-    model_name: "jinaai/jina-embeddings-v2-base-en"
-  resources:
-    requests:
-      cpu: "4"
-      memory: "1Gi"
-    limits:
-      cpu: "8"
-      memory: "8Gi"
-  hpa:
-    minReplicas: 1
-    maxReplicas: 2
-    targetValue: 2
-    behavior:
-      scaleDown:
-        stabilizationWindowSeconds: 60
-        policies:
-        - type: Percent
-          value: 25
-          periodSeconds: 15
-        - type: Pods
-          value: 1
-          periodSeconds: 15
-      scaleUp:
-        selectPolicy: Max
-        stabilizationWindowSeconds: 0
-        policies:
-        - type: Pods
-          value: 1
-          periodSeconds: 15
 
 textExtractor:
   nameOverride: "edp-text-extractor"
@@ -776,10 +714,6 @@ textSplitter:
     embedding_service_endpoint: "http://embedding-svc.chatqna.svc:6000/v1/embeddings"
     # For semantic chunking
     use_semantic_chunking: "False"
-    # For late chunking
-    use_late_chunking: "False"
-    late_chunk_size: "8192"
-    late_chunk_overlap: "1024"
   resources:
     requests:
       cpu: "100m"

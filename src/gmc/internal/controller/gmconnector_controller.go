@@ -75,7 +75,6 @@ const (
 	TextCompression          = "TextCompression"
 	TextSplitter             = "TextSplitter"
 	DocSum                   = "DocSum"
-	LateChunking             = "LateChunking"
 	QueryRewrite             = "QueryRewrite"
 	monitoringCoreOSGroup    = "monitoring.coreos.com"
 )
@@ -121,7 +120,6 @@ var yamlDict = map[string]string{
 	TextCompression:   yaml_dir + "text-compression-usvc.yaml",
 	TextSplitter:      yaml_dir + "text-splitter-usvc.yaml",
 	DocSum:            yaml_dir + "docsum-usvc.yaml",
-	LateChunking:      yaml_dir + "late-chunking-usvc.yaml",
 	QueryRewrite:      yaml_dir + "query-rewrite-usvc.yaml",
 }
 

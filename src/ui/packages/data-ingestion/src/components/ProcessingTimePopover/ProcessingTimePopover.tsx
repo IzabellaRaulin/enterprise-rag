@@ -19,7 +19,6 @@ type DurationKey =
   | "text_compression_duration"
   | "text_splitter_duration"
   | "dpguard_duration"
-  | "late_chunking_duration"
   | "embedding_duration"
   | "ingestion_duration";
 
@@ -49,11 +48,6 @@ const durationLegendItems: {
     label: "Data Prep Guardrails",
   },
   {
-    key: "late_chunking_duration",
-    className: "processing-time-popover--embedding",
-    label: "Late Chunking",
-  },
-  {
     key: "embedding_duration",
     className: "processing-time-popover--embedding",
     label: "Embedding",
@@ -70,7 +64,6 @@ interface ProcessingTimePopoverProps {
   textCompressionDuration: number;
   textSplitterDuration: number;
   dpguardDuration: number;
-  lateChunkingDuration: number;
   embeddingDuration: number;
   ingestionDuration: number;
   processingDuration: number;
@@ -84,7 +77,6 @@ const ProcessingTimePopover = memo(
     textCompressionDuration = 0,
     textSplitterDuration = 0,
     dpguardDuration = 0,
-    lateChunkingDuration = 0,
     embeddingDuration = 0,
     ingestionDuration = 0,
     processingDuration = 0,
@@ -143,7 +135,6 @@ const ProcessingTimePopover = memo(
       text_compression_duration: textCompressionDuration,
       text_splitter_duration: textSplitterDuration,
       dpguard_duration: dpguardDuration,
-      late_chunking_duration: lateChunkingDuration,
       embedding_duration: embeddingDuration,
       ingestion_duration: ingestionDuration,
     };

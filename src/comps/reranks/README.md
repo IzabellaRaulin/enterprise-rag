@@ -47,7 +47,6 @@ The configuration for the Reranking Microservice is specified in the [impl/micro
 | `RERANKING_USVC_PORT`       | The port of the microservice, by default 8000                              |
 | `RERANKING_SERVICE_ENDPOINT`     | The endpoint of the reranking service, e.g., "http://localhost:6060" |
 | `RERANKING_MODEL_SERVER`     | Connector used to reach the model server: "vllm" or "nai" (Nutanix Enterprise AI rerank endpoint) |
-| `RERANKING_LATE_CHUNKING_ENABLED` | Flag informing if the late chunking is enabled. Default: False |
 
 Set below environment variables only for VLLM if remote model server is enabled with token based authentication (OAuth).
 | `RERANKING_VLLM_CLIENT_ID`                 | The client id in auth provider |

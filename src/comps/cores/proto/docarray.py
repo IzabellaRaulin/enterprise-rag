@@ -44,7 +44,6 @@ class TextDoc(BaseDoc, TopologyInfo):
     original_query: Optional[str] = None
     metadata: Optional[dict] = {}
     history_id: Optional[str] = None
-    return_pooling: Optional[bool] = None
 
     def to_reranked_doc(self):
         if self.metadata and 'url' in self.metadata:
@@ -339,16 +338,9 @@ class TextDocList(BaseDoc):
     docs: List[TextDoc]
     history_id: Optional[str] = None
     dataprep_guardrail_params: Optional[LLMGuardDataprepGuardrailParams] = None
-    return_pooling: Optional[bool] = None
     summary_type: Optional[str] = None
     stream: Optional[bool] = True
     max_new_tokens: PositiveInt = 1024
-
-class LateChunkingInput(BaseDoc):
-    docs: List[TextDoc]
-    chunk_size: Optional[PositiveInt] = None
-    chunk_overlap: Optional[NonNegativeInt] = None
-
 
 class LLMPromptTemplate(BaseDoc):
     role: Literal["system", "user", "assistant"]

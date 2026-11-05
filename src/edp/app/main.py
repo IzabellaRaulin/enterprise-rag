@@ -143,7 +143,7 @@ async def metrics():
             gauge_total_chunks = Gauge(name='edp_chunks_total', documentation='Total number of chunks', registry=registry)
             gauge_total_chunks.set((files_chunks.chunks_total_sum or 0) + (links_chunks.chunks_total_sum or 0))
 
-            for obj_status in 'uploaded, error, processing, text_extracting, text_compression, text_splitting, dpguard, late_chunking, embedding, ingested, deleting, canceled, blocked'.split(', '):
+            for obj_status in 'uploaded, error, processing, text_extracting, text_compression, text_splitting, dpguard, embedding, ingested, deleting, canceled, blocked'.split(', '):
                 file_count = files_statuses.get(obj_status, 0)
                 file_gauge = Gauge(name=f'edp_files_{obj_status}_total', documentation=f'Total number of files with status {obj_status}', registry=registry)
                 file_gauge.set(file_count)
@@ -1192,12 +1192,8 @@ def api_file_text_extract(file_uuid: str, request: Request):
                 raise Exception(f'[{file.id}] No text compressed.')
 
             TEXT_SPLITTER_ENDPOINT = os.environ.get('TEXT_SPLITTER_ENDPOINT')
-            late_chunking_enabled = os.getenv('LATE_CHUNKING_ENABLED', "false").lower()
             default_chunk_size = 512
             default_chunk_overlap = 64
-            if late_chunking_enabled == "true":
-                default_chunk_size = 8192
-                default_chunk_overlap = 1024
             response = requests.post(TEXT_SPLITTER_ENDPOINT, json={
                                                                 'loaded_docs': dataprep_compressed_docs,
                                                                 'chunk_size': request.query_params.get('chunk_size', default_chunk_size),

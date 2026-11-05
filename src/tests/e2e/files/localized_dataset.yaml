@@ -1,3 +1,5 @@
+# Copyright (C) 2026 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 # yamllint disable-line rule:line-length
 test_txt:
   - en:
@@ -368,17 +370,6 @@ test_similarity_search_with_siblings:
         - question: "Wymień 20 zasad wartościowego życia według Giorgiooo"
           expected_absent: "Bądź pokorny"
           expected_present: "Bądź pokorny"
-test_late_chunking:
-  - en:
-      files: [test_late_chunking.txt]
-      questions:
-        - question: "List 35 cities in Europe to visit by Zaravinth"
-          expected_all: ["Rome", "Dublin", "Malmo", "Bruges", "Milan"]
-    pl:
-      files: [test_late_chunking.txt]
-      questions:
-        - question: "Wymień 35 europejskich miast do odwiedzenia według Zaravinth"
-          expected_all: ["Rzym", "Dublin", "Malmö", "Brugia", "Mediolan"]
 test_docx_numbered_and_bulleted_lists:
   - en:
       files: [test_docx_numbered_and_bulleted_lists.docx]

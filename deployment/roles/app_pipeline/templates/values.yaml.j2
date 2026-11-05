@@ -107,11 +107,6 @@ images:
       RERANKING_SERVICE_ENDPOINT: "{{ reranking_endpoint }}"
       RERANKING_MODEL_SERVER: "vllm"
 {% endif %}
-{% if edp_late_chunking_enabled is true %}
-      RERANKING_LATE_CHUNKING_ENABLED: "True"
-{% else %}
-      RERANKING_LATE_CHUNKING_ENABLED: "False"
-{% endif %}
   prompt-template-usvc:
     image: "enterprise-rag-prompt_template"
     repository: *repo
@@ -194,13 +189,6 @@ images:
     repository: *repo
     tag: *tag
     pullPolicy: Always
-  late-chunking-usvc:
-    image: "enterprise-rag-late-chunking"
-    repository: *repo
-    tag: *tag
-    envs:
-      EMBEDDING_MODEL_NAME: *embedding_model_name
-      EMBEDDING_ENDPOINT: "http://embedding-usvc:6000/v1/embeddings"
   ovms_ner:
     image: "enterprise-rag-ovms_ner"
     repository: *repo

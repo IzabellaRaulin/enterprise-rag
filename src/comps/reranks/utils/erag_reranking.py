@@ -29,7 +29,7 @@ SUPPORTED_MODEL_SERVERS = ["vllm", "nai"]
 TRUNCATE_TO_MODEL_WINDOW = -1
 
 class EragReranker:
-    def __init__(self, service_endpoint: str, model_server: str, model_name: str = None, late_chunking_enabled: bool = True, headers: Optional[Dict[str, str]] = None):
+    def __init__(self, service_endpoint: str, model_server: str, model_name: str = None, headers: Optional[Dict[str, str]] = None):
         """
          Initialize the EragReranker instance with the given parameter
         Sets up the reranker.
@@ -38,7 +38,6 @@ class EragReranker:
             :param service_endpoint: the URL of the reranking service
             :param model_server: the model server type (e.g., 'vllm', 'nai')
             :param model_name: the model name (required for all supported model servers)
-            :param late_chunking_enabled: if True, bypass reranker and use vector distances
             :param headers: optional HTTP headers (e.g. Authorization) sent with every request
 
         Raises:
@@ -47,24 +46,22 @@ class EragReranker:
 
         self._service_endpoint = service_endpoint
         self._model_server = model_server.lower()
-        self.late_chunking_enabled = late_chunking_enabled
         self._headers = headers if headers is not None else {}
         self._validate_config()
 
-        if not self.late_chunking_enabled:
-            if self._model_server == "vllm":
-                if not model_name:
-                    raise ValueError("The 'RERANKING_MODEL_NAME' cannot be empty when using 'vllm' as the model server.")
-                self._model_name = model_name
-                self._service_endpoint = self._service_endpoint.rstrip('/') + '/score'
-            elif self._model_server == "nai":
-                if not model_name:
-                    raise ValueError("The 'RERANKING_MODEL_NAME' cannot be empty when using 'nai' as the model server.")
-                self._model_name = model_name
-                # NAI exposes the Cohere-style rerank API under /v1/rerank. The configured
-                # endpoint is the API base (e.g. ".../enterpriseai"), matching the OpenAI
-                # convention used by the embedding/LLM services.
-                self._service_endpoint = self._service_endpoint.rstrip('/') + '/v1/rerank'
+        if self._model_server == "vllm":
+            if not model_name:
+                raise ValueError("The 'RERANKING_MODEL_NAME' cannot be empty when using 'vllm' as the model server.")
+            self._model_name = model_name
+            self._service_endpoint = self._service_endpoint.rstrip('/') + '/score'
+        elif self._model_server == "nai":
+            if not model_name:
+                raise ValueError("The 'RERANKING_MODEL_NAME' cannot be empty when using 'nai' as the model server.")
+            self._model_name = model_name
+            # NAI exposes the Cohere-style rerank API under /v1/rerank. The configured
+            # endpoint is the API base (e.g. ".../enterpriseai"), matching the OpenAI
+            # convention used by the embedding/LLM services.
+            self._service_endpoint = self._service_endpoint.rstrip('/') + '/v1/rerank'
 
         self._validate()
 
@@ -74,18 +71,13 @@ class EragReranker:
 
     def _validate_config(self):
         """Validate the configuration values."""
-        if not self.late_chunking_enabled:
-            if not self._service_endpoint:
-                raise ValueError("The 'RERANKING_SERVICE_ENDPOINT' cannot be empty.")
+        if not self._service_endpoint:
+            raise ValueError("The 'RERANKING_SERVICE_ENDPOINT' cannot be empty.")
 
         if self._model_server not in SUPPORTED_MODEL_SERVERS:
             raise ValueError(f"Unsupported model server: {self._model_server}. Supported model servers: {SUPPORTED_MODEL_SERVERS}")
 
     def _validate(self):
-        if self.late_chunking_enabled:
-            logger.info("Late chunking enabled. Skipping reranker service validation.")
-            return
-        
         initial_query = "What is DL?"
         retrieved_docs = ["DL is not...", "DL is..."]
         asyncio.run(self._async_call_reranker(initial_query, retrieved_docs))
@@ -112,53 +104,42 @@ class EragReranker:
 
         # Check if retrieved_docs is not empty and all documents have non-empty 'text' fields
         if input.retrieved_docs and all(doc.text for doc in input.retrieved_docs):
-            # If late chunking is enabled, bypass reranker and use vector distances
-            if self.late_chunking_enabled:
-                logger.info("Late chunking enabled. Using vector distances for filtering instead of reranker.")
-                logger.info(f"Retrieved documents: {input.retrieved_docs}")
-                reranked_docs = self._filter_top_n_by_vector_distance(
-                    input.retrieved_docs, 
-                    input.top_n
+            try:
+                retrieved_texts = [doc.text for doc in input.retrieved_docs]
+                response_data = await self._async_call_reranker(
+                    input.user_prompt, retrieved_texts
                 )
-                logger.info(f"Filtered documents by vector distance: {reranked_docs}")
+                logger.debug(f"Received response from reranking service: {response_data}")
+                best_response_list = self._filter_top_n(input.top_n, response_data, score_threshold=input.rerank_score_threshold)
+                if len(best_response_list) != len(retrieved_texts):
+                    logger.warning(f"Limiting the number of best responses to {len(best_response_list)} based on {len(retrieved_texts)} retrieved documents using max score of {input.rerank_score_threshold}.")
+                logger.debug(f"Best responses after filtering: {best_response_list}")
+
+            except TimeoutError as e:
+                raise TimeoutError(e)
+            except Timeout as e:
+                raise Timeout(e)
+            except RequestException as e:
+                raise RequestException(e)
+            except HTTPError as e:
+                raise HTTPError(e)
+            except ClientResponseError:
+                raise
+            except Exception as e:
+                logger.error(f"Error during request to reranking service: {e}")
+                raise Exception(f"Error during request to reranking service: {e}")
+
+            if not response_data:
+                logger.warning("No best responses found. Using all retrieved documents.")
+                reranked_docs = input.retrieved_docs
             else:
-                # Proceed with processing the retrieved documents
-                try:
-                    retrieved_texts = [doc.text for doc in input.retrieved_docs]
-                    response_data = await self._async_call_reranker(
-                        input.user_prompt, retrieved_texts
-                    )
-                    logger.debug(f"Received response from reranking service: {response_data}")
-                    best_response_list = self._filter_top_n(input.top_n, response_data, score_threshold=input.rerank_score_threshold)
-                    if len(best_response_list) != len(retrieved_texts):
-                        logger.warning(f"Limiting the number of best responses to {len(best_response_list)} based on {len(retrieved_texts)} retrieved documents using max score of {input.rerank_score_threshold}.")
-                    logger.debug(f"Best responses after filtering: {best_response_list}")
-
-                except TimeoutError as e:
-                    raise TimeoutError(e)
-                except Timeout as e:
-                    raise Timeout(e)
-                except RequestException as e:
-                    raise RequestException(e)
-                except HTTPError as e:
-                    raise HTTPError(e)
-                except ClientResponseError:
-                    raise
-                except Exception as e:
-                    logger.error(f"Error during request to reranking service: {e}")
-                    raise Exception(f"Error during request to reranking service: {e}")
-
-                if not response_data:
-                    logger.warning("No best responses found. Using all retrieved documents.")
-                    reranked_docs = input.retrieved_docs
-                else:
-                    reranked_docs = DocList[TextDoc]()
-                    for best_response in best_response_list:
-                        doc = input.retrieved_docs[best_response["index"]]
-                        doc.metadata['reranker_score'] = best_response["score"]
-                        reranked_docs.append(doc)
-                    logger.debug(f"Retrieved documents: {input.retrieved_docs}")
-                    logger.debug(f"Reranked documents via best responses: {reranked_docs}")
+                reranked_docs = DocList[TextDoc]()
+                for best_response in best_response_list:
+                    doc = input.retrieved_docs[best_response["index"]]
+                    doc.metadata['reranker_score'] = best_response["score"]
+                    reranked_docs.append(doc)
+                logger.debug(f"Retrieved documents: {input.retrieved_docs}")
+                logger.debug(f"Reranked documents via best responses: {reranked_docs}")
         else:
             logger.warning("No retrieved documents found")
             reranked_docs = DocList[TextDoc]()
@@ -296,34 +277,3 @@ class EragReranker:
             out = [s for s in top_n_outputs if s["score"] > score_threshold]
             return out
         return top_n_outputs
-
-    def _filter_top_n_by_vector_distance(self, retrieved_docs: DocList[TextDoc], top_n: int) -> DocList[TextDoc]:
-        """
-        Filter and return the top N documents based on their vector distances.
-        Lower vector distance means higher similarity.
-
-        Args:
-            retrieved_docs (DocList[TextDoc]): The list of retrieved documents with vector distances.
-            top_n (int): The number of top documents to filter.
-
-        Returns:
-            DocList[TextDoc]: The filtered list of top documents sorted by vector distance (ascending).
-        """
-        # Extract vector_distance from metadata, use a large default if not present
-        docs_with_distances = []
-        for doc in retrieved_docs:
-            vector_distance = doc.metadata.get('vector_distance', float('inf'))
-            docs_with_distances.append((doc, vector_distance))
-        
-        # Sort by vector_distance (ascending - lower is better)
-        # Use heapq.nsmallest for efficiency
-        top_docs_with_distances = heapq.nsmallest(top_n, docs_with_distances, key=lambda x: x[1])
-        
-        # Extract just the documents and return as DocList
-        top_docs = DocList[TextDoc]()
-        for doc, distance in top_docs_with_distances:
-            # For late chunking, we use vector_distance as the score
-            # Note: vector distance is already in metadata, no need to add reranker_score
-            top_docs.append(doc)
-        
-        return top_docs

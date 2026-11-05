@@ -177,7 +177,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum({__name__=~\"edp_(files|links)_(uploaded|processing|dpguard|text_extracting|text_compression|text_splitting|embedding|late_chunking)_total\"})",
+          "expr": "sum({__name__=~\"edp_(files|links)_(uploaded|processing|dpguard|text_extracting|text_compression|text_splitting|embedding)_total\"})",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
@@ -1357,18 +1357,6 @@
           "hide": false,
           "queryType": "range",
           "refId": "E"
-        },
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "loki"
-          },
-          "direction": "backward",
-          "editorMode": "builder",
-          "expr": "{k8s_container_name=\"edp-late-chunking\"} |= ``",
-          "hide": false,
-          "queryType": "range",
-          "refId": "F"
         }
       ],
       "title": "Logs",
@@ -1761,18 +1749,6 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "edp_files_late_chunking_total",
-          "hide": false,
-          "legendFormat": "Files Late Chunking",
-          "range": true,
-          "refId": "F"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "editorMode": "code",
           "expr": "edp_files_ingested_total",
           "legendFormat": "Files Ingested",
           "range": true,
@@ -2152,18 +2128,6 @@
           "legendFormat": "Links Embedding",
           "range": true,
           "refId": "E"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "editorMode": "code",
-          "expr": "edp_links_late_chunking_total",
-          "hide": false,
-          "legendFormat": "Links Late Chunking",
-          "range": true,
-          "refId": "F"
         },
         {
           "datasource": {

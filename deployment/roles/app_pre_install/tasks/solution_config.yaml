@@ -1,3 +1,5 @@
+# Copyright (C) 2026 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 ---
 - name: "app_pre_install | Initialize configuration issues list"
   ansible.builtin.set_fact:
@@ -38,24 +40,6 @@
         'base_domain_name is required but not set. Please provide a value in the configuration file.'
       ] }}
   when: base_domain_name | default('') | length == 0
-
-# Late chunking pools token-level embeddings client-side, so the embedding usvc
-# must be able to request them (return_pooling=True). Only the torchserve
-# connector implements that, and every model on this path is served by vLLM,
-# whose connector posts to /v1/embeddings — sequence-level only. Reject the flag
-# here rather than let EDP ingestion fail on "expected 2D token embeddings".
-- name: "app_pre_install | Reject late chunking (no token-level embedding path)"
-  ansible.builtin.set_fact:
-    configuration_issues: >-
-      {{ configuration_issues + [
-        'edp_late_chunking_enabled is true, but late chunking is not deployable:
-         it needs an embedding model server that returns token-level embeddings,
-         and models are served by vLLM via KServe, which exposes pooled
-         embeddings only. Set edp_late_chunking_enabled to false.'
-      ] }}
-  when:
-    - edp_enabled | default(false) | bool
-    - edp_late_chunking_enabled | default(false) | bool
 
 - name: "app_pre_install | Display HF_TOKEN warning if not set"
   ansible.builtin.debug:

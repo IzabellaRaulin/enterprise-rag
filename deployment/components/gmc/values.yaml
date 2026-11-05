@@ -222,20 +222,11 @@ images:
     pullPolicy: Always
     envs:
       RERANKING_MODEL_NAME: *reranking_model_name
-      RERANKING_LATE_CHUNKING_ENABLED: "False"
   prompt-template-usvc:
     image: "enterprise-rag-prompt_template"
     repository: *repo
     tag: *tag
     pullPolicy: Always
-  late-chunking-usvc:
-    image: "enterprise-rag-late_chunking"
-    repository: *repo
-    tag: *tag
-    pullPolicy: Always
-    envs:
-      EMBEDDING_MODEL_NAME: *embedding_model_name
-      EMBEDDING_ENDPOINT: "http://embedding-usvc:6000/v1/embeddings"
   retriever-usvc:
     image: "enterprise-rag-retriever"
     repository: *repo

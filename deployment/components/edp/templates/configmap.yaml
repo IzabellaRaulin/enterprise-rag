@@ -10,8 +10,6 @@ data:
   TEXT_EXTRACTOR_ENDPOINT: {{ print "http://" .Values.textExtractor.nameOverride "-headless:9398/v1/text_extractor" | quote }}
   TEXT_COMPRESSION_ENDPOINT: {{ print "http://" .Values.textCompression.nameOverride ":9397/v1/text_compression" | quote }}
   TEXT_SPLITTER_ENDPOINT: {{ print "http://" .Values.textSplitter.nameOverride ":9399/v1/text_splitter" | quote }}
-  LATE_CHUNKING_ENABLED: {{ .Values.lateChunking.enabled | quote }}
-  LATE_CHUNKING_ENDPOINT: {{ if .Values.lateChunking.enabled }}{{ print "http://" .Values.lateChunking.nameOverride ":8003/v1/late_chunking" | quote }}{{ else }}""{{ end }}
   EMBEDDING_ENDPOINT: {{ if .Values.embedding.enabled }}{{ print "http://" .Values.embedding.nameOverride ":6000/v1/embeddings" | quote }}{{ else }}{{ .Values.embedding.remoteEmbeddingUri | quote }}{{ end }}
   INGESTION_ENDPOINT: {{ print "http://" .Values.ingestion.nameOverride ":6120/v1/ingestion" | quote }}
   RETRIEVER_ENDPOINT: http://retriever-svc.{{ .Values.pipelineNamespace }}.svc:6620/v1/retrieval

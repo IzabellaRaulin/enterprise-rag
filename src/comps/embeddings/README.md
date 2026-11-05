@@ -27,7 +27,6 @@ Users are able to configure and build embedding-related services according to th
    - 4.4. [Verify the Embedding Microservice](#verify-the-embedding-microservice)
      - 4.4.1. [Check Status](#check-status)
      - 4.4.2. [Sending a Request](#sending-a-request)
-   - 4.5. [Parameter `return_pooling`](#parameter-return_pooling)
 5. [Additional Information](#additional-information)
    - 5.1. [Project Structure](#project-structure)
    - 5.2. [Tests](#tests)
@@ -229,19 +228,6 @@ For multiple documents:
   ]
 }
 ```
-
-
-### Parameter `return_pooling`
-
-The embedding service returns a single vector per text. Setting `return_pooling=true` asks for one vector per token instead of an aggregated vector, which is what the late chunking technique needs (the input is embedded as a whole and chunked afterwards, based on token-level vectors).
-
-> [!IMPORTANT]
-> `return_pooling` is **not supported**. Neither the vLLM nor the OVMS connector exposes
-> token-level pooling output, so a request with `return_pooling: true` is rejected with a
-> `ValueError` (HTTP 400) instead of silently returning aggregated vectors. The field
-> remains part of the request schema, so the API contract is unchanged. Late chunking is
-> unavailable as a consequence, see
-> [Accuracy Tuning Tips](../../../docs/customize/models.md#late-chunking).
 
 ## Additional Information
 ### Project Structure

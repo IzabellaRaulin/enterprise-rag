@@ -21,7 +21,7 @@ def test_class():
     """Fixture to create EragReranker instance."""
     with patch.object(EragReranker, '_validate', return_value='Mocked Method'):
         return EragReranker(service_endpoint="http:/test:1234", model_server="vllm",
-                            model_name="BAAI/bge-reranker-v2-m3", late_chunking_enabled=False)
+                            model_name="BAAI/bge-reranker-v2-m3")
 
 @pytest.fixture
 def mock_input_data():
@@ -50,7 +50,7 @@ def mock_response_data():
 def test_initialization_succeeds_with_valid_params():
     # Assert that the instance is created successfully
     with patch.object(EragReranker, '_validate', return_value='Mocked Method'):
-        assert isinstance(EragReranker(service_endpoint="http:/test:1234/reranks", model_server="vllm"), EragReranker), "Instance was not created successfully."
+        assert isinstance(EragReranker(service_endpoint="http:/test:1234/reranks", model_server="vllm", model_name="BAAI/bge-reranker-v2-m3"), EragReranker), "Instance was not created successfully."
 
 
 def test_initializaction_raises_exception_when_missing_required_arg():
@@ -62,7 +62,7 @@ def test_initializaction_raises_exception_when_missing_required_arg():
 
     # empty string is passed to trigger validation
     with pytest.raises(ValueError) as context:
-        EragReranker(service_endpoint="",  model_server="vllm", late_chunking_enabled=False)
+        EragReranker(service_endpoint="",  model_server="vllm")
 
     assert str(context.value) == "The 'RERANKING_SERVICE_ENDPOINT' cannot be empty."
 
@@ -325,7 +325,6 @@ def test_vllm_initialization_appends_score_suffix():
             service_endpoint="http://bge-reranker-v2-m3-predictor.llm-inference.svc.cluster.local/v1",
             model_server="vllm",
             model_name="BAAI/bge-reranker-v2-m3",
-            late_chunking_enabled=False,
         )
     assert reranker._service_endpoint.endswith("/score")
     assert reranker._model_name == "BAAI/bge-reranker-v2-m3"
@@ -336,7 +335,6 @@ def test_vllm_initialization_raises_when_model_name_missing():
         EragReranker(
             service_endpoint="http://bge-reranker-v2-m3-predictor.llm-inference.svc.cluster.local/v1",
             model_server="vllm",
-            late_chunking_enabled=False,
         )
 
 
@@ -347,7 +345,6 @@ def vllm_reranker():
             service_endpoint="http://bge-reranker-v2-m3-predictor.llm-inference.svc.cluster.local/v1",
             model_server="vllm",
             model_name="BAAI/bge-reranker-v2-m3",
-            late_chunking_enabled=False,
         )
 
 

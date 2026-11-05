@@ -25,7 +25,6 @@ class ServiceType(Enum):
     TEXT_SPLITTER = 23
     CHAT_HISTORY = 24
     DOC_SUMMARY = 34
-    LATE_CHUNKING = 35
     NAMESPACE_STATUS_WATCHER = 36
     QUERY_REWRITE = 37
 
@@ -52,7 +51,6 @@ class MegaServiceEndpoint(Enum):
     TEXT_COMPRESSION = "/v1/text_compression"
     TEXT_SPLITTER = "/v1/text_splitter"
     CHAT_HISTORY = "/v1/chat_history"
-    LATE_CHUNKING = "/v1/late_chunking"
     QUERY_REWRITE = "/v1/query_rewrite"
 
     def __str__(self):

@@ -27,9 +27,6 @@
 .data-item-status--text_splitting {
   @apply text-light-accent dark:text-dark-accent;
 }
-.data-item-status--late_chunking {
-  @apply text-light-accent dark:text-dark-accent;
-}
 .data-item-status--ingested {
   @apply text-light-accent dark:text-dark-accent;
 }

@@ -666,11 +666,6 @@ func Test_checkStepName_allowlist(t *testing.T) {
 	testNode := "test-node"
 	fldRoot := field.NewPath("spec").Child("nodes")
 
-	// LateChunking is a live step the controller renders and must be accepted.
-	if err := checkStepName(Step{StepName: "LateChunking"}, 0, fldRoot, testNode); err != nil {
-		t.Errorf("LateChunking should be an allowed step name, got %v", err)
-	}
-
 	// OvmsNer and VLLMQueryRewrite are retained ERAG steps and must be accepted.
 	for _, retained := range []string{"OvmsNer", "VLLMQueryRewrite"} {
 		if err := checkStepName(Step{StepName: retained}, 0, fldRoot, testNode); err != nil {
@@ -679,7 +674,7 @@ func Test_checkStepName_allowlist(t *testing.T) {
 	}
 
 	// Ghost names dropped from the allowlist must now be rejected.
-	for _, ghost := range []string{"TeiEmbedding", "TeiReranking", "WebRetriever", "Asr", "Whisper", "VLLM"} {
+	for _, ghost := range []string{"TeiEmbedding", "TeiReranking", "WebRetriever", "Asr", "Whisper", "VLLM", "LateChunking"} {
 		if err := checkStepName(Step{StepName: ghost}, 0, fldRoot, testNode); err == nil {
 			t.Errorf("dropped ghost step name %q should be rejected", ghost)
 		}
@@ -832,8 +827,8 @@ func Test_validateReachability(t *testing.T) {
 	})
 }
 
-// A valid Sequence -> Ensemble -> Sequence -> Switch graph, using the
-// LateChunking step, must pass every structural check.
+// A valid Sequence -> Ensemble -> Sequence -> Switch graph must pass every
+// structural check.
 func Test_checkfields_validGraph(t *testing.T) {
 	mockKindsServer(t, testKinds)
 	c := &GMConnector{
@@ -842,7 +837,7 @@ func Test_checkfields_validGraph(t *testing.T) {
 				"root": routerNode(Sequence, stepTo("Embedding", "ensemble")),
 				"ensemble": routerNode(Ensemble,
 					stepTo("Retriever", "seq"),
-					stepTo("LateChunking", ""),
+					stepTo("TextSplitter", ""),
 				),
 				"seq": routerNode(Sequence, stepTo("Reranking", "switch")),
 				"switch": routerNode(Switch,

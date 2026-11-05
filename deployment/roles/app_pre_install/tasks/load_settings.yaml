@@ -1,3 +1,5 @@
+# Copyright (C) 2026 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 ---
 - name: "app_pre_install | Load solution configuration"
   ansible.builtin.include_tasks:
@@ -99,9 +101,6 @@
         • APISIX: {{ apisix_enabled | default('undefined') }}
         • Vector DB: {{ vector_databases_enabled | default('undefined') }}
         • EDP: {{ edp_enabled | default('undefined') }}
-      {% if edp_enabled | default(false) | bool %}
-        • Late Chunking: {{ edp_late_chunking_enabled | default(false) }}
-      {% endif %}
         • UI: {{ ui_enabled | default('undefined') }}
         • Telemetry: {{ telemetry_enabled | default('undefined') }}
 

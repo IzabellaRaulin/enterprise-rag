@@ -471,10 +471,6 @@ def test_similarity_search_with_siblings(edp_helper, chatqa_api_helper, fingerpr
     With retriever's search type set to 'similarity', expect the answer to be incomplete.
     Change the retriever's search type to 'similarity_search_with_siblings' and expect the answer to be complete.
     """
-    # Skip the test if late chunking is enabled
-    if cfg.get("edp_late_chunking_enabled", False):
-        pytest.skip("Test is not applicable when late chunking is enabled")
-
     # Read the baseline from the same scope the test writes to, so the restore
     # cannot overwrite the chatqa retriever config with values from another scope.
     retriever_config = fingerprint_api_helper.read_config("retriever", pipeline=PIPELINE, tenant=TENANT)
@@ -512,28 +508,6 @@ def test_similarity_search_with_siblings(edp_helper, chatqa_api_helper, fingerpr
         # Restore default parameters
         fingerprint_api_helper.set_chatqa_component_parameters(
             "retriever", search_type=original_search_type, k=original_k)
-
-
-@allure.testcase("DSPTV-T155")
-def test_late_chunking(edp_helper, chatqa_api_helper, fingerprint_api_helper, test_data):
-    """
-    Upload a file with a list of 35 elements.
-    Ask a question that requires the entire list to be included in the answer.
-    With late chunking enabled, expect the full answer. Otherwise, just save the response for comparison.
-    """
-    if not test_data.stages:
-        pytest.skip("Test not supported for Polish language")
-
-    stage = test_data.stages[0]
-    file = stage["files"][0]
-    q = stage["questions"][0]
-
-    edp_helper.upload_file_and_wait_for_ingestion(os.path.join(TEST_FILES_DIR, f"dataset_{test_data.language}", file))
-
-    response = ask_question(chatqa_api_helper, q["question"])
-    if cfg.get("edp_late_chunking_enabled", False):
-        # With late chunking enabled, expect the full answer
-        assert chatqa_api_helper.words_in_response(q["expected_all"], response)
 
 
 @allure.testcase("DSPTV-T185")

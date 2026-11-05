@@ -90,7 +90,6 @@ var (
 		"TextCompression",
 		"TextSplitter",
 		"DocSum",
-		"LateChunking",
 		"QueryRewrite",
 		"OvmsNer",
 		"VLLMQueryRewrite",

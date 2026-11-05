@@ -76,7 +76,7 @@ The **Enabled** column is the fallback in `components.yaml`, used only when noth
 
 Each step of a RAG answer is its own service, which is what lets you swap a reranker, insert a query-rewrite step, or scale embedding independently of the LLM without touching anything else. The trade-off is more moving parts to understand, so the map and table below group them by the role they play.
 
-21 FastAPI microservices in `src/comps/`, packaged as Docker images and deployed via Helm. That is 18 top-level services plus the three `guardrails` sub-services. `src/comps/cores/` and `src/comps/vectorstores/` are shared libraries the services import, not deployed services of their own.
+20 FastAPI microservices in `src/comps/`, packaged as Docker images and deployed via Helm. That is 17 top-level services plus the three `guardrails` sub-services. `src/comps/cores/` and `src/comps/vectorstores/` are shared libraries the services import, not deployed services of their own.
 
 <div align="center">
    <img alt="Intel AI for Enterprise RAG microservices map: every microservice in the stack grouped by role - ingestion and data preparation services feeding the vector database, retrieval and reranking services, guardrail services on the query and response paths, and the pipeline router connecting them - with the model-serving layer shown beneath" src="../microservices_architecture.png" width="900">
@@ -91,7 +91,6 @@ Each step of a RAG answer is its own service, which is what lets you swap a rera
 | `guardrails` (3 variants) | Input/output/dataprep content filtering | `chatqna`, `edp` |
 | `ingestion` | Document upload and storage | `edp` |
 | `language_detection` | Language identification | `chatqna` |
-| `late_chunking` | Late-chunking embedding strategy (not supported on the current model servers - see [Models](../customize/models.md)) | `chatqna` |
 | `llms` | LLM request proxy | `chatqna` |
 | `namespace_status_watcher` | Monitors namespace health | `default` |
 | `prompt_template` | Prompt template rendering | `chatqna` |

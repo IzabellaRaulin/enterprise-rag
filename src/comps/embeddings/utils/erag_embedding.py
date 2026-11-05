@@ -127,7 +127,7 @@ class EragEmbedding:
             if input.text.strip() == "":
                 raise ValueError("Input text is empty. Provide a valid input text.")
 
-            embed_vector = await self._connector.embed_documents(texts=[input.text], return_pooling=input.return_pooling)
+            embed_vector = await self._connector.embed_documents(texts=[input.text])
             if len(embed_vector) == 1 and isinstance(embed_vector[0], list):
                 embed_vector = embed_vector[0]
             res = EmbedDoc(text=input.text, embedding=embed_vector, metadata=input.metadata)
@@ -148,7 +148,7 @@ class EragEmbedding:
                 async with semaphore:
                     logger.debug(f"Processing batch {i+1}/{len(batches)} with {len(batch)} texts")
                     texts = [doc.text for doc in batch]
-                    res_vectors = await self._connector.embed_documents(texts=texts, return_pooling=input.return_pooling)
+                    res_vectors = await self._connector.embed_documents(texts=texts)
 
                     if len(res_vectors) == 1:
                         res_vector = res_vectors[0]

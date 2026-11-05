@@ -132,18 +132,6 @@ backend:
       cacheExpiration: "{{ edp_rbac_cache_expiration | default('600') }}"
       staticConfig: {{ edp_rbac_static_config | default('["default"]') | to_json }}
 {% endif %}
-{% if edp_late_chunking_enabled is true %}
-lateChunking:
-  enabled: {{ edp_late_chunking_enabled }}
-  tag: "{{ tag }}"
-  repository: "{{ registry }}"
-  name: "enterprise-rag-late-chunking"
-  config:
-    chunk_size: "{{ edp_late_chunking_chunk_size | default('512') }}"
-    chunk_overlap: "{{ edp_late_chunking_chunk_overlap | default('0') }}"
-    embedding_service_endpoint: "http://embedding-svc.{{ pipeline_namespace }}.svc:6000/v1/embeddings"
-    model_name: "{{ edp_late_chunking_model_name }}"
-{% else %}
 textExtractor:
   tag: "{{ tag }}"
   repository: "{{ registry }}"
@@ -162,7 +150,6 @@ textSplitter:
 {% if edp_semantic_chunking_enabled is true %}
     use_semantic_chunking: "True"
 {% endif %}
-{% endif %}
 ingestion:
   tag: "{{ tag }}"
   repository: "{{ registry }}"
@@ -173,9 +160,6 @@ ingestion:
     embedding_model_name: *embedding_model_name
     vector_dims: {{ vector_databases_vector_dims }}
     vector_datatype: {{ vector_databases_vector_datatype }}
-{% if edp_late_chunking_enabled is true %}
-    use_late_chunking: "True"
-{% endif %}
 embedding:
   enabled: false
   remoteEmbeddingUri: "http://embedding-svc.{{ pipeline_namespace }}.svc:6000/v1/embeddings"

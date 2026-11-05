@@ -1,3 +1,5 @@
+# Copyright (C) 2026 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 ---
 # =============================================================================
 # Pipeline defaults — fetched via: ai-solutions installer init rag --translation
@@ -33,7 +35,6 @@ inference_models:
 # --- EDP (app_edp) ---
 # edp_namespace: "edp"
 # edp_storage_type: "seaweedfs"            # seaweedfs | s3 | s3compatible
-# edp_late_chunking_enabled: false
 # edp_rbac_enabled: false
 # edp_scheduled_sync_enabled: false
 

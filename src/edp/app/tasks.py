@@ -57,7 +57,6 @@ TEXT_COMPRESSION_ENDPOINT  = os.environ.get('TEXT_COMPRESSION_ENDPOINT')
 TEXT_SPLITTER_ENDPOINT  = os.environ.get('TEXT_SPLITTER_ENDPOINT')
 EMBEDDING_ENDPOINT = os.environ.get('EMBEDDING_ENDPOINT')
 EMBEDDING_MODEL_NAME = os.environ.get('EMBEDDING_MODEL_NAME', 'unknown')
-LATE_CHUNKING_ENDPOINT = os.environ.get('LATE_CHUNKING_ENDPOINT')
 INGESTION_ENDPOINT = os.environ.get('INGESTION_ENDPOINT')
 EMBEDDING_TIMEOUT = int(os.getenv('EMBEDDING_TIMEOUT_SECONDS', '120'))
 TEXT_PROCESSING_TIMEOUT_SECONDS = int(os.getenv('TEXT_PROCESSING_TIMEOUT_SECONDS', '300'))  # timeout for compression and splitter requests
@@ -865,12 +864,7 @@ def process_file_task(self, file_id: Any, *args, **kwargs):
     self.safe_commit()
     logger.info(f"[{file_db.id}] Starting text splitting ({len(dataprep_compressed_docs)} docs).")
 
-    late_chunking_enabled = os.getenv('LATE_CHUNKING_ENABLED', "false").lower()
-    additional_params = {}
-    if late_chunking_enabled == "true":
-        additional_params = { 'chunk_size': 8192, 'chunk_overlap': 1024 }
-
-    response = requests.post(TEXT_SPLITTER_ENDPOINT, json={ 'loaded_docs': dataprep_compressed_docs, **additional_params }, timeout=TEXT_PROCESSING_TIMEOUT_SECONDS)
+    response = requests.post(TEXT_SPLITTER_ENDPOINT, json={ 'loaded_docs': dataprep_compressed_docs }, timeout=TEXT_PROCESSING_TIMEOUT_SECONDS)
     if response.status_code != 200:
         file_db.status = 'error'
         file_db.job_message = f"Error encountered while data splitting. {response_err(response)}"
@@ -942,292 +936,233 @@ def process_file_task(self, file_id: Any, *args, **kwargs):
         self.safe_commit()
         raise Exception(f"Error while executing dataprep guardrail. {e} {response.text}")
 
-    if late_chunking_enabled == "true":
-        # Step 5 - Call the late chunking service and ingestion service
-        batch_size = 1 # sending requests individually due to TorchServe serialization issues
-        file_db.late_chunking_start = datetime.datetime.now()
-        file_db.ingestion_start = file_db.late_chunking_start
-        file_db.status = 'late_chunking'
-        file_db.job_message = 'Data late chunking in progress.'
-        self.safe_commit()
-        total_late_chunking_duration = datetime.timedelta()
-        total_ingestion_duration = datetime.timedelta()
-        final_chunk_number = 0
-        final_chunk_size = 0
-        
-        for i in range(0, len(dataprep_docs), batch_size):
-            # Step 5.1 - send each chunk of text from dataprep to the late chunking service
-            docs_batch = dataprep_docs[i:i+batch_size]
-            
-            start_late_chunking_time = datetime.datetime.now()
-            response = requests.post(LATE_CHUNKING_ENDPOINT, json={ "docs": docs_batch })
-            end_late_chunking_time = datetime.datetime.now()
-            total_late_chunking_duration += (end_late_chunking_time - start_late_chunking_time)
-            logger.debug(f"[{file_db.id}] Chunk {i} late chunking completed.")
+    batch_size = int(os.getenv('BATCH_SIZE', '32'))                    # max documents per embedding batch
+    max_workers = int(os.getenv('MAX_NEW_WORKERS', '8'))               # max parallel embedding threads
+    embedding_timeout_seconds = float(os.getenv('EMBEDDING_REQUEST_TIMEOUT_SECONDS', os.getenv('EMBEDDING_TIMEOUT_SECONDS', '120')))  # per-request embedding timeout (seconds)
+    ingestion_timeout_seconds = 120.0                                   # per-request ingestion timeout (seconds)
+    high_watermark_ratio = 0.5                                          # fraction of timeout above which load is reduced
+    low_watermark_ratio = 0.3                                           # fraction of timeout below which load is increased
+    latency_ema_alpha = 0.3                                             # EMA smoothing factor for embedding latency (higher = more reactive)
+    max_batch_reduction_ratio = 0.25                                    # max single-step batch size reduction as fraction of current
+    max_inflight_reduction_ratio = 0.25                                 # max single-step inflight count reduction as fraction of current
+    min_batch_size = max(1, batch_size // 4)                            # floor for batch size adaptation
+    max_batch_size = batch_size                                          # ceiling for batch size adaptation
+    initial_batch_size = max(min_batch_size, max_batch_size // 2)       # starting batch size before warm-up ramp
+    target_inflight = max(1, max_workers // 3)                          # initial number of concurrent inflight batches
+    stabilization_window = target_inflight                               # batches to wait after an adaptation before allowing the next
+    batches_since_last_change = 0                                        # counter of batches processed since last adaptation step
 
-            if response.status_code == 200:
-                # Step 5.2 - save each chunk of text and embedding to the vector database
-                lc_docs = response.json()["docs"]
-                final_chunk_number += len(lc_docs)
-                final_chunk_size = len(lc_docs[0])
+    file_db.embedding_start = datetime.datetime.now()
+    file_db.ingestion_start = file_db.embedding_start
+    file_db.status = 'embedding'
+    file_db.job_message = 'Data embedding and ingestion in progress.'
+    self.safe_commit()
 
-                start_ingestion_time = datetime.datetime.now()
-                response = requests.post(INGESTION_ENDPOINT, json=response.json()) # pass the whole response from embedding to ingestion
-                end_ingestion_time = datetime.datetime.now()
-                total_ingestion_duration += (end_ingestion_time - start_ingestion_time)
-                logger.debug(f"[{file_db.id}] Chunk {i} ingestion completed.")
-                if response.status_code != 200:
-                    file_db.status = 'error'
-                    file_db.job_message = f"Error encountered while ingestion. {response_err(response)}"
-                    file_db.late_chunking_end = datetime.datetime.now()
-                    self.safe_commit()
-                    raise Exception(f"Error encountered while ingestion. {response_err(response)}")
-            else:
-                file_db.status = 'error'
-                file_db.job_message = f"Error encountered while late_chunking. {response_err(response)}"
-                file_db.late_chunking_end = datetime.datetime.now()
-                self.safe_commit()
-                raise Exception(f"Error encountered while late chunking. {response_err(response)}")
+    pipeline_start = datetime.datetime.now()   # wall-clock start of the entire embedding+ingestion pipeline
+    error_occurred = None                       # set to error string by the first failing thread
+    error_lock = Lock()                         # protects error_occurred from concurrent writes
+    chunks_processed = 0                        # total documents successfully embedded and ingested
+    chunks_lock = Lock()                        # protects chunks_processed from concurrent writes
+    total_ingestion_time = datetime.timedelta() # cumulative ingestion time across all batches
 
-            # Update the pipeline progress
-            file_db.chunks_processed = i + len(docs_batch)
-            file_db.late_chunking_end = file_db.late_chunking_start + total_late_chunking_duration
-            file_db.ingestion_start = file_db.late_chunking_end
-            file_db.ingestion_end = file_db.late_chunking_end + total_ingestion_duration
-            self.safe_commit()
+    total_docs = len(dataprep_docs)                                              # total documents to process
+    startup_batch_size = max(1, initial_batch_size // 3)                         # reduced batch size used during startup warm-up
+    current_batch_size = max(min_batch_size, min(max_batch_size, startup_batch_size))  # active batch size (adapts at runtime)
+    embedding_latency_ema = None                                                 # running EMA of embedding latency; None until first batch completes
+    consecutive_fast_windows = 0                                                 # counter of consecutive batches below low_watermark (triggers scale-up)
+    submitted_batches = 0                                                        # total batches submitted to the executor (used as batch ID)
 
-        file_db.chunk_size = final_chunk_size
-        file_db.chunks_total = final_chunk_number
-        file_db.chunks_processed = final_chunk_number
-        self.safe_commit()
-    else:
-        batch_size = int(os.getenv('BATCH_SIZE', '32'))                    # max documents per embedding batch
-        max_workers = int(os.getenv('MAX_NEW_WORKERS', '8'))               # max parallel embedding threads
-        embedding_timeout_seconds = float(os.getenv('EMBEDDING_REQUEST_TIMEOUT_SECONDS', os.getenv('EMBEDDING_TIMEOUT_SECONDS', '120')))  # per-request embedding timeout (seconds)
-        ingestion_timeout_seconds = 120.0                                   # per-request ingestion timeout (seconds)
-        high_watermark_ratio = 0.5                                          # fraction of timeout above which load is reduced
-        low_watermark_ratio = 0.3                                           # fraction of timeout below which load is increased
-        latency_ema_alpha = 0.3                                             # EMA smoothing factor for embedding latency (higher = more reactive)
-        max_batch_reduction_ratio = 0.25                                    # max single-step batch size reduction as fraction of current
-        max_inflight_reduction_ratio = 0.25                                 # max single-step inflight count reduction as fraction of current
-        min_batch_size = max(1, batch_size // 4)                            # floor for batch size adaptation
-        max_batch_size = batch_size                                          # ceiling for batch size adaptation
-        initial_batch_size = max(min_batch_size, max_batch_size // 2)       # starting batch size before warm-up ramp
-        target_inflight = max(1, max_workers // 3)                          # initial number of concurrent inflight batches
-        stabilization_window = target_inflight                               # batches to wait after an adaptation before allowing the next
-        batches_since_last_change = 0                                        # counter of batches processed since last adaptation step
+    # Cache the ID so worker threads never touch the ORM object / session
+    file_id = file_db.id
 
-        file_db.embedding_start = datetime.datetime.now()
-        file_db.ingestion_start = file_db.embedding_start
-        file_db.status = 'embedding'
-        file_db.job_message = 'Data embedding and ingestion in progress.'
-        self.safe_commit()
+    logger.info(f"[{file_id}] Starting adaptive parallel pipeline: "
+                f"total_docs={total_docs}, startup_batch_size={current_batch_size}, "
+                f"max_workers={max_workers}, startup_inflight={target_inflight}, "
+                f"stabilization_window={stabilization_window}, timeout={embedding_timeout_seconds}s")
 
-        pipeline_start = datetime.datetime.now()   # wall-clock start of the entire embedding+ingestion pipeline
-        error_occurred = None                       # set to error string by the first failing thread
-        error_lock = Lock()                         # protects error_occurred from concurrent writes
-        chunks_processed = 0                        # total documents successfully embedded and ingested
-        chunks_lock = Lock()                        # protects chunks_processed from concurrent writes
-        total_ingestion_time = datetime.timedelta() # cumulative ingestion time across all batches
+    def process_batch(batch_info):
+        nonlocal chunks_processed, error_occurred, total_ingestion_time
 
-        total_docs = len(dataprep_docs)                                              # total documents to process
-        startup_batch_size = max(1, initial_batch_size // 3)                         # reduced batch size used during startup warm-up
-        current_batch_size = max(min_batch_size, min(max_batch_size, startup_batch_size))  # active batch size (adapts at runtime)
-        embedding_latency_ema = None                                                 # running EMA of embedding latency; None until first batch completes
-        consecutive_fast_windows = 0                                                 # counter of consecutive batches below low_watermark (triggers scale-up)
-        submitted_batches = 0                                                        # total batches submitted to the executor (used as batch ID)
+        batch_num, docs_batch = batch_info
 
-        # Cache the ID so worker threads never touch the ORM object / session
-        file_id = file_db.id
+        with error_lock:
+            if error_occurred:
+                logger.warning(f"[{file_id}] Batch {batch_num} skipped - another thread failed: {error_occurred}")
+                return None
 
-        logger.info(f"[{file_id}] Starting adaptive parallel pipeline: "
-                    f"total_docs={total_docs}, startup_batch_size={current_batch_size}, "
-                    f"max_workers={max_workers}, startup_inflight={target_inflight}, "
-                    f"stabilization_window={stabilization_window}, timeout={embedding_timeout_seconds}s")
+        try:
+            start_embedding = datetime.datetime.now()
+            embed_response = requests.post(
+                EMBEDDING_ENDPOINT,
+                json={"docs": docs_batch},
+                timeout=embedding_timeout_seconds
+            )
+            embedding_time = datetime.datetime.now() - start_embedding
 
-        def process_batch(batch_info):
-            nonlocal chunks_processed, error_occurred, total_ingestion_time
+            if embed_response.status_code != 200:
+                raise Exception(f"Embedding failed for batch {batch_num}: {response_err(embed_response)}")
 
-            batch_num, docs_batch = batch_info
+            logger.info(f"[{file_id}] Batch {batch_num} embedded in {embedding_time.total_seconds():.2f}s")
 
+            start_ingestion = datetime.datetime.now()
+            ingest_response = requests.post(
+                INGESTION_ENDPOINT,
+                json=embed_response.json(),
+                timeout=ingestion_timeout_seconds
+            )
+            ingestion_time = datetime.datetime.now() - start_ingestion
+
+            if ingest_response.status_code != 200:
+                raise Exception(f"Ingestion failed for batch {batch_num}: {response_err(ingest_response)}")
+
+            logger.info(f"[{file_id}] Batch {batch_num} ingested in {ingestion_time.total_seconds():.2f}s")
+
+            with chunks_lock:
+                chunks_processed += len(docs_batch)
+                total_ingestion_time += ingestion_time
+
+            return (batch_num, len(docs_batch), embedding_time.total_seconds())
+
+        except Exception as e:
             with error_lock:
-                if error_occurred:
-                    logger.warning(f"[{file_id}] Batch {batch_num} skipped - another thread failed: {error_occurred}")
-                    return None
+                if error_occurred is None:
+                    error_occurred = str(e)
+            logger.error(f"[{file_id}] Batch {batch_num} failed: {str(e)}")
+            raise Exception(f"Error encountered while processing, error={str(e)}")
 
-            try:
-                start_embedding = datetime.datetime.now()
-                embed_response = requests.post(
-                    EMBEDDING_ENDPOINT,
-                    json={"docs": docs_batch},
-                    timeout=embedding_timeout_seconds
-                )
-                embedding_time = datetime.datetime.now() - start_embedding
+    with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = {}
+        next_doc_idx = 0
+        completed = 0
+        while next_doc_idx < total_docs or futures:
+            while next_doc_idx < total_docs and len(futures) < target_inflight:
+                batch_end_idx = min(total_docs, next_doc_idx + current_batch_size)
+                docs_batch = dataprep_docs[next_doc_idx:batch_end_idx]
+                submitted_batches += 1
+                batch_num = submitted_batches
+                future = executor.submit(process_batch, (batch_num, docs_batch))
+                futures[future] = batch_num
+                next_doc_idx = batch_end_idx
 
-                if embed_response.status_code != 200:
-                    raise Exception(f"Embedding failed for batch {batch_num}: {response_err(embed_response)}")
+            if not futures:
+                continue
 
-                logger.info(f"[{file_id}] Batch {batch_num} embedded in {embedding_time.total_seconds():.2f}s")
+            done_futures, _ = concurrent.futures.wait(
+                futures,
+                return_when=concurrent.futures.FIRST_COMPLETED,
+                timeout=1
+            )
 
-                start_ingestion = datetime.datetime.now()
-                ingest_response = requests.post(
-                    INGESTION_ENDPOINT,
-                    json=embed_response.json(),
-                    timeout=ingestion_timeout_seconds
-                )
-                ingestion_time = datetime.datetime.now() - start_ingestion
+            if not done_futures:
+                continue
 
-                if ingest_response.status_code != 200:
-                    raise Exception(f"Ingestion failed for batch {batch_num}: {response_err(ingest_response)}")
+            for future in done_futures:
+                batch_num = futures.pop(future)
+                try:
+                    result = future.result()
+                    if result is None:
+                        continue
 
-                logger.info(f"[{file_id}] Batch {batch_num} ingested in {ingestion_time.total_seconds():.2f}s")
+                    completed += 1
+                    _, batch_len, embedding_latency_seconds = result
 
-                with chunks_lock:
-                    chunks_processed += len(docs_batch)
-                    total_ingestion_time += ingestion_time
+                    if embedding_latency_ema is None:
+                        embedding_latency_ema = embedding_latency_seconds
+                    else:
+                        embedding_latency_ema = (
+                            (latency_ema_alpha * embedding_latency_seconds)
+                            + ((1 - latency_ema_alpha) * embedding_latency_ema)
+                        )
 
-                return (batch_num, len(docs_batch), embedding_time.total_seconds())
+                    batches_since_last_change += 1
 
-            except Exception as e:
-                with error_lock:
-                    if error_occurred is None:
-                        error_occurred = str(e)
-                logger.error(f"[{file_id}] Batch {batch_num} failed: {str(e)}")
-                raise Exception(f"Error encountered while processing, error={str(e)}")
+                    high_threshold = embedding_timeout_seconds * high_watermark_ratio
+                    low_threshold = embedding_timeout_seconds * low_watermark_ratio
 
-        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-            futures = {}
-            next_doc_idx = 0
-            completed = 0
-            while next_doc_idx < total_docs or futures:
-                while next_doc_idx < total_docs and len(futures) < target_inflight:
-                    batch_end_idx = min(total_docs, next_doc_idx + current_batch_size)
-                    docs_batch = dataprep_docs[next_doc_idx:batch_end_idx]
-                    submitted_batches += 1
-                    batch_num = submitted_batches
-                    future = executor.submit(process_batch, (batch_num, docs_batch))
-                    futures[future] = batch_num
-                    next_doc_idx = batch_end_idx
+                    if batches_since_last_change < stabilization_window:
+                        pass  # still in stabilization window, skip adaptation
+                    elif embedding_latency_ema > high_threshold:
+                        consecutive_fast_windows = 0
+                        prev_batch_size = current_batch_size
+                        prev_target_inflight = target_inflight
+                        reduced_batch_size = max(min_batch_size, current_batch_size // 2)  # halve batch size on backoff
+                        max_batch_drop = max(1, int(prev_batch_size * max_batch_reduction_ratio))
+                        min_batch_after_step = max(min_batch_size, prev_batch_size - max_batch_drop)
+                        current_batch_size = max(reduced_batch_size, min_batch_after_step)
 
-                if not futures:
-                    continue
-
-                done_futures, _ = concurrent.futures.wait(
-                    futures,
-                    return_when=concurrent.futures.FIRST_COMPLETED,
-                    timeout=1
-                )
-
-                if not done_futures:
-                    continue
-
-                for future in done_futures:
-                    batch_num = futures.pop(future)
-                    try:
-                        result = future.result()
-                        if result is None:
-                            continue
-
-                        completed += 1
-                        _, batch_len, embedding_latency_seconds = result
-
-                        if embedding_latency_ema is None:
-                            embedding_latency_ema = embedding_latency_seconds
-                        else:
-                            embedding_latency_ema = (
-                                (latency_ema_alpha * embedding_latency_seconds)
-                                + ((1 - latency_ema_alpha) * embedding_latency_ema)
+                        reduced_target_inflight = max(1, target_inflight // 2)  # halve inflight count on backoff
+                        max_inflight_drop = max(1, int(prev_target_inflight * max_inflight_reduction_ratio))
+                        min_inflight_after_step = max(1, prev_target_inflight - max_inflight_drop)
+                        target_inflight = max(reduced_target_inflight, min_inflight_after_step)
+                        if prev_batch_size != current_batch_size or prev_target_inflight != target_inflight:
+                            batches_since_last_change = 0
+                            stabilization_window = target_inflight
+                            logger.warning(
+                                f"[{file_id}] Reducing load after batch {batch_num}: "
+                                f"latency_ema={embedding_latency_ema:.2f}s, "
+                                f"batch_size {prev_batch_size}->{current_batch_size}, "
+                                f"inflight {prev_target_inflight}->{target_inflight}"
                             )
-
-                        batches_since_last_change += 1
-
-                        high_threshold = embedding_timeout_seconds * high_watermark_ratio
-                        low_threshold = embedding_timeout_seconds * low_watermark_ratio
-
-                        if batches_since_last_change < stabilization_window:
-                            pass  # still in stabilization window, skip adaptation
-                        elif embedding_latency_ema > high_threshold:
-                            consecutive_fast_windows = 0
+                    elif embedding_latency_ema < low_threshold:
+                        consecutive_fast_windows += 1
+                        if consecutive_fast_windows >= 2:
                             prev_batch_size = current_batch_size
                             prev_target_inflight = target_inflight
-                            reduced_batch_size = max(min_batch_size, current_batch_size // 2)  # halve batch size on backoff
-                            max_batch_drop = max(1, int(prev_batch_size * max_batch_reduction_ratio))
-                            min_batch_after_step = max(min_batch_size, prev_batch_size - max_batch_drop)
-                            current_batch_size = max(reduced_batch_size, min_batch_after_step)
-
-                            reduced_target_inflight = max(1, target_inflight // 2)  # halve inflight count on backoff
-                            max_inflight_drop = max(1, int(prev_target_inflight * max_inflight_reduction_ratio))
-                            min_inflight_after_step = max(1, prev_target_inflight - max_inflight_drop)
-                            target_inflight = max(reduced_target_inflight, min_inflight_after_step)
+                            current_batch_size = min(max_batch_size, current_batch_size + max(1, current_batch_size // 4))
+                            target_inflight = min(max_workers, target_inflight + max(1, target_inflight // 4))
+                            consecutive_fast_windows = 0
                             if prev_batch_size != current_batch_size or prev_target_inflight != target_inflight:
                                 batches_since_last_change = 0
                                 stabilization_window = target_inflight
-                                logger.warning(
-                                    f"[{file_id}] Reducing load after batch {batch_num}: "
+                                logger.info(
+                                    f"[{file_id}] Increasing load after batch {batch_num}: "
                                     f"latency_ema={embedding_latency_ema:.2f}s, "
                                     f"batch_size {prev_batch_size}->{current_batch_size}, "
                                     f"inflight {prev_target_inflight}->{target_inflight}"
                                 )
-                        elif embedding_latency_ema < low_threshold:
-                            consecutive_fast_windows += 1
-                            if consecutive_fast_windows >= 2:
-                                prev_batch_size = current_batch_size
-                                prev_target_inflight = target_inflight
-                                current_batch_size = min(max_batch_size, current_batch_size + max(1, current_batch_size // 4))
-                                target_inflight = min(max_workers, target_inflight + max(1, target_inflight // 4))
-                                consecutive_fast_windows = 0
-                                if prev_batch_size != current_batch_size or prev_target_inflight != target_inflight:
-                                    batches_since_last_change = 0
-                                    stabilization_window = target_inflight
-                                    logger.info(
-                                        f"[{file_id}] Increasing load after batch {batch_num}: "
-                                        f"latency_ema={embedding_latency_ema:.2f}s, "
-                                        f"batch_size {prev_batch_size}->{current_batch_size}, "
-                                        f"inflight {prev_target_inflight}->{target_inflight}"
-                                    )
-                        else:
-                            consecutive_fast_windows = 0
+                    else:
+                        consecutive_fast_windows = 0
 
-                        current_time = datetime.datetime.now()
-                        file_db.chunks_processed = chunks_processed
-                        file_db.embedding_end = current_time
-                        file_db.ingestion_end = file_db.ingestion_start + total_ingestion_time
-                        file_db.job_message = (
-                            f'Processing: {chunks_processed}/{total_docs} chunks '
-                            f'({completed} batches, batch_size={current_batch_size}, inflight={target_inflight})'
+                    current_time = datetime.datetime.now()
+                    file_db.chunks_processed = chunks_processed
+                    file_db.embedding_end = current_time
+                    file_db.ingestion_end = file_db.ingestion_start + total_ingestion_time
+                    file_db.job_message = (
+                        f'Processing: {chunks_processed}/{total_docs} chunks '
+                        f'({completed} batches, batch_size={current_batch_size}, inflight={target_inflight})'
+                    )
+                    self.safe_commit()
+
+                    if completed % 10 == 0 or chunks_processed == total_docs:
+                        logger.info(
+                            f"[{file_id}] Progress: completed_batches={completed}, "
+                            f"chunks={chunks_processed}/{total_docs}, "
+                            f"latency_ema={embedding_latency_ema:.2f}s"
                         )
-                        self.safe_commit()
+                except Exception as e:
+                    for f in futures:
+                        f.cancel()
 
-                        if completed % 10 == 0 or chunks_processed == total_docs:
-                            logger.info(
-                                f"[{file_id}] Progress: completed_batches={completed}, "
-                                f"chunks={chunks_processed}/{total_docs}, "
-                                f"latency_ema={embedding_latency_ema:.2f}s"
-                            )
-                    except Exception as e:
-                        for f in futures:
-                            f.cancel()
+                    file_db.status = 'error'
+                    file_db.job_message = f"Error during processing: {str(e)}"
+                    file_db.embedding_end = datetime.datetime.now()
+                    self.safe_commit()
+                    raise Exception(f"Error encountered while processing, error={str(e)}")
 
-                        file_db.status = 'error'
-                        file_db.job_message = f"Error during processing: {str(e)}"
-                        file_db.embedding_end = datetime.datetime.now()
-                        self.safe_commit()
-                        raise Exception(f"Error encountered while processing, error={str(e)}")
+    pipeline_end = datetime.datetime.now()
+    total_wall_time = pipeline_end - pipeline_start
 
-        pipeline_end = datetime.datetime.now()
-        total_wall_time = pipeline_end - pipeline_start
+    file_db.chunks_processed = chunks_processed
+    file_db.embedding_end = pipeline_end
+    file_db.ingestion_start = file_db.embedding_start
+    file_db.ingestion_end = file_db.ingestion_start + total_ingestion_time
+    self.safe_commit()
 
-        file_db.chunks_processed = chunks_processed
-        file_db.embedding_end = pipeline_end
-        file_db.ingestion_start = file_db.embedding_start
-        file_db.ingestion_end = file_db.ingestion_start + total_ingestion_time
-        self.safe_commit()
-
-        logger.info(f"[{file_id}] Pipeline complete! "
-                   f"Wall time: {total_wall_time.total_seconds():.2f}s, "
-                   f"Total ingestion time: {total_ingestion_time.total_seconds():.2f}s, "
-                   f"Batches: {completed}, "
-                   f"Throughput: {chunks_processed / max(total_wall_time.total_seconds(), 0.001):.1f} docs/s")
+    logger.info(f"[{file_id}] Pipeline complete! "
+               f"Wall time: {total_wall_time.total_seconds():.2f}s, "
+               f"Total ingestion time: {total_ingestion_time.total_seconds():.2f}s, "
+               f"Batches: {completed}, "
+               f"Throughput: {chunks_processed / max(total_wall_time.total_seconds(), 0.001):.1f} docs/s")
 
     # Update the processing time
     file_db.status = 'ingested'

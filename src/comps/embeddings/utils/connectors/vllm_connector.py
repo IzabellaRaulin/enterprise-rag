@@ -3,7 +3,7 @@
 
 
 import asyncio
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 import aiohttp
 
@@ -71,7 +71,7 @@ class VLLMConnector(EmbeddingConnector):
         asyncio.run(self._validate())
 
 
-    async def embed_documents(self, texts: List[str], **kwargs: Any) -> List[List[float]]:
+    async def embed_documents(self, texts: List[str]) -> List[List[float]]:
         """
         Embed multiple documents asynchronously.
         
@@ -87,12 +87,6 @@ class VLLMConnector(EmbeddingConnector):
             "input": texts,
             "model": self._model_name  # vLLM needs full model name
         }
-
-        if kwargs.get("return_pooling"):
-            raise ValueError(
-                "return_pooling is not supported by the vllm model server. "
-                "Token-level pooling requires a model server that returns per-token embeddings."
-            )
 
         try:
             logger.debug(f"vLLM embedding request to {self._endpoint}: {len(texts)} texts")

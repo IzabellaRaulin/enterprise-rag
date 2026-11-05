@@ -23,7 +23,7 @@ LINK_DELETION_TIMEOUT_S = 60
 FILE_UPLOAD_TIMEOUT_S = 300  # 5 minutes
 FILE_DELETION_TIMEOUT_S = 120  # 2 minutes
 LINK_UPLOAD_TIMEOUT = 300  # 5 minutes
-DATAPREP_STATUS_FLOW = ["uploaded", "processing", "text_extracting", "text_compression", "text_splitting", "embedding", "late_chunking", "ingested"]
+DATAPREP_STATUS_FLOW = ["uploaded", "processing", "text_extracting", "text_compression", "text_splitting", "embedding", "ingested"]
 
 
 class EdpHelper(ApiRequestHelper):
@@ -687,7 +687,7 @@ class EdpHelper(ApiRequestHelper):
     def cleanup_all_files_and_links(self, file_ids_to_keep=None):
         """Cancel in-progress tasks and delete all files and links not in file_ids_to_keep."""
         in_progress = {"uploaded", "processing", "text_extracting", "text_compression",
-                       "text_splitting", "late_chunking", "embedding"}
+                       "text_splitting", "embedding"}
         file_ids_to_keep = file_ids_to_keep or set()
 
         files = self.list_files()

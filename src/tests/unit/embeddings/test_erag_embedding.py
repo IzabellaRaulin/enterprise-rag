@@ -57,53 +57,37 @@ def test_unsupported_model_server(teardown):
 
 
 @pytest.mark.asyncio
-async def test_return_pooling_is_rejected_by_the_connector(teardown):
-    """The surviving model servers cannot return per-token embeddings, so pooling must raise."""
+async def test_batches_respect_request_batch_size(teardown):
+    """Test that documents are embedded in batches of at most REQUEST_BATCH_SIZE."""
     from comps.cores.proto.docarray import TextDoc, TextDocList
 
     with mock.patch.object(VLLMConnector, '__new__', return_value=mock.MagicMock()):
         embedding = EragEmbedding("test_model", "vllm", "http://test-endpoint")
 
-    embedding._connector.embed_documents = mock.AsyncMock(
-        side_effect=ValueError("return_pooling is not supported by the vllm model server.")
-    )
-
-    docs = [TextDoc(text=f"test document {i}") for i in range(5)]
-    input_with_pooling = TextDocList(docs=docs, return_pooling=True)
-
-    with pytest.raises(ValueError) as exc_info:
-        await embedding.run(input_with_pooling)
-
-    assert "return_pooling is not supported" in str(exc_info.value)
-
-
-@pytest.mark.asyncio
-async def test_return_pooling_false_uses_regular_batch_size(teardown):
-    """Test that return_pooling=False uses REQUEST_BATCH_SIZE."""
-    from comps.cores.proto.docarray import TextDoc, TextDocList
-
-    with mock.patch.object(VLLMConnector, '__new__', return_value=mock.MagicMock()):
-        embedding = EragEmbedding("test_model", "vllm", "http://test-endpoint")
-
-    def mock_embed_side_effect(texts, **kwargs):
+    def mock_embed_side_effect(texts):
         return [[0.1, 0.2, 0.3] for _ in texts]
 
     mock_embed_docs = mock.AsyncMock(side_effect=mock_embed_side_effect)
     embedding._connector.embed_documents = mock_embed_docs
 
     docs = [TextDoc(text=f"test document {i}") for i in range(5)]
-    input_without_pooling = TextDocList(docs=docs, return_pooling=False)
-
-    result = await embedding.run(input_without_pooling)
+    result = await embedding.run(TextDocList(docs=docs))
 
     assert mock_embed_docs.call_count > 0
     for call in mock_embed_docs.call_args_list:
         kwargs = call.kwargs
-        assert 'return_pooling' in kwargs
-        assert kwargs['return_pooling'] == False
         texts = call.args[0] if call.args else kwargs.get('texts', [])
         assert len(texts) <= embedding.REQUEST_BATCH_SIZE
 
     assert len(result.docs) == 5
     for doc in result.docs:
         assert doc.embedding is not None
+
+
+def test_legacy_return_pooling_field_is_ignored():
+    from comps.cores.proto.docarray import TextDocList
+
+    parsed = TextDocList.model_validate({"docs": [{"text": "doc", "return_pooling": True}], "return_pooling": True})
+
+    assert parsed.docs[0].text == "doc"
+    assert "return_pooling" not in parsed.model_dump()

@@ -104,7 +104,6 @@ export const createLinksColumnDefs = (
             text_compression_duration,
             text_splitter_duration,
             dpguard_duration,
-            late_chunking_duration,
             embedding_duration,
             ingestion_duration,
             processing_duration,
@@ -118,7 +117,6 @@ export const createLinksColumnDefs = (
           textCompressionDuration={text_compression_duration}
           textSplitterDuration={text_splitter_duration}
           dpguardDuration={dpguard_duration}
-          lateChunkingDuration={late_chunking_duration}
           embeddingDuration={embedding_duration}
           ingestionDuration={ingestion_duration}
           processingDuration={processing_duration}

@@ -191,16 +191,6 @@ edp_ontap_s3_cors_allow_origins: >-
   {{ [] if _edp_s3_path_mode | bool else ['https://' ~ base_domain_name] }}
 edp_ontap_s3_validate_reachability: true
 
-# --- Late chunking ---
-# NOTE: when enabled, embedding_model_id MUST be one of the models listed in
-# late_chunking_compatible_models (see app_pre_install/tasks/solution_config.yaml).
-edp_late_chunking_enabled: false
-edp_late_chunking_chunk_size: 512
-edp_late_chunking_chunk_overlap: 64
-# Tokenizer reference loaded from the HuggingFace Hub — tracks the deployed
-# embedding model, so it is the model_id and not the catalog name.
-edp_late_chunking_model_name: "{{ embedding_model_id }}"
-
 # --- Scheduled sync (SharePoint / S3 polling) ---
 edp_scheduled_sync_enabled: false
 edp_scheduled_sync_period_seconds: "60"

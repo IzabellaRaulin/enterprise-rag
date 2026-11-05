@@ -103,7 +103,6 @@ Details: [`deployment/components/vector_databases/README.md`](../../deployment/c
 |---------|---------|---------|
 | `edp_namespace` | `edp` | |
 | `edp_storage_type` | `seaweedfs` | `seaweedfs` \| `s3` \| `s3compatible` |
-| `edp_late_chunking_enabled` | `false` | Not supported - [models.md](models.md#late-chunking) |
 | `edp_rbac_enabled` | `false` | Must be `false` for ONTAP S3, MSSQL |
 | `edp_scheduled_sync_enabled` | `false` | For S3-compatible sans SQS |
 
@@ -204,7 +203,6 @@ inference_models:
 # ui_chat_maintenance_mode: false
 # edp_namespace: "edp"
 # edp_storage_type: "seaweedfs"
-# edp_late_chunking_enabled: false
 # edp_rbac_enabled: false
 # edp_scheduled_sync_enabled: false
 # edp_s3_compatible_access_key_id: ""

@@ -2979,10 +2979,6 @@
     * Origin: pypi
     * License: apache2.0
 
-* Component: intel-enterprise-rag-late-chunking-microservice
-    * Origin: pypi
-    * License: apache2.0
-
 * Component: intel-enterprise-rag-llm-guard-dataprep-guardrail-microservice
     * Origin: pypi
     * License: apache2.0

@@ -54,7 +54,6 @@ inference_models:
 # --- EDP (app_edp) ---
 # edp_namespace: "edp"
 # edp_storage_type: "seaweedfs"            # seaweedfs | s3 | s3compatible
-# edp_late_chunking_enabled: false
 # edp_rbac_enabled: false
 # edp_scheduled_sync_enabled: false
 

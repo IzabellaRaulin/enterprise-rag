@@ -46,7 +46,6 @@ erag_reranker = EragReranker(
     service_endpoint=sanitize_env(os.getenv('RERANKING_SERVICE_ENDPOINT')),
     model_server=sanitize_env(os.getenv('RERANKING_MODEL_SERVER')),
     model_name=sanitize_env(os.getenv('RERANKING_MODEL_NAME')),
-    late_chunking_enabled=str(os.getenv('RERANKING_LATE_CHUNKING_ENABLED')).lower() in ['true', '1', 't', 'y', 'yes'],
     headers=headers
 )
 

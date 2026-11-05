@@ -3,7 +3,7 @@
 
 import asyncio
 import json
-from typing import Any, List, Optional
+from typing import List, Optional
 
 import numpy as np
 from langchain_core.embeddings import Embeddings
@@ -76,24 +76,17 @@ class OVMSConnector(EmbeddingConnector):
 
         return OVMSEndpointEmbeddings(**kwargs)
     
-    async def embed_documents(self, texts: List[str], **kwargs: Any) -> List[List[float]]:
+    async def embed_documents(self, texts: List[str]) -> List[List[float]]:
         """
         Embeds a list of documents.
 
         Args:
             texts (List[str]): The list of documents to embed.
-            **kwargs: Additional keyword arguments.
         Returns:
             List[List[float]]: The embedded documents.
         """
         endpoint = f"v2/models/{self._embedder.model_name}"
         url = f"{self._endpoint}/{endpoint}"
-
-        if kwargs.get("return_pooling"):
-            raise ValueError(
-                "return_pooling is not supported by the ovms model server. "
-                "Token-level pooling requires a model server that returns per-token embeddings."
-            )
 
         try:
             from huggingface_hub import (

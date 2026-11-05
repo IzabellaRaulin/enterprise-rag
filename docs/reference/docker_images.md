@@ -27,7 +27,6 @@ Full image map: `deployment/images.yaml`, version config: `deployment/version.ya
 | `intel/enterprise-rag-text-extractor` | `src/comps/text_extractor/impl/microservice/Dockerfile` | Text extractor service | [Link](https://hub.docker.com/r/intel/enterprise-rag-text-extractor) |
 | `intel/enterprise-rag-chat-history` | `src/comps/chat_history/impl/microservice/Dockerfile` | Chat history service | [Link](https://hub.docker.com/r/intel/enterprise-rag-chat-history) |
 | `intel/enterprise-rag-query-rewrite` | `src/comps/query_rewrite/impl/microservice/Dockerfile` | Query rewrite service | [Link](https://hub.docker.com/r/intel/enterprise-rag-query-rewrite) |
-| `intel/enterprise-rag-late-chunking` | `src/comps/late_chunking/impl/microservice/Dockerfile` | Late chunking service | [Link](https://hub.docker.com/r/intel/enterprise-rag-late-chunking) |
 | `intel/enterprise-rag-namespace-status-watcher` | `src/comps/namespace_status_watcher/impl/microservice/Dockerfile` | Namespace status watcher service | [Link](https://hub.docker.com/r/intel/enterprise-rag-namespace-status-watcher) |
 | `intel/enterprise-rag-asr` | `src/comps/asr/impl/microservice/Dockerfile` | Automatic speech recognition service | Not published |
 | `intel/enterprise-rag-tts` | `src/comps/tts/impl/microservice/Dockerfile` | Text-to-speech service | Not published |
