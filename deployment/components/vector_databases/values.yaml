@@ -22,6 +22,31 @@ pgvector:
       cpu: 16
       memory: 16Gi
 
+milvus:
+  enabled: false
+  metrics:
+    enabled: true
+  image:
+    repository: "milvusdb/milvus"
+    tag: "v3.0.5"
+    pullPolicy: "IfNotPresent"
+  serviceAccount:
+    name: milvus
+  config:
+    authorizationEnabled: true
+  # Merged verbatim into /milvus/configs/user.yaml, which overrides milvus.yaml.
+  extraConfig: {}
+  persistence:
+    enabled: true
+    size: "10Gi"
+  resources:
+    requests:
+      cpu: 2
+      memory: 4Gi
+    limits:
+      cpu: 16
+      memory: 16Gi
+
 mssql:
   enabled: false
   metrics:

@@ -1,0 +1,26 @@
+{{- if and (index .Values "milvus" "enabled") (index .Values "milvus" "metrics" "enabled") }}
+# Copyright (C) 2024-2026 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: milvus-metrics
+  labels:
+    release: {{ .Release.Name }}
+spec:
+  namespaceSelector:
+    matchNames:
+    - {{ .Release.Namespace }}
+  # The dashboard selects on app_kubernetes_io_name / _instance, which only reach
+  # the metrics if Prometheus copies them off the pod.
+  podTargetLabels:
+    - app.kubernetes.io/name
+    - app.kubernetes.io/instance
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: milvus
+  endpoints:
+  - port: "metrics"
+    path: /metrics
+    interval: 30s
+{{- end }}

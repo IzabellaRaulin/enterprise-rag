@@ -79,7 +79,7 @@ data_consistency_keycloak_url: >-
 #     a store the component registry would not have installed is not counted. ---
 vector_databases_enabled: false                        # app_vector_databases
 vector_databases_namespace: "vdb"                      # app_vector_databases
-vector_databases_vector_store: "redis-cluster"         # app_vector_databases (redis-cluster | mssql | pgvector)
+vector_databases_vector_store: "redis-cluster"         # app_vector_databases (redis-cluster | mssql | pgvector | milvus)
 chat_history_enabled: false                            # app_chat_history
 chat_history_namespace: "chat-history"                 # app_chat_history
 chat_history_helm_release_name: "chat-history"         # app_chat_history

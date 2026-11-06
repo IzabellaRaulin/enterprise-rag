@@ -44,7 +44,7 @@ Variants: **base** (full), **retrieve-rerank** (no LLM, retrieval-only), **uploa
 
 | Component | Default | Purpose |
 |-----------|---------|---------|
-| `vector_databases_enabled` | `true` | Vector DB (Redis/MSSQL/pgvector) |
+| `vector_databases_enabled` | `true` | Vector DB (Redis/MSSQL/pgvector/Milvus) |
 | `chat_history_enabled` | `true` | PostgreSQL chat history |
 | `edp_enabled` | `true` | Enhanced Data Preparation |
 | `hpa_enabled` | `true` | Horizontal Pod Autoscaling |
@@ -87,13 +87,13 @@ See [models.md](models.md).
 | Setting | Default | Options |
 |---------|---------|---------|
 | `vector_databases_namespace` | `vdb` | |
-| `vector_databases_vector_store` | `redis-cluster` | `redis-cluster` \| `mssql` \| `pgvector` |
+| `vector_databases_vector_store` | `redis-cluster` | `redis-cluster` \| `mssql` \| `pgvector` \| `milvus` |
 | `vector_databases_vector_datatype` | `FLOAT32` | |
 | `vector_databases_vector_dims` | `768` | Auto-detected; override if detection fails |
 
-Backends: **redis-cluster** (production, 1M+ vectors, HA, scalable), **mssql** (SQL Server; RBAC unsupported; EULA prompt on deploy), **pgvector** (PostgreSQL).
+Backends: **redis-cluster** (production, 1M+ vectors, HA, scalable), **mssql** (SQL Server; RBAC unsupported; EULA prompt on deploy), **pgvector** (PostgreSQL), **milvus** (purpose-built vector database, standalone with embedded etcd and local storage; RBAC unsupported).
 
-Storage defaults: redis-cluster 8Gi per node (set `vector_databases_stores.redis-cluster.persistence.size` in `config.erag.yaml`), mssql and pgvector 10Gi (`deployment/components/vector_databases/values.yaml`). Vector store needs more storage than file storage (text + embeddings).
+Storage defaults: redis-cluster 8Gi per node (set `vector_databases_stores.redis-cluster.persistence.size` in `config.erag.yaml`), mssql, pgvector and milvus 10Gi (`deployment/components/vector_databases/values.yaml`). Vector store needs more storage than file storage (text + embeddings).
 
 The installer generates the database password and hands the connection details to the services in the `vector-database-config` secret, in the pipeline and EDP namespaces.
 

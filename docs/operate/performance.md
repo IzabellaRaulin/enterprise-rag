@@ -27,13 +27,14 @@ Intel® Chatbot Toolkit supports the following vector database backends:
 | `redis-cluster` | Multi-node cluster for production | 1M+ vectors |
 | `mssql` | Microsoft SQL Server 2025 Express Edition | SQL-based vector operations |
 | `pgvector` | PostgreSQL with pgvector extension | General-purpose |
+| `milvus` | Standalone Milvus with embedded etcd and local storage | Purpose-built vector search |
 
 Set via `vector_databases_vector_store` in `env/<name>/config.erag.yaml`:
 
 ```yaml
 vector_databases_enabled: true
 vector_databases_namespace: vdb
-vector_databases_vector_store: redis-cluster   # redis-cluster | mssql | pgvector
+vector_databases_vector_store: redis-cluster   # redis-cluster | mssql | pgvector | milvus
 ```
 
 Per-store Helm payloads live under the `vector_databases_stores` key (nested, because the chart consumes them shaped that way); everything else in `config.erag.yaml` is flat.

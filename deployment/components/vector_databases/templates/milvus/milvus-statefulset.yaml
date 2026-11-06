@@ -1,0 +1,130 @@
+{{- if index .Values "milvus" "enabled" -}}
+# Copyright (C) 2024-2026 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: milvus
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: milvus
+    app.kubernetes.io/instance: milvus
+spec:
+  serviceName: milvus
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: milvus
+      app.kubernetes.io/instance: milvus
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: milvus
+        app.kubernetes.io/instance: milvus
+    spec:
+      serviceAccountName: {{ .Values.milvus.serviceAccount.name }}
+      {{- if .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: milvus
+          {{- if .Values.securityContextWithTemp }}
+          securityContext:
+            {{- toYaml .Values.securityContextWithTemp | nindent 12 }}
+          {{- end }}
+          image: "{{ .Values.milvus.image.repository }}:{{ .Values.milvus.image.tag }}"
+          imagePullPolicy: {{ .Values.milvus.image.pullPolicy | default "IfNotPresent" }}
+          command: ["milvus", "run", "standalone"]
+          env:
+            - name: DEPLOY_MODE
+              value: "STANDALONE"
+            - name: ETCD_USE_EMBED
+              value: "true"
+            - name: ETCD_DATA_DIR
+              value: /var/lib/milvus/etcd
+            - name: ETCD_CONFIG_PATH
+              value: /milvus/configs/embedEtcd.yaml
+            - name: COMMON_STORAGETYPE
+              value: local
+            - name: LOCALSTORAGE_PATH
+              value: /var/lib/milvus/data
+            - name: COMMON_SECURITY_AUTHORIZATIONENABLED
+              value: {{ .Values.milvus.config.authorizationEnabled | quote }}
+            - name: COMMON_SECURITY_DEFAULTROOTPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: milvus-secret
+                  key: MILVUS_PASSWORD
+          ports:
+            - name: grpc
+              containerPort: 19530
+              protocol: TCP
+            - name: metrics
+              containerPort: 9091
+              protocol: TCP
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: metrics
+            periodSeconds: 10
+            failureThreshold: 60
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: metrics
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: metrics
+            periodSeconds: 10
+            timeoutSeconds: 10
+            failureThreshold: 3
+          volumeMounts:
+            - mountPath: /tmp
+              name: tmp
+            - mountPath: /milvus/logs
+              name: logs
+            - mountPath: /milvus/configs/embedEtcd.yaml
+              name: config
+              subPath: embedEtcd.yaml
+            - mountPath: /milvus/configs/user.yaml
+              name: config
+              subPath: user.yaml
+            - mountPath: /var/lib/milvus
+              name: milvusdata
+          resources:
+            {{- if .Values.milvus.resources }}
+            {{- toYaml .Values.milvus.resources | nindent 12 }}
+            {{- end }}
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        - name: logs
+          emptyDir: {}
+        - name: config
+          configMap:
+            name: milvus-config
+        {{- if not (index .Values "milvus" "persistence" "enabled") }}
+        # Embedded etcd metadata lives here too, so the index is lost on restart.
+        - name: milvusdata
+          emptyDir: {}
+        {{- end }}
+  {{- if index .Values "milvus" "persistence" "enabled" }}
+  volumeClaimTemplates:
+    - metadata:
+        name: milvusdata
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        {{- if .Values.milvus.persistence.storageClass }}
+        storageClassName: {{ .Values.milvus.persistence.storageClass }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.milvus.persistence.size | default "10Gi" }}
+  {{- end }}
+{{- end }}

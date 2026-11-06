@@ -42,7 +42,7 @@ Edit `env/<name>/config.erag.yaml`:
 | `pipeline_type` | `chatqna` \| `docsum` \| `translation` | `chatqna` |
 | `pipeline_variant` | `base` \| `query-rewrite` \| `output_guard` \| `retrieve-rerank` \| `upload` | `base` |
 | `inference_models` | List: `name` + `role` (`llm` \| `embedding` \| `reranking`) | `llama3-8b-awq`, `nomic-embed`, `bge-reranker-v2-m3` |
-| `vector_databases_vector_store` | `redis-cluster` \| `mssql` \| `pgvector` | `redis-cluster` |
+| `vector_databases_vector_store` | `redis-cluster` \| `mssql` \| `pgvector` \| `milvus` | `redis-cluster` |
 | `mcp_enabled` | `true` \| `false` | `false` |
 | `hpa_enabled` | `true` \| `false` | `true` |
 

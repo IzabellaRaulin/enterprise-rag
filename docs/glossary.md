@@ -64,6 +64,6 @@ Terms used across this documentation, in alphabetical order.
 
 **Variant.** A modification of a pipeline type: `base`, `query-rewrite`, `output_guard`, `retrieve-rerank`, or `upload`. Variants add or remove steps and change which models are needed. See [Pipelines](deploy/pipelines.md#pipeline-variants).
 
-**Vector database.** The store that holds embeddings and answers similarity queries. Selectable with `vector_databases_vector_store`: `redis-cluster` (default), `mssql`, or `pgvector`.
+**Vector database.** The store that holds embeddings and answers similarity queries. Selectable with `vector_databases_vector_store`: `redis-cluster` (default), `mssql`, `pgvector`, or `milvus`.
 
 **ztunnel.** The per-node proxy that carries mutual TLS traffic in an Istio ambient mesh.

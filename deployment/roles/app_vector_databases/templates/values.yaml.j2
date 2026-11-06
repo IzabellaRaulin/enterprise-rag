@@ -12,6 +12,20 @@ pgvector:
   enabled: true
 {% endif %}
 
+{% if vector_databases_vector_store == "milvus" %}
+{% set milvus = vector_databases_stores.milvus %}
+vectorStore: {{ vector_databases_vector_store }}
+vector_database_password: {{ MILVUS_PASSWORD }}
+vector_database_username: {{ vector_database_connection_username | default("root") }}
+vector_database_name: {{ vector_database_name | default("vdb") }}
+
+milvus:
+  enabled: true
+  persistence:
+    storageClass: "{{ milvus.persistence.storageClass | default('') }}"
+    size: "{{ milvus.persistence.size | default('10Gi') }}"
+{% endif %}
+
 {% if vector_databases_vector_store == "mssql" %}
 {% set mssql = vector_databases_stores.mssql %}
 vector_database_password: {{ MSSQL_PASSWORD }}
