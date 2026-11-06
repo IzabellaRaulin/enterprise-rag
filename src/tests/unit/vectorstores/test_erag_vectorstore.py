@@ -90,3 +90,20 @@ def test_import_redis_failure(caplog):
                 MockConnectorRedis("redis")
                 assert "exception when loading ConnectorRedis" in caplog.text
                 assert MockConnectorRedis.vector_store is None
+
+def test_milvus_is_a_supported_store(mock_redis_vectorstore):
+    assert "milvus" in EragVectorStore("redis")._SUPPORTED_VECTOR_STORES
+
+def test_import_milvus_success(reset_singleton):
+    with mock.patch('comps.vectorstores.utils.connectors.connector_milvus.ConnectorMilvus', autospec=True) as MockConnectorMilvus:
+        vectorstore = EragVectorStore("milvus")
+        assert vectorstore._vector_store_name == "milvus"
+        assert vectorstore.vector_store is MockConnectorMilvus.return_value
+
+def test_import_milvus_failure(reset_singleton, caplog):
+    with mock.patch('comps.vectorstores.utils.connectors.connector_milvus.ConnectorMilvus',
+                    side_effect=ModuleNotFoundError):
+        with caplog.at_level(logging.ERROR):
+            vectorstore = EragVectorStore("milvus")
+            assert "exception when loading ConnectorMilvus" in caplog.text
+            assert not hasattr(vectorstore, "vector_store")

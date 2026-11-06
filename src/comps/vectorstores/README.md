@@ -26,6 +26,7 @@ Support for specific vector databases:
 | -------------------| :---------: |
 | [REDIS](#redis)    | &#x2713; |
 | [REDIS-CLUSTER](#redis-cluster) | &#x2713;  |
+| [MILVUS](#connectormilvus) | &#x2713;  |
 | [MSSQL](#microsoft-sql-server) | Experimental |
 | [PGVECTOR](#pgvector) | Deployment only |
 
@@ -108,6 +109,16 @@ Or use more specific configuration for endpoint URL:
 | MSSQL_DB             | 'vdb'         | Default database name |
 | MSSQL_USER           | 'edp'         | Database username |
 | MSSQL_PASSWORD       | Not set       | Database password |
+
+#### ConnectorMilvus
+
+| Environment Variable      | Default Value | Description                                                                 |
+|---------------------------|---------------|-----------------------------------------------------------------------------|
+| MILVUS_URL                | Not set       | Endpoint URI, for example `http://milvus.vdb.svc:19530` |
+| MILVUS_USERNAME           | 'root'        | Database username |
+| MILVUS_PASSWORD           | Not set       | Database password |
+| MILVUS_DB                 | 'default'     | Milvus database, created on first use when not `default` |
+| MILVUS_VECTOR_COLLECTION  | 'vdb'         | Collection holding the embeddings |
 
 #### ConnectorPgVector
 

@@ -4,6 +4,8 @@
 {{- $path = "files/dashboards/vectordb-redis.json" }}
 {{- else if eq .Values.vectorStore "mssql" }}
 {{- $path = "files/dashboards/vectordb-mssql.json" }}
+{{- else if eq .Values.vectorStore "milvus" }}
+{{- $path = "files/dashboards/vectordb-milvus.json" }}
 {{- end }}
 {{- if $path }}
 {{- $name := regexReplaceAll "(^.*/)(.*)\\.json$" $path "${2}" }}

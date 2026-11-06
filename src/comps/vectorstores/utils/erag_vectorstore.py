@@ -53,6 +53,7 @@ class EragVectorStore():
             "redis-cluster": self._import_redis,
             "pgvector": self._import_pgvector,
             "mssql": self._import_mssql,
+            "milvus": self._import_milvus,
         }
 
         if self._vector_store_name not in self._SUPPORTED_VECTOR_STORES:
@@ -182,3 +183,13 @@ class EragVectorStore():
             self.vector_store = ConnectorMssql()
         except ModuleNotFoundError:
             logger.exception("exception when loading ConnectorMssql")
+
+    def _import_milvus(self):
+        """
+        Imports the ConnectorMilvus connector.
+        """
+        try:
+            from comps.vectorstores.utils.connectors.connector_milvus import ConnectorMilvus
+            self.vector_store = ConnectorMilvus()
+        except ModuleNotFoundError:
+            logger.exception("exception when loading ConnectorMilvus")

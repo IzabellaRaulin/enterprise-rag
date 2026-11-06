@@ -98,6 +98,37 @@
             "postgresql://" + vector_database_connection_username + ':' + POSTGRES_PASSWORD + '@' + vector_database_connection_host  + ':' + vector_database_connection_port + '/' + vector_database_name
           }}
 
+- name: "app_vector_databases | Configure Milvus vector store"
+  when: vector_databases_vector_store == 'milvus'
+  block:
+    - name: "app_vector_databases | Generate user connection details for vector store"
+      ansible.builtin.set_fact:
+        vector_database_connection_username: "root"
+        vector_database_connection_port: "19530"
+        vector_database_name: "vdb"
+
+    # root is Milvus' only built-in account
+    - name: "app_vector_databases | Generate password"
+      ansible.builtin.include_role:
+        name: app_generate_password
+        tasks_from: generate_password.yaml
+      loop:
+        - {name: 'MILVUS', user: "{{ vector_database_connection_username }}"}
+
+    - name: "app_vector_databases | Generate host connection details for vector store"
+      ansible.builtin.set_fact:
+        vector_database_connection_host: >-
+          {{
+            'milvus.' + vector_databases_namespace + '.svc'
+          }}
+
+    - name: "app_vector_databases | Generate uri connection details for vector store"
+      ansible.builtin.set_fact:
+        vector_database_connection_host_with_auth: >-
+          {{
+            "http://" + vector_database_connection_host + ':' + vector_database_connection_port
+          }}
+
 - name: "app_vector_databases | Configure Mssql-like vector store"
   when: vector_databases_vector_store == 'mssql'
   block:
@@ -223,6 +254,27 @@
   no_log: "{{ secure_logs }}"
   loop: "{{ vector_db_connection_detail_namespaces | flatten }}"
 
+- name: "app_vector_databases | Create milvus compatible vector store configs for services in namespaces"
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: "vector-database-config"
+        namespace: "{{ item }}"
+      data:
+        VECTOR_STORE: "{{ vector_databases_vector_store | b64encode }}"
+        MILVUS_URL: "{{ vector_database_connection_host_with_auth | b64encode }}"
+        MILVUS_HOST: "{{ vector_database_connection_host | b64encode }}"
+        MILVUS_PORT: "{{ vector_database_connection_port | b64encode }}"
+        MILVUS_USERNAME: "{{ vector_database_connection_username | b64encode }}"
+        MILVUS_PASSWORD: '{{ MILVUS_PASSWORD | b64encode }}'
+        MILVUS_DB: '{{ vector_database_name | b64encode }}'
+  when: vector_databases_vector_store == 'milvus'
+  no_log: "{{ secure_logs }}"
+  loop: "{{ vector_db_connection_detail_namespaces | flatten }}"
+
 - name: "app_vector_databases | Create mssql compatible vector store configs for services in namespaces"
   kubernetes.core.k8s:
     state: present
@@ -305,3 +357,14 @@
       password_mappings:
         - {key: MSSQL_PASSWORD, variable: MSSQL_PASSWORD, user: "{{ vector_database_connection_username }}"}
   when: vector_databases_vector_store == 'mssql'
+
+- name: "app_vector_databases | Mark secret for password management"
+  ansible.builtin.include_role:
+    name: app_password_mgmt
+    tasks_from: markup.yaml
+  vars:
+      namespace: "{{ vector_databases_namespace }}"
+      secret_name: "milvus-secret"
+      password_mappings:
+        - {key: MILVUS_PASSWORD, variable: MILVUS_PASSWORD, user: "{{ vector_database_connection_username }}"}
+  when: vector_databases_vector_store == 'milvus'

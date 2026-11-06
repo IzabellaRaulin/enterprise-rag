@@ -66,7 +66,7 @@ To protect edits you have already made to the configuration. Either use a fresh 
 
 ### Which vector databases are supported?
 
-`redis-cluster` (default) and `mssql`, selected with `vector_databases_vector_store`. See [Configuration](customize/configuration.md).
+`redis-cluster` (default), `mssql`, `pgvector` and `milvus`, selected with `vector_databases_vector_store`. See [Configuration](customize/configuration.md).
 
 ### How do I change the LLM, embedding, or reranking model?
 

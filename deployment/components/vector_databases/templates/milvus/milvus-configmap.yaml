@@ -1,0 +1,27 @@
+{{- if index .Values "milvus" "enabled" -}}
+# Copyright (C) 2024-2026 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+# Standalone Milvus keeps metadata in an embedded etcd and segments on the data
+# volume, so no external etcd / object store is deployed alongside it.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: milvus-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: milvus
+    app.kubernetes.io/instance: milvus
+data:
+  embedEtcd.yaml: |
+    listen-client-urls: http://0.0.0.0:2379
+    advertise-client-urls: http://0.0.0.0:2379
+    quota-backend-bytes: 4294967296
+    auto-compaction-mode: revision
+    auto-compaction-retention: '1000'
+  user.yaml: |
+    # Extra config to override default milvus.yaml
+    {{- with .Values.milvus.extraConfig }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+{{- end }}

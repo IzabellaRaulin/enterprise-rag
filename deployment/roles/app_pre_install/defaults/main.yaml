@@ -43,7 +43,7 @@ llm_endpoint: ""                                   # app_inference_models
 #     owning role. ---
 vector_databases_namespace: "vdb"                    # app_vector_databases
 vector_databases_helm_release_name: "vdb"            # app_vector_databases
-vector_databases_vector_store: "redis-cluster"       # app_vector_databases (redis-cluster | mssql | pgvector)
+vector_databases_vector_store: "redis-cluster"       # app_vector_databases (redis-cluster | mssql | pgvector | milvus)
 chat_history_namespace: "chat-history"               # app_chat_history
 chat_history_helm_release_name: "chat-history"       # app_chat_history
 edp_namespace: "edp"                                 # app_edp
