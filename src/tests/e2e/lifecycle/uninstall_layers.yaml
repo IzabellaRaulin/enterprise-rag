@@ -45,17 +45,16 @@ layers:
       - langfuse
       - llm-inference
       - envoy-ai-gateway-system
-      - node-feature-discovery
       - lws-system
     removed_crd_groups:
       - serving.kserve.io
       - aigateway.envoyproxy.io
-      - nfd.k8s-sigs.io
       - config.nri
       - leaderworkerset.x-k8s.io
     retained_namespaces:      # platform still installed below inference
       - istio-system
       - cert-manager
+      - node-feature-discovery
 
   platform:
     removed_namespaces:
@@ -67,6 +66,7 @@ layers:
       - metallb-system
       - minio
       - monitoring
+      - node-feature-discovery
       - postgresql
     removed_crd_groups:
       - cert-manager.io
@@ -77,6 +77,7 @@ layers:
       - networking.istio.io
       - security.istio.io
       - telemetry.istio.io
+      - nfd.k8s-sigs.io
     retained_namespaces: []   # only infrastructure (bare cluster) remains
 
   all:
