@@ -1,6 +1,6 @@
 # @intel-enterprise-rag-ui/layouts
 
-This package provides reusable layout components for the Intel® AI for Enterprise RAG UI.
+This package provides reusable layout components for the Intel® Chatbot Toolkit UI.
 
 ## Table of Contents
 

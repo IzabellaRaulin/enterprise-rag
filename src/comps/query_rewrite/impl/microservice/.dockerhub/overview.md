@@ -1,10 +1,10 @@
-# Intel® AI for Enterprise RAG Query Rewrite Microservice
+# Intel® Chatbot Toolkit Query Rewrite Microservice
 
-Part of the Intel® AI for Enterprise RAG ecosystem.
+Part of the Intel® Chatbot Toolkit ecosystem.
 
 ## 🔍 Overview
 
-The Intel® AI for Enterprise RAG Query Rewrite Microservice is designed to improve retrieval quality in RAG (Retrieval Augmented Generation) pipelines by rewriting user queries. It processes input queries and generates refined versions that are more effective for document retrieval, using a dedicated LLM to rewrite queries in a single call, contextualizing them with conversation history when available and optimizing them for search.
+The Intel® Chatbot Toolkit Query Rewrite Microservice is designed to improve retrieval quality in RAG (Retrieval Augmented Generation) pipelines by rewriting user queries. It processes input queries and generates refined versions that are more effective for document retrieval, using a dedicated LLM to rewrite queries in a single call, contextualizing them with conversation history when available and optimizing them for search.
 
 ### Key Features
 
@@ -23,7 +23,7 @@ Default model: `AMead10/Llama-3.2-3B-Instruct-AWQ` (3B parameters, AWQ quantized
 
 ## 🔗 Related Components
 
-This service integrates with other Intel® AI for Enterprise RAG components:
+This service integrates with other Intel® Chatbot Toolkit components:
 - Chat History Service provides conversation context for query contextualization
 - vLLM Model Server performs the actual query rewriting using an LLM
 - Retriever Microservice uses the rewritten queries for improved document retrieval
@@ -31,6 +31,6 @@ This service integrates with other Intel® AI for Enterprise RAG components:
 
 ## License
 
-Intel® AI for Enterprise RAG is licensed under the Apache License, Version 2.0.
+Intel® Chatbot Toolkit is licensed under the Apache License, Version 2.0.
 
 Copyright © 2024–2026 Intel Corporation. All rights reserved.

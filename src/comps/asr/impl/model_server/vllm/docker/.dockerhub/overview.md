@@ -1,6 +1,6 @@
 # VLLM Audio model server
 
-Part of the Intel® AI for Enterprise RAG ecosystem.
+Part of the Intel® Chatbot Toolkit ecosystem.
 
 ## 🔍 Overview
 
@@ -15,8 +15,8 @@ The VLLM Audio model server converts audio files to text using Whisper or compat
 
 ## 🔗 Related Components
 
-This service integrates with other Intel® AI for Enterprise RAG components:
-- Intel® AI for Enterprise RAG ASR Microservice sends the requests to it to convert audio files to text.
+This service integrates with other Intel® Chatbot Toolkit components:
+- Intel® Chatbot Toolkit ASR Microservice sends the requests to it to convert audio files to text.
 
 ## Disclaimer
 
@@ -27,6 +27,6 @@ which will require the image to be rebuilt.
 
 ## License
 
-Intel® AI for Enterprise RAG is licensed under the Apache License, Version 2.0.
+Intel® Chatbot Toolkit is licensed under the Apache License, Version 2.0.
 
 Copyright © 2026 Intel Corporation. All rights reserved.

@@ -62,9 +62,9 @@ There are 2 ways to run this microservice:
 
 > [!IMPORTANT]
 > The model server setups under `impl/model_server/` are for **local development and
-> testing only**. In an Intel AI for Enterprise RAG deployment, model servers are not
-> part of this repository: Intel AI for Enterprise Solutions deploys every model
-> through Enterprise Inference (Model Manager) **before** the RAG components start,
+> testing only**. In an Intel® Chatbot Toolkit deployment, model servers are not
+> part of this repository: Toolkit Manager deploys every model
+> through Intel® Inference Toolkit (Model Manager) **before** the RAG components start,
 > and this microservice only consumes the endpoint it is given. Use the harness here
 > when you need an endpoint to test the microservice standalone; do not use it as a
 > deployment reference.

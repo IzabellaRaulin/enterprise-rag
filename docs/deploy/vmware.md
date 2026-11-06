@@ -6,7 +6,7 @@
     <img src="../images/vmware-logo.png" alt="VMware by Broadcom" width="500" />
 </p>
 
-This guide covers deploying the RAG chatbot onto virtual machines running on VMware vSphere: how many VMs to size, what the hypervisor has to expose for Intel AMX to be usable inside the guests, and the install steps that differ from a bare-metal deployment. The general install flow is unchanged, so read [Deploy the RAG Layer](install_rag.md) alongside it.
+This guide covers deploying Intel® Chatbot Toolkit onto virtual machines running on VMware vSphere: how many VMs to size, what the hypervisor has to expose for Intel AMX to be usable inside the guests, and the install steps that differ from a bare-metal deployment. The general install flow is unchanged, so read [Deploy Intel® Chatbot Toolkit](install_rag.md) alongside it.
 
 ## Capacity Requirements
 
@@ -62,7 +62,7 @@ Control plane nodes handle Kubernetes orchestration only. All AI inference workl
 
 1. Tools Installation
 2. Deploy Kubernetes Cluster on vSphere
-3. Deploy Intel® AI for Enterprise RAG Application
+3. Deploy Intel® Chatbot Toolkit Application
 
 ### 1. Tools Installation
 
@@ -70,7 +70,7 @@ Install the following tools on your deployment machine (the VM you will be runni
 
 **Installer setup**
 
-SSH into one of the VMs (for example vm3), clone Enterprise AI Solutions, and let it prepare the machine. `configure` installs Python 3.11+, yq, kubectl, helm, and builds the Ansible virtual environment, so there is no per-repo venv to create.
+SSH into one of the VMs (for example vm3), clone Toolkit Manager, and let it prepare the machine. `configure` installs Python 3.11+, yq, kubectl, helm, and builds the Ansible virtual environment, so there is no per-repo venv to create.
 
 ```bash
 git clone https://github.com/intel/enterprise-ai-solutions.git
@@ -80,21 +80,21 @@ cd enterprise-ai-solutions
 ./es_auto_installer.sh init erag
 ```
 
-`init erag` clones this repository and the inference layer into `ext/` at their pinned revisions. Every command from here runs from this directory.
+`init erag` clones this repository and Intel® Inference Toolkit into `ext/` at their pinned revisions. Every command from here runs from this directory.
 
 ### 2. Deploy the Kubernetes cluster on vSphere
 
-Describe the VMs in `env/local/nodes.yaml` and `env/local/inventory/hosts.yaml`, then let the installer provision the cluster. See the Enterprise AI Solutions [Multi-Node and BYO Cluster guide](https://github.com/intel/enterprise-ai-solutions/blob/main/docs/deploy/topologies.md).
+Describe the VMs in `env/local/nodes.yaml` and `env/local/inventory/hosts.yaml`, then let the installer provision the cluster. See the Toolkit Manager [Multi-Node and BYO Cluster guide](https://github.com/intel/enterprise-ai-solutions/blob/main/docs/deploy/topologies.md).
 
 If vSphere already provides the cluster, set `existing_kubernetes` in `env/local/global_config.yaml` to its kubeconfig path instead.
 
-### 3. Deploy Intel® AI for Enterprise RAG
+### 3. Deploy Intel® Chatbot Toolkit
 
 ```bash
 ./es_auto_installer.sh install erag
 ```
 
-This pulls in the infrastructure, platform, and inference layers first. Full walkthrough → [Deploy the RAG Layer](install_rag.md).
+This pulls in the `infrastructure`, `platform`, and `inference` installer targets first. Full walkthrough → [Deploy Intel® Chatbot Toolkit](install_rag.md).
 
 ## Debugging Commands
 

@@ -2,22 +2,22 @@
 
 [← Docs Index](../README.md)
 
-Intel AI for Enterprise RAG deploys as the **`erag` layer** on top of the Intel® AI for Enterprise Solutions platform.
+Toolkit Manager installs and operates Intel® Chatbot Toolkit on the platform. The install target is `erag`.
 
-This guide installs Kubernetes, the platform services, the model servers, and the RAG application itself, then leaves you with a working assistant at `https://<base_domain_name>` that you can ingest documents into.
+This guide installs Kubernetes, the platform services, the model servers, and the chatbot itself, then leaves you with a working assistant at `https://<base_domain_name>` that you can ingest documents into.
 
 > [!IMPORTANT]
-> You clone and work from the **Enterprise AI Solutions** repository, not this one. Every command below runs from its root, and `init erag` clones this repository into `ext/` for you.
+> You clone and work from the **Toolkit Manager** repository, not this one. Every command below runs from its root, and `init erag` clones this repository into `ext/` for you.
 
 ## Before you begin
 
 Check [Prerequisites](prerequisites.md): Ubuntu 22.04/24.04 or RHEL 8+, passwordless sudo, internet access, minimum 60 cores / 128 GB RAM / 200 GB disk.
 
-If the platform is already installed, skip to [Step 3](#step-3---initialize-the-rag-layer).
+If the platform is already installed, skip to [Step 3](#step-3---initialize-the-chatbot).
 
 ## Step 1 - Get the code and configure
 
-Run from the Enterprise AI Solutions repo root:
+Run from the Toolkit Manager repo root:
 
 ```bash
 git clone https://github.com/intel/enterprise-ai-solutions.git
@@ -27,9 +27,9 @@ cd enterprise-ai-solutions
 
 ## Step 2 - Install the platform (optional)
 
-`install erag` in Step 4 auto-pulls the layers it depends on (infrastructure, platform, inference), so you can skip straight to [Step 3](#step-3---initialize-the-rag-layer).
+`install erag` in Step 4 pulls in the installer targets it depends on (`infrastructure`, `platform`, `inference`), so you can skip straight to [Step 3](#step-3---initialize-the-chatbot).
 
-To stage the platform separately, for example to confirm model serving works before adding RAG:
+To stage the platform separately, for example to confirm model serving works before adding the chatbot:
 
 ```bash
 ./es_auto_installer.sh install inference --env local
@@ -37,7 +37,7 @@ To stage the platform separately, for example to confirm model serving works bef
 
 For multi-node or bring-your-own-Kubernetes, see the [Platform Quickstart](https://github.com/intel/enterprise-ai-solutions/blob/main/docs/quickstart/quickstart.md).
 
-## Step 3 - Initialize the RAG layer
+## Step 3 - Initialize the chatbot
 
 ```bash
 ./es_auto_installer.sh init erag --env local

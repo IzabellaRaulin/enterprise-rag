@@ -1,29 +1,30 @@
-# Intel® AI for Enterprise RAG
+![Intel® Chatbot Toolkit](docs/images/banner.png)
+# Intel® Chatbot Toolkit
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![Component of: AI Solutions](https://img.shields.io/badge/Component%20of-AI%20Solutions-0068B5)](https://github.com/intel/enterprise-ai-solutions)
-[![Platform: Intel Xeon](https://img.shields.io/badge/Platform-Intel%C2%AE%20Xeon%C2%AE-0068B5)](https://www.intel.com/xeon)
+[![Installed and operated by: Toolkit Manager](https://img.shields.io/badge/Installed%20and%20operated%20by-Toolkit%20Manager-0068B5)](https://github.com/intel/enterprise-ai-solutions)
+[![Platform: Intel® Xeon®](https://img.shields.io/badge/Platform-Intel%C2%AE%20Xeon%C2%AE-0068B5)](https://www.intel.com/xeon)
 [![Pipelines: ChatQnA · DocSum · AudioQnA](https://img.shields.io/badge/Pipelines-ChatQnA%20%C2%B7%20DocSum%20%C2%B7%20AudioQnA-purple)](docs/deploy/pipelines.md)
 [![Identity: Keycloak](https://img.shields.io/badge/Identity-Keycloak%20OIDC-orange)](https://www.keycloak.org)
 
-**Enterprise-grade retrieval-augmented generation layer for Intel® AI for Enterprise Solutions. Turn your enterprise documents into a governed, production-ready AI assistant on Intel® Xeon® CPUs.**
+**Turn your enterprise documents into a governed, production-ready AI assistant on Intel® Xeon® CPUs. Toolkit Manager installs and operates this toolkit.**
 
 > Ships the Ansible roles, Helm charts, and composable pipeline definitions that deploy a full RAG application - document ingestion, vector search, reranking, guardrails, chat history, and a web UI - wired into the platform's identity, gateway, storage, and observability.
 
 > [!IMPORTANT]
-> **This repository is not used standalone.** It is a component of the
-> [**ai-solutions**](https://github.com/intel/enterprise-ai-solutions)
-> platform and is automatically cloned into it at `enterprise-ai-solutions/ext/enterprise.ai-erag/`, where it contributes the
-> **`erag`** layer. Install the platform first - it provisions the Kubernetes cluster,
-> the platform services (cert-manager, Istio, MetalLB, Envoy Gateway, PostgreSQL, Keycloak,
-> MinIO, observability), and the model serving this layer consumes.
-> Every command below runs from the **solutions repo root**, not from here.
+> **This repository is not used on its own.**
+> [**Toolkit Manager**](https://github.com/intel/enterprise-ai-solutions)
+> installs and operates it. Install the platform first. Toolkit Manager clones this repository to
+> `ext/enterprise.ai-erag/` and brings up the Kubernetes cluster, the platform services
+> (cert-manager, Istio, MetalLB, Envoy Gateway, PostgreSQL, Keycloak,
+> MinIO, observability), and Intel® Inference Toolkit that this toolkit depends on.
+> Every command below runs from the **Toolkit Manager repo root**, not from here.
 
 ---
 
-## What is Intel® AI for Enterprise RAG?
+## What is Intel® Chatbot Toolkit?
 
-Intel® AI for Enterprise RAG deploys that whole path as one opt-in layer. You pick a pipeline flavour, run two commands, and get a working assistant grounded in your own documents - no model training or fine-tuning required.
+Intel® Chatbot Toolkit deploys that whole path. You pick a pipeline flavour, run two commands, and get a working assistant grounded in your own documents - no model training or fine-tuning required.
 
 Pipelines are composed, not hardcoded. A flavour declares an ordered flow of steps, the composer renders it into a `GMConnector` resource, and the GMC operator reconciles the microservices behind it. Swapping a retrieval strategy or adding output guardrails is a config change, not a rewrite.
 
@@ -33,22 +34,22 @@ Pipelines are composed, not hardcoded. A flavour declares an ordered flow of ste
 
 - **Access control, not just an API key** - Keycloak OIDC single sign-on across the UI, Grafana and Keycloak itself, a guardrail on every query by default, and opt-in role-based access control that scopes retrieval to the documents each user is cleared to see.
 - **Modular pipelines, not a monolith** - a flavour declares an ordered flow of steps, the composer renders it into a `GMConnector` resource, and the operator reconciles the microservices behind it. Changing retrieval strategy or adding output guardrails is a config edit, not a rewrite.
-- **Integrated, not bolted on** - identity, TLS, object storage, PostgreSQL and Grafana come from the shared platform, so RAG becomes one more governed workload instead of a second stack to operate.
+- **Integrated, not bolted on** - identity, TLS, object storage, PostgreSQL and Grafana come from the shared platform, so the chatbot is one more governed workload instead of a second stack to operate.
 - **Secure by default** - Pod Security Standards enforcement, Istio ambient mTLS between services, and generated credentials with no secrets in the repo.
 - **Four workloads, one stack** - conversational retrieval (ChatQnA), document summarization (DocSum), voice question answering (AudioQnA), and translation.
 - **Tuned for Intel® Xeon®** - horizontal pod autoscaling and NUMA-aware CPU pinning through the platform's balloons policy.
 
 ## Architecture
 
-A question enters through the gateway, is authenticated against Keycloak, and reaches the pipeline router. The router walks the composed flow - embed the query, retrieve candidates from the vector database, rerank them, apply input guardrails, build the prompt, and call the LLM - then streams the grounded answer back. Model inference itself is served by the platform's inference layer, so the RAG namespace runs no model servers of its own.
+A question enters through the gateway, is authenticated against Keycloak, and reaches the pipeline router. The router walks the composed flow - embed the query, retrieve candidates from the vector database, rerank them, apply input guardrails, build the prompt, and call the LLM - then streams the grounded answer back. Model inference is served by Intel® Inference Toolkit, so this toolkit runs no model servers of its own.
 
 <div align="center">
-   <img alt="Intel AI for Enterprise RAG ChatQnA architecture: a request from the UI enters the gateway, is authenticated, and passes through embedding, retrieval from the vector database, reranking, guardrails, and prompt templating before reaching the LLM, with document ingestion feeding the vector database from the object store" src="./docs/images/architecture_chatqna.svg" width="900">
+   <img alt="Intel® Chatbot Toolkit ChatQnA architecture: a request from the UI enters the gateway, is authenticated, and passes through embedding, retrieval from the vector database, reranking, guardrails, and prompt templating before reaching the LLM, with document ingestion feeding the vector database from the object store" src="./docs/images/architecture_chatqna.svg" width="900">
 </div>
 
 DocSum's flow is shown in [architecture_docsum.svg](./docs/images/architecture_docsum.svg), and the full microservice map in [microservices_architecture.png](./docs/microservices_architecture.png).
 
-See the [Architecture reference](docs/reference/architecture.md) for the component inventory, the roles that deploy them, and how this repo plugs into the platform.
+See the [Architecture reference](docs/reference/architecture.md) for the component inventory, the roles that deploy them, and how this toolkit plugs into the platform.
 
 ---
 
@@ -63,18 +64,18 @@ See the [Architecture reference](docs/reference/architecture.md) for the compone
 
 ### Step 1 - Install the stack
 
-`init erag` clones this repo and the inference layer it depends on, at the revisions the platform pins, and seeds the configuration for your chosen pipeline. `install erag` then pulls in the layers below it (infrastructure, platform, inference) and deploys the RAG application on top.
+`init erag` clones this repo and Intel® Inference Toolkit, at the revisions the platform pins, and seeds the configuration for your chosen pipeline. `install erag` then brings up the platform underneath and deploys Intel® Chatbot Toolkit on top.
 
 ```bash
 git clone https://github.com/intel/enterprise-ai-solutions.git
 cd enterprise-ai-solutions
 
 ./es_auto_installer.sh configure     # one-time machine prep (Python 3.11+, yq, kubectl, helm)
-./es_auto_installer.sh init erag     # clone + seed the erag layer and its dependencies
+./es_auto_installer.sh init erag     # clone this toolkit and its dependencies
 ./es_auto_installer.sh install erag  # deploy everything
 ```
 
-Settings for this layer land in `env/local/config.erag.yaml`. Pick a different pipeline with `--flavour`:
+Settings for this toolkit land in `env/local/config.erag.yaml`. Pick a different pipeline with `--flavour`:
 
 ```bash
 ./es_auto_installer.sh init erag --flavour docsum
@@ -128,7 +129,7 @@ Curious first? The demo below shows ChatQnA in action.
 
 <div align="center">
   <a href="https://www.youtube.com/watch?v=wWcUNle1kkg">
-    <img alt="Intel AI for Enterprise RAG ChatQnA demonstration video" src="./docs/images/yt_thumbnail.png">
+    <img alt="Intel® Chatbot Toolkit ChatQnA demonstration video" src="./docs/images/yt_thumbnail.png">
   </a>
 </div>
 
@@ -144,7 +145,7 @@ The Quick Start deploys the ChatQnA flavour with defaults. From here you can cha
 
 | Goal | Guide |
 |---|---|
-| Deploy step by step, endpoints and credentials | [Deploy the RAG layer](docs/deploy/install_rag.md) |
+| Deploy step by step, endpoints and credentials | [Deploy Intel® Chatbot Toolkit](docs/deploy/install_rag.md) |
 | Pipelines, flavours, and variants | [Pipelines](docs/deploy/pipelines.md) |
 | Every configuration option | [Configuration](docs/customize/configuration.md) |
 | Change the LLM, embedding, or reranking model | [Models](docs/customize/models.md) |
@@ -157,7 +158,7 @@ The Quick Start deploys the ChatQnA flavour with defaults. From here you can cha
 | Scaling and tuning | [Performance](docs/operate/performance.md) |
 | Something isn't working | [Troubleshooting](docs/operate/troubleshooting.md) |
 | VMware deployment | [Deploy on VMware](docs/deploy/vmware.md) |
-| What it is and why it exists | [Meet Intel® AI for Enterprise RAG](docs/meet/meet.md) |
+| What it is and why it exists | [Meet Intel® Chatbot Toolkit](docs/meet/meet.md) |
 | Common questions | [FAQ](docs/faq.md) |
 | Terminology | [Glossary](docs/glossary.md) |
 
@@ -180,7 +181,7 @@ Submit questions, feature requests, and bug reports on the GitHub Issues page.
 
 ## License
 
-Intel® AI for Enterprise RAG is licensed under the [Apache License Version 2.0](LICENSE). Refer to the "[LICENSE](LICENSE)" file for the full license text and copyright notice.
+Intel® Chatbot Toolkit is licensed under the [Apache License Version 2.0](LICENSE). Refer to the "[LICENSE](LICENSE)" file for the full license text and copyright notice.
 
 This distribution includes third-party software governed by separate license terms. This third-party software, even if included with the distribution of the Intel software, may be governed by separate license terms, including without limitation, third-party license terms, other Intel software license terms, and open-source software license terms. These separate license terms govern your use of the third-party programs as set forth in the "[THIRD-PARTY-PROGRAMS](THIRD-PARTY-PROGRAMS)" file.
 
@@ -188,7 +189,7 @@ Please note: component(s) depend on software subject to non-open source licenses
 
 ## Security
 
-The [Security Policy](SECURITY.md) outlines our guidelines and procedures for ensuring the highest level of security and trust for our users who consume Intel® AI for Enterprise RAG.
+The [Security Policy](SECURITY.md) outlines our guidelines and procedures for ensuring the highest level of security and trust for our users who consume Intel® Chatbot Toolkit.
 
 ## Intel's Human Rights Principles
 
@@ -206,8 +207,8 @@ If you want to contribute to the project, please refer to the guide in [CONTRIBU
 
 - [Documentation Index](docs/README.md)
 - [GitHub Repository](https://github.com/intel/enterprise-rag)
-- [Intel® AI for Enterprise Solutions (platform)](https://github.com/intel/enterprise-ai-solutions)
-- [Intel® Enterprise for AI Inference (inference layer)](https://github.com/intel/enterprise-inference)
+- [Toolkit Manager](https://github.com/intel/enterprise-ai-solutions) — installs and operates this toolkit
+- [Intel® Inference Toolkit](https://github.com/intel/enterprise-inference)
 - [Architecture](docs/reference/architecture.md)
 
 ---

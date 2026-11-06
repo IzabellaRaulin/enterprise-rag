@@ -1,6 +1,6 @@
 # Telemetry
 
-Intel® AI for Enterprise RAG services emit metrics, logs, and traces to the platform observability stack (Prometheus + Grafana + Loki + Tempo). This doc covers accessing Grafana and the RAG-specific dashboards.
+Intel® Chatbot Toolkit services emit metrics, logs, and traces to the platform observability stack (Prometheus + Grafana + Loki + Tempo). This doc covers accessing Grafana and the chatbot dashboards.
 
 ## Login
 
@@ -26,11 +26,11 @@ On the Grafana login page, select **Sign in with Keycloak** and enter your usern
 
 ## Dashboards
 
-Click **Dashboards** in the left pane. Dashboards prefixed with `EnterpriseRAG` are tailored to Intel AI for Enterprise RAG services. The Grafana instance also provides standard Kubernetes, Node Exporter, and Prometheus Overview dashboards for cluster-level monitoring.
+Click **Dashboards** in the left pane. Dashboards prefixed with `EnterpriseRAG` are tailored to Intel® Chatbot Toolkit services. The Grafana instance also provides standard Kubernetes, Node Exporter, and Prometheus Overview dashboards for cluster-level monitoring.
 
 ![dashboard](../images/telemetry/dashboards.png)
 
-Eight dashboards ship with this layer, each provisioned by the component that owns it:
+Eight dashboards ship with this toolkit, each provisioned by the component that owns it:
 
 | Dashboard | Shipped by | Covers |
 |---|---|---|
@@ -81,11 +81,11 @@ Horizontal Pod Autoscaler activity: replica count, scaling actions over time, an
 
 The top panel shows current replica count for each HPA-managed service. Below, each service has a section with replica changes over time and the scaling metric.
 
-See [HPA configuration](../../deployment/components/hpa/README.md).
+See [Horizontal Pod Autoscaling](performance.md#horizontal-pod-autoscaling).
 
-### Enterprise AI Inference Dashboards (tag `modelserving`)
+### Intel® Inference Toolkit Dashboards (tag `modelserving`)
 
-Enterprise RAG relies on the **Enterprise AI Inference** component for LLM model serving. Models are served on vLLM or OpenVINO backends; Grafana provides dashboards for the backend in use. All AI Inference dashboards are tagged with `modelserving`, making them easy to find by filtering dashboards using that tag.
+Intel® Chatbot Toolkit relies on the **Intel® Inference Toolkit** component for LLM model serving. Models are served on vLLM or OpenVINO backends; Grafana provides dashboards for the backend in use. All AI Inference dashboards are tagged with `modelserving`, making them easy to find by filtering dashboards using that tag.
 
 ![EnterpriseAIInference / ModelServing / vLLM](../images/telemetry/dashboard_04_llm_inference.png)
 
@@ -107,6 +107,6 @@ For more on using this feature see [Grafana Logs Drilldown documentation](https:
 
 ## Platform Telemetry
 
-Grafana itself, Prometheus, Loki, and Tempo are deployed by the **platform layer** (`roles/observability/`). For login setup, data retention, and platform-level dashboards see the Enterprise AI Solutions observability documentation:
+Grafana itself, Prometheus, Loki, and Tempo are deployed by the **platform** (`roles/observability/`). For login setup, data retention, and platform dashboards see the Toolkit Manager observability documentation:
 
-- [Enterprise AI Solutions documentation](https://github.com/intel/enterprise-ai-solutions/blob/main/docs/README.md)
+- [Toolkit Manager documentation](https://github.com/intel/enterprise-ai-solutions/blob/main/docs/README.md)

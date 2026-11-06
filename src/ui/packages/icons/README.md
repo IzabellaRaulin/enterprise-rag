@@ -1,6 +1,6 @@
 # @intel-enterprise-rag-ui/icons
 
-This package provides a large set of React icon components for the Intel® AI for Enterprise RAG UI.
+This package provides a large set of React icon components for the Intel® Chatbot Toolkit UI.
 
 ## Table of Contents
 

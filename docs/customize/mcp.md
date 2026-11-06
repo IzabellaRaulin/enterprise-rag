@@ -2,7 +2,7 @@
 
 [← Customize](../README.md#customize)
 
-The MCP gateway exposes Intel® AI for Enterprise RAG capabilities as tools that AI agents can discover and invoke over a persistent SSE connection.
+The MCP gateway exposes Intel® Chatbot Toolkit capabilities as tools that AI agents can discover and invoke over a persistent SSE connection.
 
 Enable it when the consumer of your corpus is an agent rather than a person: the agent can search your documents and add new ones as part of a larger workflow, using your existing identity and access rules instead of a second copy of the data.
 

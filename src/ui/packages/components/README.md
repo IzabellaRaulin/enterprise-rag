@@ -1,6 +1,6 @@
 # @intel-enterprise-rag-ui/components
 
-This package provides reusable UI components and color scheme management utilities for the Intel® AI for Enterprise RAG UI.
+This package provides reusable UI components and color scheme management utilities for the Intel® Chatbot Toolkit UI.
 
 ## Table of Contents
 

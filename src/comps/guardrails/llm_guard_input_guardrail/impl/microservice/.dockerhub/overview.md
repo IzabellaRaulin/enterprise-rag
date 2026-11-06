@@ -1,10 +1,10 @@
-# Intel® AI for Enterprise RAG Input Guardrail Service
+# Intel® Chatbot Toolkit Input Guardrail Service
 
-Part of the Intel® AI for Enterprise RAG ecosystem.
+Part of the Intel® Chatbot Toolkit ecosystem.
 
 ## 🔍 Overview
 
-The Intel® AI for Enterprise RAG Input Guardrail service provides content filtering and safety validation for user inputs in the Enterprise RAG system. This microservice ensures that all input queries adhere to content policies, preventing potentially harmful, inappropriate, or malicious prompts from reaching the underlying LLM components.
+The Intel® Chatbot Toolkit Input Guardrail service provides content filtering and safety validation for user inputs in the Intel® Chatbot Toolkit system. This microservice ensures that all input queries adhere to content policies, preventing potentially harmful, inappropriate, or malicious prompts from reaching the underlying LLM components.
 
 This microservice implements [LLM Guard](https://protectai.github.io/llm-guard/) Input Scanners, including:
 - [Anonymize](https://protectai.github.io/llm-guard/input_scanners/anonymize/)
@@ -28,12 +28,12 @@ This microservice implements [LLM Guard](https://protectai.github.io/llm-guard/)
 
 ## 🔗 Related Components
 
-This service integrates with other Intel® AI for Enterprise RAG components:
-- Pairs with the Intel® AI for Enterprise RAG Output Guardrail for complete input/output protection
-- Guards Intel® AI for Enterprise RAG LLM microservice from inappropriate inputs
+This service integrates with other Intel® Chatbot Toolkit components:
+- Pairs with the Intel® Chatbot Toolkit Output Guardrail for complete input/output protection
+- Guards Intel® Chatbot Toolkit LLM microservice from inappropriate inputs
 
 ## License
 
-Intel® AI for Enterprise RAG is licensed under the Apache License, Version 2.0.
+Intel® Chatbot Toolkit is licensed under the Apache License, Version 2.0.
 
 Copyright © 2024–2026 Intel Corporation. All rights reserved.

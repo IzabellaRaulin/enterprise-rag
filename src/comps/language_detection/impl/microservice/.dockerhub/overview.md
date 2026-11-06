@@ -1,10 +1,10 @@
-# Intel® AI for Enterprise RAG Language Detection Service
+# Intel® Chatbot Toolkit Language Detection Service
 
-Part of the Intel® AI for Enterprise RAG ecosystem.
+Part of the Intel® Chatbot Toolkit ecosystem.
 
 ## 🔍 Overview
 
-The Intel® AI for Enterprise RAG Language Detection service identifies and classifies the language. It can be run in 2 modes:
+The Intel® Chatbot Toolkit Language Detection service identifies and classifies the language. It can be run in 2 modes:
 
 1. Pipeline: This mode adds multilingual support to ChatQnA pipelines. The microservice detects the language of the user's query as well as the LLM generated response to set up a prompt for translation.
 
@@ -12,6 +12,6 @@ The Intel® AI for Enterprise RAG Language Detection service identifies and clas
 
 ## License
 
-Intel® AI for Enterprise RAG is licensed under the Apache License, Version 2.0.
+Intel® Chatbot Toolkit is licensed under the Apache License, Version 2.0.
 
 Copyright © 2024–2026 Intel Corporation. All rights reserved.

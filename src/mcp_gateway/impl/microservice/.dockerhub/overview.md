@@ -1,10 +1,10 @@
-# Intel® AI for Enterprise RAG MCP Gateway Microservice
+# Intel® Chatbot Toolkit MCP Gateway Microservice
 
-Part of the Intel® AI for Enterprise RAG ecosystem.
+Part of the Intel® Chatbot Toolkit ecosystem.
 
 ## 🔍 Overview
 
-The Intel® AI for Enterprise RAG MCP Gateway Microservice exposes Enterprise RAG capabilities as tools that AI agents can discover and call over a persistent SSE connection. It implements the Model Context Protocol (MCP) SSE transport and acts as the authentication boundary for agent traffic, translating MCP tool calls into HTTP requests to internal services.
+The Intel® Chatbot Toolkit MCP Gateway Microservice exposes Intel® Chatbot Toolkit capabilities as tools that AI agents can discover and call over a persistent SSE connection. It implements the Model Context Protocol (MCP) SSE transport and acts as the authentication boundary for agent traffic, translating MCP tool calls into HTTP requests to internal services.
 
 The gateway dynamically registers tools based on which backend services are configured and available. Agents see only the tools backed by running services in their deployment.
 
@@ -20,13 +20,13 @@ The gateway dynamically registers tools based on which backend services are conf
 
 ## 🔗 Related Components
 
-This service integrates with other Intel® AI for Enterprise RAG components:
+This service integrates with other Intel® Chatbot Toolkit components:
 - EDP (Enhanced Data Preparation) provides ingestion and retrieval endpoints
 - SeaweedFS stores document objects and metadata
 - Keycloak handles authentication via client_credentials grant
 
 ## License
 
-Intel® AI for Enterprise RAG is licensed under the Apache License, Version 2.0.
+Intel® Chatbot Toolkit is licensed under the Apache License, Version 2.0.
 
 Copyright © 2024–2026 Intel Corporation. All rights reserved.

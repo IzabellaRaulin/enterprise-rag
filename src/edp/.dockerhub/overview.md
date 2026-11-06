@@ -1,10 +1,10 @@
-# Intel® AI for Enterprise RAG Enhanced Data Preparation Service
+# Intel® Chatbot Toolkit Enhanced Data Preparation Service
 
-Part of the Intel® AI for Enterprise RAG ecosystem.
+Part of the Intel® Chatbot Toolkit ecosystem.
 
 ## 🔍 Overview
 
-The Intel® AI for Enterprise RAG Enhanced Data Preparation service provides advanced document processing capabilities for the Enterprise RAG system. Designed to operate alongside other Intel AI for Enterprise RAG services, EDP ensures seamless, automated data flow from storage to retriever-ready format.
+The Intel® Chatbot Toolkit Enhanced Data Preparation service provides advanced document processing capabilities for the Intel® Chatbot Toolkit system. Designed to operate alongside other Intel® Chatbot Toolkit services, EDP ensures seamless, automated data flow from storage to retriever-ready format.
 
 ### Storage Endpoints Support Matrix
 
@@ -34,6 +34,6 @@ This service works with other components:
 
 ## License
 
-Intel® AI for Enterprise RAG is licensed under the Apache License, Version 2.0.
+Intel® Chatbot Toolkit is licensed under the Apache License, Version 2.0.
 
 Copyright © 2024–2026 Intel Corporation. All rights reserved.

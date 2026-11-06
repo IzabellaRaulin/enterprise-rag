@@ -1,6 +1,6 @@
 # @intel-enterprise-rag-ui/markdown
 
-This package provides a React component for markdown parsing and rendering in the Intel® AI for Enterprise RAG UI. It is based on `marked` and `highlight.js` packages along with components and styles that are a part of `@intel-enterprise-rag-ui` pnpm workspace.
+This package provides a React component for markdown parsing and rendering in the Intel® Chatbot Toolkit UI. It is based on `marked` and `highlight.js` packages along with components and styles that are a part of `@intel-enterprise-rag-ui` pnpm workspace.
 
 ## Table of Contents
 

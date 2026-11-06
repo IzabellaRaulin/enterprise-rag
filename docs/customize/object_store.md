@@ -2,7 +2,7 @@
 
 [← Customize](../README.md#customize)
 
-Intel® AI for Enterprise RAG supports multiple object store backends for storing ingested documents. The choice of backend affects where files are stored and how they are accessed by the EDP (Enhanced Data Preparation) service.
+Intel® Chatbot Toolkit supports multiple object store backends for storing ingested documents. The choice of backend affects where files are stored and how they are accessed by the EDP (Enhanced Data Preparation) service.
 
 This matters when your documents already live somewhere: pointing EDP at an existing bucket or array means you ingest from the system of record instead of copying corpora into the cluster, and it decides who is responsible for retention and backup of the source files.
 
@@ -65,9 +65,9 @@ S3-compatible storage without SQS event notifications requires scheduled synchro
 
 ## NetApp ONTAP S3 integration
 
-Intel AI for Enterprise RAG can use a NetApp ONTAP object-store server as the document store instead of the in-cluster SeaweedFS.
+Intel® Chatbot Toolkit can use a NetApp ONTAP object-store server as the document store instead of the in-cluster SeaweedFS.
 
-> **Note:** Persistent volume storage is a separate decision made by Enterprise AI Solutions (`storage_backend: netapp-trident` in `env/<name>/global_config.yaml`). This section covers only the object store used by EDP.
+> **Note:** Persistent volume storage is a separate decision made by Toolkit Manager (`storage_backend: netapp-trident` in `env/<name>/global_config.yaml`). This section covers only the object store used by EDP.
 
 ### Why a reverse proxy is needed
 
@@ -82,7 +82,7 @@ The reverse proxy objects (`Service`/`EndpointSlice` or an Envoy Gateway `Backen
 
 ### Configuration
 
-Set the following in the Enterprise AI Solutions `env/<name>/global_config.yaml`:
+Set the following in the Toolkit Manager `env/<name>/global_config.yaml`:
 
 ```yaml
 ontap_s3_data_lif: "10.0.0.102"     # Object-store data LIF, NOT the NFS LIF
@@ -165,7 +165,7 @@ To use `ca` mode:
 - **Which gateway listener serves the S3 host.** The platform's dedicated S3 listener when it exists (it keeps signed paths intact); EDP then only records the host grant. Otherwise EDP publishes the host through the platform's gateway contract (`roles/gateway`, `publish.yaml`) as `ontap-s3` (namespace `edp`) or `seaweedfs-s3` (namespace `seaweedfs`), and the platform picks the mechanism: its own ListenerSet and certificate on a gateway that serves ListenerSets, a host grant on the shared `*.<base_domain_name>` listener otherwise, or the `/s3` path on the apex host in `routing_mode: path`. Those listeners use Envoy's default path normalization, so the key limitation above applies to them. The SeaweedFS admin UI is published the same way (`seaweedfs-admin`, `/seaweedfs` in path mode).
 - **No ONTAP-side provisioning.** The object-store server, the bucket, and the S3 user must exist, and the access keys are inputs. Nothing here creates them.
 
-For the complete end-to-end flow (from `configure` through `init erag` to `install erag`), array-side prerequisites, and the `ontap_*` values themselves, see `docs/NETAPP_ONTAP.md` in Enterprise AI Solutions repository.
+For the complete end-to-end flow (from `configure` through `init erag` to `install erag`), array-side prerequisites, and the `ontap_*` values themselves, see `docs/NETAPP_ONTAP.md` in Toolkit Manager repository.
 
 ---
 

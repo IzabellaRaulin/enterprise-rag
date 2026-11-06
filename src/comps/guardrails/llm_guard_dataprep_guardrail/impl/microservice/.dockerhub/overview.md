@@ -1,10 +1,10 @@
-# Intel® AI for Enterprise RAG Dataprep Guardrail Microservice
+# Intel® Chatbot Toolkit Dataprep Guardrail Microservice
 
-Part of the Intel® AI for Enterprise RAG ecosystem.
+Part of the Intel® Chatbot Toolkit ecosystem.
 
 ## 🔍 Overview
 
-The Intel® AI for Enterprise RAG Dataprep Guardrail microservice runs scanners on incoming documents and links destined for the dataprep pipeline. It ensures data safety by checking inputs before they proceed to the next stage (e.g., vector database ingestion), informing users whether their uploaded documents or links have passed the scan or have been blocked by the guard. Acting as a protective layer, it prevents invalid or harmful data from propagating downstream in the system.
+The Intel® Chatbot Toolkit Dataprep Guardrail microservice runs scanners on incoming documents and links destined for the dataprep pipeline. It ensures data safety by checking inputs before they proceed to the next stage (e.g., vector database ingestion), informing users whether their uploaded documents or links have passed the scan or have been blocked by the guard. Acting as a protective layer, it prevents invalid or harmful data from propagating downstream in the system.
 
 This microservice implements [LLM Guard](https://protectai.github.io/llm-guard/) scanners, including:
 - [BanSubstrings](https://protectai.github.io/llm-guard/input_scanners/ban_substrings/)
@@ -27,12 +27,12 @@ This microservice implements [LLM Guard](https://protectai.github.io/llm-guard/)
 
 ## 🔗 Related Components
 
-This service integrates with other Intel® AI for Enterprise RAG components:
-- The Intel AI for Enterprise RAG Dataprep service processes only data that has passed the dataprep guardrail scans, ensuring safety and policy compliance before vector search ingestion.
+This service integrates with other Intel® Chatbot Toolkit components:
+- The Intel® Chatbot Toolkit Dataprep service processes only data that has passed the dataprep guardrail scans, ensuring safety and policy compliance before vector search ingestion.
 
 
 ## License
 
-Intel® AI for Enterprise RAG is licensed under the Apache License, Version 2.0.
+Intel® Chatbot Toolkit is licensed under the Apache License, Version 2.0.
 
 Copyright © 2024–2026 Intel Corporation. All rights reserved.

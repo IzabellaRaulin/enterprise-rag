@@ -2,7 +2,7 @@
 
 [← Customize](../README.md#customize)
 
-Intel® AI for Enterprise RAG provides the ability to build Docker images locally instead of using pre-built images from public registries. This is useful for custom modifications, security requirements, or development and testing.
+Intel® Chatbot Toolkit provides the ability to build Docker images locally instead of using pre-built images from public registries. This is useful for custom modifications, security requirements, or development and testing.
 
 Most deployments never need this. Reach for it when your environment cannot pull from a public registry, when your policy requires images you scanned and signed yourself, or when you changed a microservice and want to run your version. This guide covers pointing the deployment at a registry, building the images, and pushing them.
 
@@ -124,4 +124,4 @@ This uploads all built images to the registry specified during setup.
 | Topic | Link |
 |-------|------|
 | Image registry map and Dockerfiles | `deployment/images.yaml` |
-| Enterprise AI Solutions configuration | [`../../docs/customize/configuration.md`](https://github.com/intel/enterprise-ai-solutions/blob/main/docs/customize/configuration.md) |
+| Toolkit Manager configuration | [`../../docs/customize/configuration.md`](https://github.com/intel/enterprise-ai-solutions/blob/main/docs/customize/configuration.md) |

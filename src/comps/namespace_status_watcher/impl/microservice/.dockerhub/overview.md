@@ -1,10 +1,10 @@
-# Intel® AI for Enterprise RAG Namespace Status Watcher Microservice
+# Intel® Chatbot Toolkit Namespace Status Watcher Microservice
 
-Part of the Intel® AI for Enterprise RAG ecosystem.
+Part of the Intel® Chatbot Toolkit ecosystem.
 
 ## 🔍 Overview
 
-The Intel® AI for Enterprise RAG Namespace Status Watcher microservice provides Kubernetes namespace monitoring functionality. It queries the Kubernetes API to retrieve and report the status of all resources deployed in a specified namespace.
+The Intel® Chatbot Toolkit Namespace Status Watcher microservice provides Kubernetes namespace monitoring functionality. It queries the Kubernetes API to retrieve and report the status of all resources deployed in a specified namespace.
 
 ### Features
 
@@ -16,13 +16,13 @@ The Intel® AI for Enterprise RAG Namespace Status Watcher microservice provides
 
 ## 🔗 Related Components
 
-This service integrates with other Intel® AI for Enterprise RAG components:
+This service integrates with other Intel® Chatbot Toolkit components:
 - Provides status information for audio namespace
-- Can be deployed alongside any Intel AI for Enterprise RAG microservice deployment
+- Can be deployed alongside any Intel® Chatbot Toolkit microservice deployment
 - Accessible through NGINX reverse proxy for centralized status monitoring
 
 ## License
 
-Intel® AI for Enterprise RAG is licensed under the Apache License, Version 2.0.
+Intel® Chatbot Toolkit is licensed under the Apache License, Version 2.0.
 
 Copyright © 2026 Intel Corporation. All rights reserved.

@@ -4,7 +4,7 @@
 
 The pipeline is what your deployment actually does. It decides whether users get conversational answers over your documents, one-shot summaries, translations, or voice, and which steps a question passes through on the way to an answer.
 
-Picking a pipeline is therefore the first product decision, not a tuning detail: the flavour sets the use case, and the variant trades accuracy against latency, cost, and the number of model servers you have to fit on the machine. Intel AI for Enterprise RAG composes these service graphs from modular definitions, so switching is a configuration change and a re-install rather than a redeployment from scratch.
+Picking a pipeline is therefore the first product decision, not a tuning detail: the flavour sets the use case, and the variant trades accuracy against latency, cost, and the number of model servers you have to fit on the machine. Intel® Chatbot Toolkit composes these service graphs from modular definitions, so switching is a configuration change and a re-install rather than a redeployment from scratch.
 
 ## Available pipelines
 
@@ -47,13 +47,13 @@ Deploy: `./es_auto_installer.sh install erag --env <name>`.
 **ChatQnA (base):** Embedding → Retriever → Reranking → PromptTemplate → LLMGuardInput → LLM. Models (llm-inference ns): `llama3-8b-awq`, `nomic-embed`, `bge-reranker-v2-m3`.
 
 <div align="center">
-   <img alt="Intel AI for Enterprise RAG ChatQnA pipeline: the query is embedded, candidate documents are retrieved from the vector database and reranked, input guardrails and prompt templating are applied, and the LLM returns a grounded answer" src="../images/architecture_chatqna.svg" width="880">
+   <img alt="Intel® Chatbot Toolkit ChatQnA pipeline: the query is embedded, candidate documents are retrieved from the vector database and reranked, input guardrails and prompt templating are applied, and the LLM returns a grounded answer" src="../images/architecture_chatqna.svg" width="880">
 </div>
 
 **DocSum:** TextExtractor → TextCompression → TextSplitter → LLM → DocSum.
 
 <div align="center">
-   <img alt="Intel AI for Enterprise RAG DocSum pipeline: an uploaded document is extracted, compressed, and split before the LLM produces a summary" src="../images/architecture_docsum.svg" width="880">
+   <img alt="Intel® Chatbot Toolkit DocSum pipeline: an uploaded document is extracted, compressed, and split before the LLM produces a summary" src="../images/architecture_docsum.svg" width="880">
 </div>
 
 **Translation:** LanguageDetection → PromptTemplate → LLM. Model: `alma-7b-r`.

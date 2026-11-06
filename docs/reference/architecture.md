@@ -1,16 +1,16 @@
 # Architecture
 
-Intel® AI for Enterprise RAG is the application layer of the Intel® AI for Enterprise Solutions platform. It contributes a 15-component `erag` layer that deploys RAG pipelines, microservices, and UI onto the platform's Kubernetes, Istio mesh, PostgreSQL, and Keycloak/LiteLLM infrastructure.
+Toolkit Manager installs and operates Intel® Chatbot Toolkit on the platform. The toolkit deploys RAG pipelines, microservices, and a UI onto the platform's Kubernetes, Istio mesh, PostgreSQL, and Keycloak/LiteLLM. `erag` is the install target name.
 
-This doc covers what the layer actually is, how its components compose into a working RAG application, and how it integrates with the inference and platform layers below it.
+This doc covers what the toolkit deploys, how its components compose into a working RAG application, and how it uses Intel® Inference Toolkit and the platform underneath.
 
-## Integration with Enterprise AI Solutions
+## Integration with Toolkit Manager
 
-Enterprise AI Solutions clones this repo into its own `ext/enterprise.ai-erag/` at runtime and auto-discovers its contributions:
+Toolkit Manager clones this repo into its own `ext/enterprise.ai-erag/` at runtime and auto-discovers its contributions:
 
 | File | Purpose |
 |------|---------|
-| `deployment/components.yaml` | Registers 15 `app_*` components in the `erag` layer with dependency order |
+| `deployment/components.yaml` | Registers 15 `app_*` components in the `erag` install target with dependency order |
 | `deployment/pipelines/<flavour>/config.yaml` | Per-flavour baseline config, seeded to `env/<name>/config.erag.yaml` by `init erag --flavour <flavour>` |
 | `deployment/roles/` | 21 Ansible roles (15 in the component registry + 6 helpers) |
 | `deployment/components/` | Helm charts per component (apisix, audio, chat_history, edp, ferretdb, fingerprint, gmc, hpa, mcp_gateway, nats, postgresql, ui, utils, vector_databases) |
@@ -21,10 +21,10 @@ The installer adds `deployment/roles/` to `ANSIBLE_ROLES_PATH`, merges `componen
 ### Commands
 
 ```bash
-# Initialize a RAG environment (from Enterprise AI Solutions repo root)
+# Initialize a RAG environment (from Toolkit Manager repo root)
 ./es_auto_installer.sh init erag --env myenv
 
-# Install the erag layer (requires inference layer already installed)
+# Install Intel® Chatbot Toolkit (requires Intel® Inference Toolkit already installed)
 ./es_auto_installer.sh install erag --env myenv
 
 # Check status
@@ -32,9 +32,9 @@ The installer adds `deployment/roles/` to `ANSIBLE_ROLES_PATH`, merges `componen
 ./es_auto_installer.sh validate erag --env myenv
 ```
 
-## Layer Dependencies
+## Installer targets
 
-The `erag` layer depends on `platform` and `inference`:
+`install erag` depends on the `platform` and `inference` installer targets. `inference` is Intel® Inference Toolkit. `erag` is Intel® Chatbot Toolkit:
 
 ```
 infrastructure  →  platform  →  inference  →  erag
@@ -44,7 +44,7 @@ infrastructure  →  platform  →  inference  →  erag
                     Envoy GW)    Gateway)      EDP, UI)
 ```
 
-At install time Enterprise AI Solutions resolves these dependencies and deploys layers in order.
+At install time Toolkit Manager resolves these dependencies and deploys layers in order.
 
 ## Component Registry
 
@@ -79,7 +79,7 @@ Each step of a RAG answer is its own service, which is what lets you swap a rera
 20 FastAPI microservices in `src/comps/`, packaged as Docker images and deployed via Helm. That is 17 top-level services plus the three `guardrails` sub-services. `src/comps/cores/` and `src/comps/vectorstores/` are shared libraries the services import, not deployed services of their own.
 
 <div align="center">
-   <img alt="Intel AI for Enterprise RAG microservices map: every microservice in the stack grouped by role - ingestion and data preparation services feeding the vector database, retrieval and reranking services, guardrail services on the query and response paths, and the pipeline router connecting them - with the model-serving layer shown beneath" src="../microservices_architecture.png" width="900">
+   <img alt="Intel® Chatbot Toolkit microservices map: every microservice in the stack grouped by role - ingestion and data preparation services feeding the vector database, retrieval and reranking services, guardrail services on the query and response paths, and the pipeline router connecting them - with Intel® Inference Toolkit shown beneath" src="../microservices_architecture.png" width="900">
 </div>
 
 | Service | Purpose | Namespace (default) |
@@ -180,19 +180,19 @@ Enabled via `mcp_enabled: true` in `config.erag.yaml`. Requires `app_edp` and `a
 
 | Namespace | Owner | Purpose |
 |-----------|-------|---------|
-| `chatqna` (or flavour-specific) | This layer | Pipeline microservices, GMC router |
-| `edp` | This layer | EDP API, Celery workers, PostgreSQL |
-| `vdb` | This layer | Vector database (Redis/MSSQL/pgvector) |
-| `llm-inference` | Inference layer | vLLM/OVMS model pods, KServe controller |
-| `envoy-gateway-system` | Platform layer | Envoy Gateway, AI Gateway |
-| `keycloak` | Platform layer | Keycloak |
-| `monitoring` | Platform layer | Prometheus, Grafana, Loki, Tempo |
+| `chatqna` (or flavour-specific) | Intel® Chatbot Toolkit | Pipeline microservices, GMC router |
+| `edp` | Intel® Chatbot Toolkit | EDP API, Celery workers, PostgreSQL |
+| `vdb` | Intel® Chatbot Toolkit | Vector database (Redis/MSSQL/pgvector) |
+| `llm-inference` | Intel® Inference Toolkit | vLLM/OVMS model pods, KServe controller |
+| `envoy-gateway-system` | Platform | Envoy Gateway, AI Gateway |
+| `keycloak` | Platform | Keycloak |
+| `monitoring` | Platform | Prometheus, Grafana, Loki, Tempo |
 
 All RAG namespaces join the Istio ambient mesh via `istio.io/dataplane-mode: ambient` label.
 
 ## Istio Mesh Integration
 
-The platform layer (`roles/istio/`) deploys Istio ambient mesh. RAG namespaces join the mesh by label; all inter-service traffic is mTLS-encrypted via ztunnel.
+The platform (`roles/istio/`) deploys Istio ambient mesh. Chatbot namespaces join the mesh by label; all inter-service traffic is mTLS-encrypted via ztunnel.
 
 Current mTLS posture: `STRICT` via `PeerAuthentication` in each namespace. **Authorization policies are not currently deployed** - the deployment ships zero `AuthorizationPolicy` resources. Only mutual TLS is enforced; service-to-service authorization is not configured.
 
@@ -203,7 +203,7 @@ See [Mesh](mesh.md) for how to add a new service to the mesh.
 - **Vector database**: PVC (default 30Gi) for Redis/MSSQL persistence
 - **EDP blob storage**: SeaweedFS (default) / S3 / S3-compatible object store
 - **PostgreSQL**: CNPG-managed volumes (8Gi per cluster by default)
-- **Model weights**: Inference layer's model-store PVC (shared across layers)
+- **Model weights**: Intel® Inference Toolkit model-store PVC (shared with this toolkit)
 - **Backup and restore**: opt-in, Velero-based CSI volume snapshots of the namespaces above plus the
   identity realm — see [Backup and Restore](../operate/backup.md)
 
@@ -214,7 +214,7 @@ Grafana dashboards tagged `EnterpriseRAG`:
 - `EnterpriseRAG / Services / EDP` - ingestion stats, processing stages, errors
 - `EnterpriseRAG / HPA` - autoscaler activity and thresholds
 
-Additionally, inference layer dashboards (`modelserving` tag) show vLLM/KServe metrics.
+Additionally, Intel® Inference Toolkit dashboards (`modelserving` tag) show vLLM/KServe metrics.
 
 Logs flow to Loki via OpenTelemetry; traces go to Tempo. Access via `https://grafana.<base_domain_name>`.
 

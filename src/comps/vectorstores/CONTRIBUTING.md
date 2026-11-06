@@ -96,7 +96,7 @@ You would have to:
         - define the deployment in a separate folder under `deployment/components/vector_databases/templates/<your-db>`
         - it is recommended to define and mount a PersistentVolumeClaim for data storage
 - ensure that the initialization data (for example - root password) is referenced from a secret
-- update the [vector_databases/README.md](../../../deployment/components/vector_databases/README.md) file with the newly added database in the support table
+- add the newly added database to [Configuration Reference › Vector database](../../../docs/customize/configuration.md#vector-database)
 - implement the `vector_database` ansible task in `deployment/roles/app_vector_databases/`:
     - create an additional block, similar to `name: Configure Redis-like vector store`, so that:
         - password(s) are generated and stored
@@ -125,7 +125,7 @@ If your database supports Prometheus monitoring:
 - Add appropriate service monitor configurations in your Helm templates to enable automatic metrics discovery
 - Document any database-specific metrics that may be useful for monitoring vector store performance
 
-This native monitoring can complement the observability system (deployed by the Enterprise AI Solutions installer) to provide comprehensive observability of your vector database operations.
+This native monitoring can complement the observability system (deployed by Toolkit Manager) to provide comprehensive observability of your vector database operations.
 
 ##  2.3 (Optional) Implement backup
 Some vector databases provide built-in backup capabilities or support external backup tools. When implementing new database suppport, consider implementing backup support to ensure data persistence and disaster recovery.

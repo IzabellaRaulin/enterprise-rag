@@ -24,7 +24,8 @@ const APP_NAME = "Intel® AI for Enterprise RAG";
 const APP_VERSION =
   getAudioQnAAppEnv("ERAG_VERSION") || import.meta.env.VITE_APP_VERSION;
 const MAINTENANCE_MODE = getAudioQnAAppEnv("MAINTENANCE_MODE");
-const USER_GUIDE_URL = `https://github.com/opea-project/Enterprise-RAG/blob/release-${APP_VERSION}/docs/Intel_AI_for_Enterprise_RAG_AudioQnA_User_Guide.pdf`;
+const USER_GUIDE_URL =
+  "https://github.com/intel/enterprise-rag/blob/main/docs/Intel_Chatbot_Toolkit_AudioQnA_User_Guide.pdf";
 
 export const AppHeaderLeftSideContent = () => {
   const location = useLocation();

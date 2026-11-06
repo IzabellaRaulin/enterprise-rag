@@ -2,16 +2,16 @@
 
 [← Docs Index](../README.md)
 
-Everything you need before deploying Intel AI for Enterprise RAG on top of the Intel® AI for Enterprise Solutions platform.
+Everything you need before Toolkit Manager installs Intel® Chatbot Toolkit on the platform.
 
 ---
 
 ## Platform prerequisites
 
-Intel AI for Enterprise RAG is deployed as the **`erag` layer** on top of the platform. Enterprise AI Solutions provisions Kubernetes, storage, observability, model serving, and authentication before RAG can be deployed.
+Toolkit Manager installs and operates Intel® Chatbot Toolkit on the platform. The install target is `erag`. The platform provides Kubernetes, storage, observability, model serving, and authentication before the chatbot can be deployed.
 
 > [!NOTE]
-> The platform prerequisites (OS, storage backends, node configuration, and SSH setup) are owned by Enterprise AI Solutions. See:
+> The platform prerequisites (OS, storage backends, node configuration, and SSH setup) are owned by Toolkit Manager. See:
 > - [Platform Prerequisites](https://github.com/intel/enterprise-ai-solutions/blob/main/docs/quickstart/prerequisites.md) for base requirements (OS, hardware, tooling, credentials)
 > - [Multi-Node & BYO Cluster](https://github.com/intel/enterprise-ai-solutions/blob/main/docs/deploy/topologies.md) for multi-node and bring-your-own-Kubernetes setups
 
@@ -19,11 +19,11 @@ Intel AI for Enterprise RAG is deployed as the **`erag` layer** on top of the pl
 
 ## Hardware requirements for RAG
 
-These are **additional** requirements on top of the platform layer. Sizing below assumes the platform and model-serving layers are already running.
+These are **additional** requirements on top of the platform. Sizing below assumes the platform and Intel® Inference Toolkit are already running.
 
 ### Xeon-only deployment
 
-To deploy Intel AI for Enterprise RAG using Xeon only:
+To deploy Intel® Chatbot Toolkit using Xeon only:
 
 | Configuration | CPU cores | RAM | Disk | Notes |
 |---|---|---|---|---|
@@ -44,13 +44,13 @@ The **limited single-user deployment** (32 cores / 64 GB RAM) is suitable only f
 
 - **Hugging Face model access:** Ensure you have the necessary access to download and use the models your deployment will serve. Gated models (Llama, Mistral, Gemma) require a [Hugging Face token](https://huggingface.co/settings/tokens) exported as `HF_TOKEN` before install.
 
-- **Multi-node clusters require ReadWriteMany (RWX) storage:** If deploying across multiple nodes, a CSI driver supporting `ReadWriteMany` access mode is required. Enterprise AI Solutions can provision NFS (`storage_backend: nfs`) or NetApp Trident (`storage_backend: netapp-trident`). Single-node deployments use `local-path` by default. See [Platform Storage Documentation](https://github.com/intel/enterprise-ai-solutions/blob/main/docs/customize/configuration.md#storage) for configuration.
+- **Multi-node clusters require ReadWriteMany (RWX) storage:** If deploying across multiple nodes, a CSI driver supporting `ReadWriteMany` access mode is required. Toolkit Manager can provision NFS (`storage_backend: nfs`) or NetApp Trident (`storage_backend: netapp-trident`). Single-node deployments use `local-path` by default. See [Platform Storage Documentation](https://github.com/intel/enterprise-ai-solutions/blob/main/docs/customize/configuration.md#storage) for configuration.
 
 ---
 
 ## Cluster provisioning and storage
 
-Cluster provisioning, operating system requirements, Kubernetes versions, storage backends, and node topology are owned by the **Enterprise AI Solutions**, not by the RAG layer.
+Cluster provisioning, operating system requirements, Kubernetes versions, storage backends, and node topology are owned by **Toolkit Manager**.
 
 For those topics, see:
 - [Platform Prerequisites](https://github.com/intel/enterprise-ai-solutions/blob/main/docs/quickstart/prerequisites.md) - OS, tooling, hardware minimums for the platform
@@ -118,4 +118,4 @@ Additionally, reduce the model server CPU and memory limits in `env/<name>/model
 
 ## Next steps
 
-Once prerequisites are met, proceed to [Quickstart](quickstart.md) to deploy Intel AI for Enterprise RAG.
+Once prerequisites are met, proceed to [Quickstart](quickstart.md) to deploy Intel® Chatbot Toolkit.

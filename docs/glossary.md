@@ -28,15 +28,15 @@ Terms used across this documentation, in alphabetical order.
 
 **HPA (Horizontal Pod Autoscaler).** The Kubernetes controller that adds and removes replicas of a service under load. Enabled by default via `hpa_enabled`, and disabled for minimum-hardware deployments. See [Performance](operate/performance.md).
 
-**Inference layer.** The layer below this one, which serves the models over an OpenAI-compatible endpoint using KServe with vLLM or OpenVINO™ Model Server. It is a separate repository, cloned into `ext/enterprise.ai-inference`.
+**Intel® Inference Toolkit.** Serves the models over an OpenAI-compatible endpoint using KServe with vLLM or OpenVINO™ Model Server. Toolkit Manager clones it into `ext/enterprise.ai-inference`. The installer target is `inference`.
 
 **Ingestion.** Getting documents into the system so they can be retrieved: upload or sync, extract, chunk, embed, index. Handled by EDP.
 
 **Keycloak.** The identity provider. It issues the tokens the gateway checks on every request, and can federate to Microsoft Entra ID or Active Directory. See [Authentication](customize/auth.md).
 
-**KServe.** The Kubernetes model-serving framework used by the inference layer to run model servers and expose them as cluster services.
+**KServe.** The Kubernetes model-serving framework used by Intel® Inference Toolkit to run model servers and expose them as cluster services.
 
-**Layer.** A group of components installed as a unit, in dependency order: `infrastructure`, `platform`, `inference`, `erag`. Installing one layer pulls in the layers it depends on.
+**Installer target.** A group of components installed as a unit, in dependency order: `infrastructure`, `platform`, `inference`, `erag`. `inference` is Intel® Inference Toolkit. `erag` is Intel® Chatbot Toolkit. Installing one target pulls in the targets it depends on.
 
 **MCP (Model Context Protocol).** A protocol that lets AI agents discover and call tools. The MCP gateway exposes retrieval and ingestion as such tools; off by default. See [MCP](customize/mcp.md).
 
@@ -60,7 +60,7 @@ Terms used across this documentation, in alphabetical order.
 
 **System fingerprint.** The service that records the deployed configuration and checks its integrity, so a running system can be compared against the setup it was deployed with.
 
-**Target.** What you pass to `install`, `teardown`, or `validate`: a layer such as `erag`, or a single component such as `app_pipeline`. Dependencies are resolved automatically unless you pass `--only`.
+**Target.** What you pass to `install`, `teardown`, or `validate`: an installer target such as `erag`, or a single component such as `app_pipeline`. Dependencies are resolved automatically unless you pass `--only`.
 
 **Variant.** A modification of a pipeline type: `base`, `query-rewrite`, `output_guard`, `retrieve-rerank`, or `upload`. Variants add or remove steps and change which models are needed. See [Pipelines](deploy/pipelines.md#pipeline-variants).
 

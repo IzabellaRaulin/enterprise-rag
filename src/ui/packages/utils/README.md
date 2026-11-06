@@ -1,6 +1,6 @@
 # @intel-enterprise-rag-ui/utils
 
-This package provides utility functions for the Intel® AI for Enterprise RAG UI.
+This package provides utility functions for the Intel® Chatbot Toolkit UI.
 
 ## Table of Contents
 

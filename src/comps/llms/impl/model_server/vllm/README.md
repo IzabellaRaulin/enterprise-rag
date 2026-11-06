@@ -180,7 +180,7 @@ The image leverages `AMX` and `AVX-512` instruction extensions for improved infe
 
 It runs vLLM in an unprivileged mode installed on top of UBI9 which makes it a perfect choice for OpenShift deployments on Xeon® as it works out-of-the-box.
 
-The image is publicly available on Intel® AI for Enterprise RAG Docker Hub. It is compatible with all Xeon® CPUs. The image is a different variant of the vLLM image for CPU built and published by the vLLM project, so for deeper insights you can take a look at the [official documentation](https://docs.vllm.ai/en/stable/getting_started/installation/cpu).
+The image is publicly available on Intel® Chatbot Toolkit Docker Hub. It is compatible with all Xeon® CPUs. The image is a different variant of the vLLM image for CPU built and published by the vLLM project, so for deeper insights you can take a look at the [official documentation](https://docs.vllm.ai/en/stable/getting_started/installation/cpu).
 
 If you want, you can use it as a standalone vLLM in your project.
 

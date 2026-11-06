@@ -1,10 +1,10 @@
 # Mesh
 
-Intel AI for Enterprise RAG namespaces join the Istio ambient mesh deployed by the platform layer. This doc covers how RAG services plug into the mesh, the current mTLS posture, and how to troubleshoot mesh issues.
+Intel® Chatbot Toolkit namespaces join the Istio ambient mesh deployed by the platform. This doc covers how the chatbot services plug into the mesh, the current mTLS posture, and how to troubleshoot mesh issues.
 
 ## Mesh Integration
 
-Istio ambient mesh is deployed by the **platform layer** (`roles/istio/` in the solutions repo). It provides zero-trust mTLS without sidecars via ztunnel (one proxy per node).
+Istio ambient mesh is deployed by the **platform** (`roles/istio/` in the Toolkit Manager repo). It provides zero-trust mTLS without sidecars via ztunnel (one proxy per node).
 
 RAG namespaces join the mesh by label. See `roles/app_pre_install/tasks/install.yaml` for the actual namespace creation and labeling logic.
 
@@ -126,7 +126,7 @@ istioctl zc log <ztunnel-pod-name> --level=info,access=debug
 
 ## Platform Istio Documentation
 
-For Istio installation, version, and cluster-wide configuration see the Enterprise AI Solutions Istio documentation:
+For Istio installation, version, and cluster-wide configuration see the Toolkit Manager Istio documentation:
 
 - [Namespace Security Labels](https://github.com/intel/enterprise-ai-solutions/blob/main/docs/reference/labels.md)
 - [Platform Architecture](https://github.com/intel/enterprise-ai-solutions/blob/main/docs/reference/architecture.md)

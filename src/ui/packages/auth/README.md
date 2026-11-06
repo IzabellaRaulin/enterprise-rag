@@ -1,6 +1,6 @@
 # @intel-enterprise-rag-ui/auth
 
-This package provides logic for handling authentication and session, along with a custom React hook for automatic token refresh. Both utilities are built as a wrapper around the `keycloak-js` package and are tailored for use in Intel® AI for Enterprise RAG UI applications.
+This package provides logic for handling authentication and session, along with a custom React hook for automatic token refresh. Both utilities are built as a wrapper around the `keycloak-js` package and are tailored for use in Intel® Chatbot Toolkit UI applications.
 
 ## Table of Contents
 

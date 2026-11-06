@@ -1,6 +1,6 @@
 # @intel-enterprise-rag-ui/input-validation
 
-This package provides utility functions for input validation in the Intel® AI for Enterprise RAG UI applications.
+This package provides utility functions for input validation in the Intel® Chatbot Toolkit UI applications.
 
 ## Table of Contents
 

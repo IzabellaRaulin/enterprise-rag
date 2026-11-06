@@ -1,5 +1,5 @@
 # LLM Guard Input Guardrail Microservice
-This microservice implements [LLM Guard](https://protectai.github.io/llm-guard/) (version: 0.3.16) Input Scanners as part of the pipeline. The goal is to enable Secure AI and privacy-related capabilities for Enterprise RAG. Input scanners scan the incoming prompt and context before they are passed to LLM and inform the user whether they are valid.
+This microservice implements [LLM Guard](https://protectai.github.io/llm-guard/) (version: 0.3.16) Input Scanners as part of the pipeline. The goal is to enable Secure AI and privacy-related capabilities for Intel® Chatbot Toolkit. Input scanners scan the incoming prompt and context before they are passed to LLM and inform the user whether they are valid.
 
 LLM Guard Input Guardrail Microservice enables several scanners provided by LLM Guard:
  - [Anonymize](#anonymize-scanner)

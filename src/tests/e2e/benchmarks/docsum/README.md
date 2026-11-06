@@ -1,6 +1,6 @@
 # DocSum Pipeline Benchmark
 
-End-to-end performance benchmark for the Intel® AI for Enterprise RAG Document Summarization pipeline. Measures latency, throughput, and scaling characteristics under continuous load.
+End-to-end performance benchmark for the Intel® Chatbot Toolkit Document Summarization pipeline. Measures latency, throughput, and scaling characteristics under continuous load.
 
 ## Scope
 
@@ -17,7 +17,7 @@ It measures:
 
 ## Prerequisites
 
-- Deployed Intel AI for Enterprise RAG cluster with DocSum pipeline active
+- Deployed Intel® Chatbot Toolkit cluster with DocSum pipeline active
 - Network access (HTTPS) to the RAG deployment FQDN and Keycloak (or custom `ERAG_DOMAIN_NAME`)
 - Python 3.11+ with packages: `pip install -r requirements.txt`
 - HuggingFace tokenizer cached locally (or `HF_TOKEN` for download)

@@ -69,9 +69,9 @@ There're 2 ways to run this microservice:
 
 > [!IMPORTANT]
 > The model server setups under `impl/model_server/` are for **local development and
-> testing only**. In an Intel AI for Enterprise RAG deployment, model servers are not
-> part of this repository: Intel AI for Enterprise Solutions deploys every model
-> through Enterprise Inference (Model Manager) **before** the RAG components start,
+> testing only**. In an Intel® Chatbot Toolkit deployment, model servers are not
+> part of this repository: Toolkit Manager deploys every model
+> through Intel® Inference Toolkit (Model Manager) **before** the RAG components start,
 > and this microservice only consumes the endpoint it is given. Use the harness here
 > when you need an endpoint to test the microservice standalone; do not use it as a
 > deployment reference.
@@ -85,7 +85,7 @@ Depending on the model server you want to use, follow the approppriate instructi
 
 Two model servers can be started locally:
 
-1. [**_OVMS_**](./impl/model_server/ovms/) - an open source model server built on top of the [OpenVINO™ toolkit](https://github.com/openvinotoolkit/openvino), which enables optimized inference across a wide range of hardware platforms. The harness image is built locally, it is not a published Intel AI for Enterprise RAG image.
+1. [**_OVMS_**](./impl/model_server/ovms/) - an open source model server built on top of the [OpenVINO™ toolkit](https://github.com/openvinotoolkit/openvino), which enables optimized inference across a wide range of hardware platforms. The harness image is built locally, it is not a published Intel® Chatbot Toolkit image.
 2. [**_VLLM_**](./impl/model_server/vllm/) - a high-performance inference engine that, while primarily used for text generation, can also serve embedding models with very high throughput and low latency.
 
 Refer to `README.md` of a particular library to get more information on starting a model server.

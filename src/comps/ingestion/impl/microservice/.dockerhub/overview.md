@@ -1,10 +1,10 @@
-# Intel® AI for Enterprise RAG Ingestion Service
+# Intel® Chatbot Toolkit Ingestion Service
 
-Part of the Intel® AI for Enterprise RAG ecosystem.
+Part of the Intel® Chatbot Toolkit ecosystem.
 
 ## Overview
 
-The Intel® AI for Enterprise RAG Ingestion service allows multiple services to ingest data into a vector database for the Enterprise RAG system.
+The Intel® Chatbot Toolkit Ingestion service allows multiple services to ingest data into a vector database for the Intel® Chatbot Toolkit system.
 
 ### Vector Store Support Matrix
 
@@ -17,13 +17,13 @@ Support for specific vector databases:
 
 ## 🔗 Related Components
 
-This service works with other Intel® AI for Enterprise RAG components:
+This service works with other Intel® Chatbot Toolkit components:
 - Embedding service for vector generation
 - Storage service for document persistence
 - Retriever service for querying processed documents
 
 ## License
 
-Intel® AI for Enterprise RAG is licensed under the Apache License, Version 2.0.
+Intel® Chatbot Toolkit is licensed under the Apache License, Version 2.0.
 
 Copyright © 2024–2026 Intel Corporation. All rights reserved.

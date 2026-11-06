@@ -1,6 +1,6 @@
-# Intel® AI for Enterprise RAG Text Extractor Microservice
+# Intel® Chatbot Toolkit Text Extractor Microservice
 
-Part of the Intel® AI for Enterprise RAG ecosystem.
+Part of the Intel® Chatbot Toolkit ecosystem.
 
 ## 🔍 Overview
 
@@ -26,7 +26,7 @@ The Text Extractor microservice is designed to extract text from data sent for p
 
 ## 🔗 Related Components
 
-This service integrates with other Intel® AI for Enterprise RAG components:
+This service integrates with other Intel® Chatbot Toolkit components:
 - Text Compression service for compressing loaded data
 - Text Splitter service for splitting the loaded data
 - Ingestion service for vector database integration
@@ -36,6 +36,6 @@ This service integrates with other Intel® AI for Enterprise RAG components:
 
 ## License
 
-Intel® AI for Enterprise RAG is licensed under the Apache License, Version 2.0.
+Intel® Chatbot Toolkit is licensed under the Apache License, Version 2.0.
 
 Copyright © 2024–2026 Intel Corporation. All rights reserved.

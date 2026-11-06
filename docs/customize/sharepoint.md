@@ -2,7 +2,7 @@
 
 [← Customize](../README.md#customize)
 
-Intel® AI for Enterprise RAG can integrate with Microsoft SharePoint Online to ingest documents directly from SharePoint sites into the knowledge base.
+Intel® Chatbot Toolkit can integrate with Microsoft SharePoint Online to ingest documents directly from SharePoint sites into the knowledge base.
 
 This is how you keep answers current without anyone re-uploading files: documents stay where the organization already publishes them, and scheduled sync brings changes in. Site filtering means each user can be limited to the sites they are entitled to.
 

@@ -1,5 +1,5 @@
 # LLM Guard Output Guardrail Microservice
-This microservice implements [LLM Guard](https://protectai.github.io/llm-guard/) (version: 0.3.16) Output Scanners as part of the pipeline. The goal is to enable Secure AI and privacy-related capabilities for Enterprise RAG. Output scanners scan LLM response and inform the user whether they are valid.
+This microservice implements [LLM Guard](https://protectai.github.io/llm-guard/) (version: 0.3.16) Output Scanners as part of the pipeline. The goal is to enable Secure AI and privacy-related capabilities for Intel® Chatbot Toolkit. Output scanners scan LLM response and inform the user whether they are valid.
 
 LLM Guard Output Guardrail Microservice enables all scanners provided by LLM Guard:
  - [BanSubstrings](#bansubstrings-scanner)

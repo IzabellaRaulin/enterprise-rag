@@ -1,10 +1,10 @@
-# Intel® AI for Enterprise RAG Output Guardrail Service
+# Intel® Chatbot Toolkit Output Guardrail Service
 
-Part of the Intel® AI for Enterprise RAG ecosystem.
+Part of the Intel® Chatbot Toolkit ecosystem.
 
 ## 🔍 Overview
 
-The Intel® AI for Enterprise RAG Output Guardrail service provides content filtering and privacy-related capabilities for LLM-generated responses in the Enterprise RAG system. This microservice ensures all output content adheres to content policies, preventing potentially harmful, inappropriate, or inaccurate responses from reaching end users.
+The Intel® Chatbot Toolkit Output Guardrail service provides content filtering and privacy-related capabilities for LLM-generated responses in the Intel® Chatbot Toolkit system. This microservice ensures all output content adheres to content policies, preventing potentially harmful, inappropriate, or inaccurate responses from reaching end users.
 
 This microservice implements [LLM Guard](https://protectai.github.io/llm-guard/) Output Scanners, including:
 - [BanSubstrings](https://protectai.github.io/llm-guard/output_scanners/ban_substrings/)
@@ -32,12 +32,12 @@ This microservice implements [LLM Guard](https://protectai.github.io/llm-guard/)
 
 ## 🔗 Related Components
 
-This service integrates with other Intel® AI for Enterprise RAG components:
-- Pairs with the Intel® AI for Enterprise RAG Input Guardrail for complete input/output protection
-- Guards Intel® AI for Enterprise RAG LLM service against providing inappropriate responses
+This service integrates with other Intel® Chatbot Toolkit components:
+- Pairs with the Intel® Chatbot Toolkit Input Guardrail for complete input/output protection
+- Guards Intel® Chatbot Toolkit LLM service against providing inappropriate responses
 
 ## License
 
-Intel® AI for Enterprise RAG is licensed under the Apache License, Version 2.0.
+Intel® Chatbot Toolkit is licensed under the Apache License, Version 2.0.
 
 Copyright © 2024–2026 Intel Corporation. All rights reserved.

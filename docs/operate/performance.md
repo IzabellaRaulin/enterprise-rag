@@ -1,6 +1,6 @@
 # Performance
 
-Recommendations for optimizing Intel AI for Enterprise RAG deployment performance.
+Recommendations for optimizing Intel® Chatbot Toolkit deployment performance.
 
 ## LLM Model Selection
 
@@ -16,11 +16,11 @@ inference_models:
     role: reranking
 ```
 
-Redeploy the model with `./model-manager deploy <name> --wait` (from the Enterprise AI Solutions repo root).
+Redeploy the model with `./model-manager deploy <name> --wait` (from the Toolkit Manager repo root).
 
 ## Vector Database Selection
 
-Intel AI for Enterprise RAG supports the following vector database backends:
+Intel® Chatbot Toolkit supports the following vector database backends:
 
 | Backend | Use case | Scale |
 |---------|----------|-------|
@@ -42,7 +42,7 @@ Selecting `mssql` requires accepting the Microsoft SQL Server EULA during deploy
 
 ## Redis Vector Database Performance
 
-Starting with Redis 8.2, use `SVS-VAMANA` as the recommended vector index backend for Intel AI for Enterprise RAG deployments, especially for medium/large datasets. It is optimized for better memory efficiency and query throughput while maintaining high recall.
+Starting with Redis 8.2, use `SVS-VAMANA` as the recommended vector index backend for Intel® Chatbot Toolkit deployments, especially for medium/large datasets. It is optimized for better memory efficiency and query throughput while maintaining high recall.
 
 These are Helm values, not Ansible variables, so set them in `deployment/components/edp/values.yaml` under `ingestion.config`:
 
@@ -143,7 +143,7 @@ In case of `redis-cluster`, all above settings are applied for each cluster node
 
 ## Model Server Scaling
 
-Model servers (LLM, embedding, reranking) are deployed by the **inference layer** via `model-manager`, not in the RAG pipeline namespace. Their sizing is set in the model catalog (`env/<name>/models-rag.yaml` or `models.yaml`), not in pipeline resource files.
+Model servers (LLM, embedding, reranking) are deployed by **Intel® Inference Toolkit** via `model-manager`, not in the chatbot namespace. Their sizing is set in the model catalog (`env/<name>/models-rag.yaml` or `models.yaml`), not in pipeline resource files.
 
 **Automatic Configuration** (default): With `inference_auto_size: true`, the installer probes the topology of every node (physical cores, NUMA nodes, memory) and overrides the catalog `cpu`, `memory`, and `replicas` values with NUMA-aware ones. Manual configuration is only required when `inference_auto_size: false` is set in `env/<name>/config.erag.yaml`.
 
@@ -213,9 +213,9 @@ Adjust microservice parameters (e.g., `top_k` for reranker, `k` for retriever, `
    - Navigate to the **Admin Panel** section in the UI and open the **Control Plane** tab.
    - From the pipeline graph, select a service (e.g., LLM, reranker, retriever) to view and edit its parameters in the right-hand pane.
    - For detailed, step-by-step instructions with screenshots, see the **Control Plane** section of the user guide for your app:
-     - [AudioQnA User Guide](../Intel_AI_for_Enterprise_RAG_AudioQnA_User_Guide.pdf)
-     - [ChatQnA User Guide](../Intel_AI_for_Enterprise_RAG_ChatQnA_User_Guide.pdf)
-     - [DocSum User Guide](../Intel_AI_for_Enterprise_RAG_DocSum_User_Guide.pdf)
+     - [AudioQnA User Guide](../Intel_Chatbot_Toolkit_AudioQnA_User_Guide.pdf)
+     - [ChatQnA User Guide](../Intel_Chatbot_Toolkit_ChatQnA_User_Guide.pdf)
+     - [DocSum User Guide](../Intel_Chatbot_Toolkit_DocSum_User_Guide.pdf)
 
 2. **Using Configuration Scripts:**
    - See [benchmark helpers](../../src/tests/e2e/benchmarks/chatqna/README.md) for test and configuration scripts.
@@ -230,13 +230,60 @@ Enable HPA to allow the system to dynamically scale required resources in the cl
 hpa_enabled: true
 ```
 
-See [HPA component](../../deployment/components/hpa/README.md).
+The HPAs scale on Prometheus metrics, so telemetry must be installed. The `app_hpa` component adds this toolkit's custom-metric rules (`deployment/components/hpa/prometheus_adapter.yaml`) to the platform's `prometheus-adapter`, which serves them on the custom metrics API:
+
+```bash
+kubectl get --raw /apis/custom.metrics.k8s.io/v1beta1 | jq
+```
+
+| HPA | Scales | Metric |
+|-----|--------|--------|
+| `in-guard` | `input-scan-svc-deployment` | `http_request_duration_seconds_avg_input_scan` |
+| `out-guard` | `output-scan-svc-deployment` | `http_request_duration_seconds_avg_output_scan` |
+| EDP text extractor | text extractor deployment | `edp_backend_files_to_upload`, `edp_backend_files_active` |
+| Pipeline router (off by default, `router.hpa.enabled` in the GMC chart) | router deployment | CPU utilization, target 80% |
+
+Each HPA has a `metrics` section (the metric and the target above which it scales up) and a `behavior` section (how fast it scales up and down). For example, the text extractor:
+
+```yaml
+metrics:
+- type: Object
+  object:
+    metric:
+      name: edp_backend_files_to_upload
+    describedObject:
+      apiVersion: v1
+      kind: Service
+      name: edp-backend
+    target:
+      type: Value
+      value: 2      # scale up when the measured value is above this
+behavior:
+  scaleDown:
+    stabilizationWindowSeconds: 60
+    policies:
+    - type: Percent
+      value: 25
+      periodSeconds: 15
+    - type: Pods
+      value: 1
+      periodSeconds: 15
+  scaleUp:
+    selectPolicy: Max
+    stabilizationWindowSeconds: 0
+    policies:
+    - type: Pods
+      value: 1
+      periodSeconds: 15
+```
+
+Watch all HPAs: `kubectl get hpa -A -w`. The **HPA** dashboard shows replica counts and scaling metrics ([Telemetry](telemetry.md)). How HPA works: [Kubernetes autoscaling](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/).
 
 ## CPU Pinning (NRI Balloons)
 
-CPU pinning for inference pods (vLLM, embedding, reranking) is crucial for performance and is controlled by the **platform layer**, not this application layer.
+CPU pinning for inference pods (vLLM, embedding, reranking) is crucial for performance and is controlled by the **platform**, not this toolkit.
 
-Set `kubernetes_cpu_policy` in `env/<name>/global_config.yaml` (platform config, not RAG config):
+Set `kubernetes_cpu_policy` in `env/<name>/global_config.yaml` (platform config, not chatbot config):
 
 ```yaml
 kubernetes_cpu_policy: nri-balloons  # Options: nri-balloons | kubelet-static | best-effort
@@ -244,7 +291,7 @@ kubernetes_cpu_policy: nri-balloons  # Options: nri-balloons | kubelet-static | 
 
 `nri-balloons` (default) provides NUMA-aware pinning via the NRI plugin. The installer generates per-node `BalloonsPolicy` CRs based on the topology.
 
-For configuration details see [NRI CPU Balloons](https://github.com/intel/enterprise-ai-solutions/blob/main/docs/customize/nri_cpu_balloons.md) in Enterprise AI Solutions docs.
+For configuration details see [NRI CPU Balloons](https://github.com/intel/enterprise-ai-solutions/blob/main/docs/customize/nri_cpu_balloons.md) in Toolkit Manager docs.
 
 ## Monitoring and Validation
 

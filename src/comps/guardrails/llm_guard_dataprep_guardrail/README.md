@@ -1,5 +1,5 @@
 # LLM Guard Dataprep Guardrail Microservice
-This microservice implements [LLM Guard](https://protectai.github.io/llm-guard/) (version: 0.3.16) Dataprep Scanners as part of the pipeline. The goal is to enable Secure AI and privacy-related capabilities for Enterprise RAG. Dataprep scanners scan the incoming documents for dataprep pipeline before they are passed to vector database and inform the user whether they are valid.
+This microservice implements [LLM Guard](https://protectai.github.io/llm-guard/) (version: 0.3.16) Dataprep Scanners as part of the pipeline. The goal is to enable Secure AI and privacy-related capabilities for Intel® Chatbot Toolkit. Dataprep scanners scan the incoming documents for dataprep pipeline before they are passed to vector database and inform the user whether they are valid.
 
 LLM Guard Dataprep Guardrail Microservice enables the following scanners provided by LLM Guard:
  - [BanSubstrings](#bansubstrings-scanner)

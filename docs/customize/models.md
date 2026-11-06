@@ -2,7 +2,7 @@
 
 [← Customize](../README.md#customize)
 
-Intel® AI for Enterprise RAG supports multiple models for LLM inference, text embedding, and reranking, including multilingual models for non-English deployments.
+Intel® Chatbot Toolkit supports multiple models for LLM inference, text embedding, and reranking, including multilingual models for non-English deployments.
 
 ## How models are declared
 
@@ -58,7 +58,7 @@ Changing the embedding model changes the vector dimensions and invalidates the e
 
 LLM replica count and CPU allocation are calculated to fit the LLM, embedding, and reranking models together inside one NUMA node. Changing any model's size may affect the replica count of all three.
 
-Only models labeled `app.kubernetes.io/part-of=erag` are managed by the installer. Models deployed by hand or by the inference layer are left alone.
+Only models labeled `app.kubernetes.io/part-of=erag` are managed by the installer. Models deployed by hand or by Intel® Inference Toolkit are left alone.
 
 ## Model catalog reference
 
@@ -132,7 +132,7 @@ Each entry includes CPU/memory sizing, engine, category, and optional per-model 
 
 ## Accuracy tuning
 
-Intel AI for Enterprise RAG includes multiple techniques to improve retrieval and answer accuracy.
+Intel® Chatbot Toolkit includes multiple techniques to improve retrieval and answer accuracy.
 
 ### Metadata filtering
 
@@ -174,7 +174,7 @@ See [`src/comps/vectorstores/README.md#search`](../../src/comps/vectorstores/REA
 
 ## Accuracy evaluator
 
-Intel AI for Enterprise RAG includes a comprehensive accuracy evaluator for automated end-to-end testing using the MultiHop dataset (2,556 queries). It computes 10+ metrics including:
+Intel® Chatbot Toolkit includes a comprehensive accuracy evaluator for automated end-to-end testing using the MultiHop dataset (2,556 queries). It computes 10+ metrics including:
 
 - Retrieval: Hits@K, MRR, MAP
 - Generation: BLEU, ROUGE-L

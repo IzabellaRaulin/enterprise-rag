@@ -1,10 +1,10 @@
-# Intel® AI for Enterprise RAG TTS Microservice
+# Intel® Chatbot Toolkit TTS Microservice
 
-Part of the Intel® AI for Enterprise RAG ecosystem.
+Part of the Intel® Chatbot Toolkit ecosystem.
 
 ## 🔍 Overview
 
-The Intel® AI for Enterprise RAG TTS (Text-to-Speech) microservice converts text to audio files using compatible ASR models. It interfaces with ASR model servers to process text and generate audio.
+The Intel® Chatbot Toolkit TTS (Text-to-Speech) microservice converts text to audio files using compatible ASR models. It interfaces with ASR model servers to process text and generate audio.
 
 ### Features
 
@@ -15,11 +15,11 @@ The Intel® AI for Enterprise RAG TTS (Text-to-Speech) microservice converts tex
 
 ## 🔗 Related Components
 
-This service integrates with other Intel® AI for Enterprise RAG components:
+This service integrates with other Intel® Chatbot Toolkit components:
 - It triggers audio speech requests with a custom model server running on Intel® Xeon® Processors
 
 ## License
 
-Intel® AI for Enterprise RAG is licensed under the Apache License, Version 2.0.
+Intel® Chatbot Toolkit is licensed under the Apache License, Version 2.0.
 
 Copyright © 2026 Intel Corporation. All rights reserved.

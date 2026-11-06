@@ -1,4 +1,4 @@
-# Intel® AI for Enterprise RAG DocSum UI
+# Intel® Chatbot Toolkit DocSum UI
 
 ## Table of Contents
 
@@ -36,7 +36,7 @@ pnpm --version
 
 ### Build all packages within the workspace
 
-Go to the root of **Intel® AI for Enterprise RAG UI** pnpm workspace (`src/ui`) and run the following commands.
+Go to the root of **Intel® Chatbot Toolkit UI** pnpm workspace (`src/ui`) and run the following commands.
 
 ```bash
 pnpm install && pnpm -r build
@@ -112,7 +112,7 @@ Create and run a new container from an image:
 docker run -dp 127.0.0.1:4173:4173 rag-ui
 ```
 
-Now you should be able to access **Intel® AI for Enterprise RAG DocSum UI** from your browser via `127.0.0.1:4173`
+Now you should be able to access **Intel® Chatbot Toolkit DocSum UI** from your browser via `127.0.0.1:4173`
 
 ### Image configuration
 

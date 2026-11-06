@@ -1,19 +1,19 @@
-# Intel® AI for Enterprise RAG Chat History Microservice
+# Intel® Chatbot Toolkit Chat History Microservice
 
-Part of the Intel® AI for Enterprise RAG ecosystem.
+Part of the Intel® Chatbot Toolkit ecosystem.
 
 ## 🔍 Overview
 
-The Intel® AI for Enterprise RAG Chat History Microservice provides persistent storage and retrieval of chat conversations using MongoDB as the backend database. This microservice enables applications to maintain conversation history, allowing users to access previous interactions and continue conversations seamlessly. The service supports creating, retrieving, updating, and deleting chat conversations with proper user authentication and authorization.
+The Intel® Chatbot Toolkit Chat History Microservice provides persistent storage and retrieval of chat conversations using MongoDB as the backend database. This microservice enables applications to maintain conversation history, allowing users to access previous interactions and continue conversations seamlessly. The service supports creating, retrieving, updating, and deleting chat conversations with proper user authentication and authorization.
 
 ## 🔗 Related Components
 
-This service integrates with other Intel® AI for Enterprise RAG components:
+This service integrates with other Intel® Chatbot Toolkit components:
 - UI Service to manage chat history
 - Prompt Template microservice to retrieve chat history to integrate into the prompt
 
 ## License
 
-Intel® AI for Enterprise RAG is licensed under the Apache License, Version 2.0.
+Intel® Chatbot Toolkit is licensed under the Apache License, Version 2.0.
 
 Copyright © 2024–2026 Intel Corporation. All rights reserved.

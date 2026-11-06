@@ -1,6 +1,6 @@
 # MCP Gateway Microservice
 
-The MCP (Model Context Protocol) gateway exposes Intel® AI for Enterprise RAG capabilities as tools that AI agents can discover and call over a persistent SSE connection. It implements the MCP SSE transport and acts as the sole authentication boundary for agent traffic.
+The MCP (Model Context Protocol) gateway exposes Intel® Chatbot Toolkit capabilities as tools that AI agents can discover and call over a persistent SSE connection. It implements the MCP SSE transport and acts as the sole authentication boundary for agent traffic.
 
 ## Table of Contents
 

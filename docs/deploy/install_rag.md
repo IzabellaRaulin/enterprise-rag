@@ -1,4 +1,4 @@
-# Deploy the RAG Layer
+# Deploy Intel® Chatbot Toolkit
 
 [← Docs Index](../README.md)
 
@@ -10,12 +10,12 @@ One command installs: model servers, vector database, NATS, Enhanced Data Prepar
 
 ## Prerequisites
 
-Platform (infrastructure + inference) must be installed first: [Platform Quickstart](https://github.com/intel/enterprise-ai-solutions/blob/main/docs/quickstart/quickstart.md). Hardware: [Prerequisites](../quickstart/prerequisites.md).
+The platform and Intel® Inference Toolkit must be installed first: [Platform Quickstart](https://github.com/intel/enterprise-ai-solutions/blob/main/docs/quickstart/quickstart.md). Hardware: [Prerequisites](../quickstart/prerequisites.md).
 
 ## Deployment workflow
 
 > [!IMPORTANT]
-> Run every command from the **Enterprise AI Solutions** repo root, not from this repository. `init erag` clones this repository into `ext/enterprise.ai-erag` at a pinned revision.
+> Run every command from the **Toolkit Manager** repo root, not from this repository. `init erag` clones this repository into `ext/enterprise.ai-erag` at a pinned revision.
 
 ### Step 1 - Initialize
 
@@ -112,7 +112,7 @@ Edit `env/<name>/config.erag.yaml` and re-run `./es_auto_installer.sh install er
 
 ## Data ingestion, UI and telemetry
 
-Use **Data Ingestion** tab in **Admin Panel** (admin only; ChatQnA and AudioQnA only). User guides: [AudioQnA](../Intel_AI_for_Enterprise_RAG_AudioQnA_User_Guide.pdf), [ChatQnA](../Intel_AI_for_Enterprise_RAG_ChatQnA_User_Guide.pdf), [DocSum](../Intel_AI_for_Enterprise_RAG_DocSum_User_Guide.pdf). Telemetry: [Telemetry Guide](../operate/telemetry.md).
+Use **Data Ingestion** tab in **Admin Panel** (admin only; ChatQnA and AudioQnA only). User guides: [AudioQnA](../Intel_Chatbot_Toolkit_AudioQnA_User_Guide.pdf), [ChatQnA](../Intel_Chatbot_Toolkit_ChatQnA_User_Guide.pdf), [DocSum](../Intel_Chatbot_Toolkit_DocSum_User_Guide.pdf). Telemetry: [Telemetry Guide](../operate/telemetry.md).
 
 ## Single sign-on and SharePoint integration
 
@@ -137,7 +137,7 @@ All empty = disabled. Partial config rejected. Apply: `./es_auto_installer.sh in
 Removes components in reverse order; models undeployed automatically.
 
 > [!WARNING]
-> Teardown is environment-scoped. Tear down with the same `--env` you installed with: running it against another environment silently does nothing to the one you meant. `teardown erag` keeps the cluster, platform, and inference layers; `teardown infrastructure` removes the cluster and everything on it.
+> Teardown is environment-scoped. Tear down with the same `--env` you installed with: running it against another environment silently does nothing to the one you meant. `teardown erag` keeps the cluster, the platform, and Intel® Inference Toolkit; `teardown infrastructure` removes the cluster and everything on it.
 
 ## Troubleshooting
 

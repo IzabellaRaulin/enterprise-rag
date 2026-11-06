@@ -76,7 +76,7 @@ bucket_arns() { local path=$1; shift; printf '%s\n' "$@" | jq -R -s -c --arg pat
 ### Using More Buckets
 `READ_WRITE_BUCKETS` and `READ_ONLY_BUCKETS` are space-separated lists of bucket names, and EDP processes documents from every bucket it can access. To create more buckets, add their names to the lists before running the steps below, keeping `$SUFFIX` in each name:
 
-- **Read-write buckets:** documents can be uploaded and deleted through the Intel® AI for Enterprise RAG UI.
+- **Read-write buckets:** documents can be uploaded and deleted through the Intel® Chatbot Toolkit UI.
 - **Read-only buckets:** EDP only ingests documents that are placed in the bucket by other means, for example with `aws s3 cp`. Uploads and deletions through the UI are rejected.
 
 For example:
@@ -196,7 +196,7 @@ aws iam create-access-key --user-name "$USER_NAME" \
 > [!IMPORTANT]
 > The secret key is shown only once. Store it securely; if it is lost, delete the access key and create a new one.
 
-### Passing the Values to Intel® AI for Enterprise RAG Deployment
+### Passing the Values to Intel® Chatbot Toolkit Deployment
 To use them in [deployment](../../deployment/README.md), print the queue URL and region:
 
 ```bash

@@ -1,17 +1,17 @@
-# Intel® AI for Enterprise RAG Documentation
+# Intel® Chatbot Toolkit Documentation
 
-The technical documentation for the RAG application layer. Start with **Meet** for the
+The technical documentation for Intel® Chatbot Toolkit. Start with **Meet** for the
 what and why, **Get started** to stand it up, **Deploy** to choose a pipeline and go
 further, then customize, operate, and look things up as needed.
 
 > [!IMPORTANT]
-> This layer is a component of [Intel® AI for Enterprise Solutions](https://github.com/intel/enterprise-ai-solutions). Clone **that** repository, run every command from its root, and `init erag` will fetch this one into `ext/` for you. See [Meet](meet/meet.md#where-the-pieces-live).
+> [Toolkit Manager](https://github.com/intel/enterprise-ai-solutions) installs and operates this toolkit. Clone **that** repository, run every command from its root, and `init erag` will fetch this one into `ext/` for you. See [Meet](meet/meet.md#where-the-pieces-live).
 
 ## Meet
 
 | Guide | What it covers |
 |-------|----------------|
-| [Meet Intel® AI for Enterprise RAG](meet/meet.md) | What it is, why it exists, when to choose it, and which repository to start from |
+| [Meet Intel® Chatbot Toolkit](meet/meet.md) | What it is, why it exists, when to choose it, and which repository to start from |
 | [FAQ](faq.md) | Short answers to the questions that come up most |
 | [Glossary](glossary.md) | Every term used in these guides, defined once |
 
@@ -26,14 +26,13 @@ Check your machine meets the bar, then deploy the stack and ingest a document.
 
 ## Deploy
 
-Install the layer, pick a pipeline, and take it onto a partner platform.
+Install the toolkit, pick a pipeline, and take it onto a partner platform.
 
 | Guide | What it covers |
 |-------|----------------|
-| [Deploy the RAG Layer](deploy/install_rag.md) | Step-by-step install, endpoints, credentials, and teardown |
+| [Deploy Intel® Chatbot Toolkit](deploy/install_rag.md) | Step-by-step install, endpoints, credentials, and teardown |
 | [Pipelines](deploy/pipelines.md) | The five flavours, ChatQnA variants, and how to switch between them |
 | [Deploy on VMware](deploy/vmware.md) | Running the chatbot on VMware vSphere |
-| [Deployment Layer Reference](../deployment/README.md) | What the `deployment/` plug-in contributes and how the installer consumes it |
 
 ## Customize
 
@@ -63,7 +62,7 @@ Watch it, tune it, and fix it once it is running.
 
 ## Reference
 
-How the layer is built and what it exposes.
+How the toolkit is built and what it exposes.
 
 | Guide | What it covers |
 |-------|----------------|
@@ -77,6 +76,6 @@ Feature and usage walkthroughs for each app, with screenshots.
 
 | Guide | App |
 |-------|-----|
-| [AudioQnA User Guide](Intel_AI_for_Enterprise_RAG_AudioQnA_User_Guide.pdf) | Voice question answering |
-| [ChatQnA User Guide](Intel_AI_for_Enterprise_RAG_ChatQnA_User_Guide.pdf) | Conversational retrieval |
-| [DocSum User Guide](Intel_AI_for_Enterprise_RAG_DocSum_User_Guide.pdf) | Document summarization |
+| [AudioQnA User Guide](Intel_Chatbot_Toolkit_AudioQnA_User_Guide.pdf) | Voice question answering |
+| [ChatQnA User Guide](Intel_Chatbot_Toolkit_ChatQnA_User_Guide.pdf) | Conversational retrieval |
+| [DocSum User Guide](Intel_Chatbot_Toolkit_DocSum_User_Guide.pdf) | Document summarization |

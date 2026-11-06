@@ -1,6 +1,6 @@
 # Docker Images
 
-Published Intel AI for Enterprise RAG Docker images, organized by component type.
+Published Intel® Chatbot Toolkit Docker images, organized by component type.
 
 Default registry: `docker.io/intel`
 Default tag: matches the solution version (`3.0.0`)

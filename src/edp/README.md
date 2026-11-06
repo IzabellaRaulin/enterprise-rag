@@ -1,6 +1,6 @@
-# Enterprise RAG Enhanced DataPrep Service
+# Intel® Chatbot Toolkit Enhanced DataPrep Service
 
-The Intel AI for Enterprise RAG Enhanced Data Preparation (EDP) service provides advanced document processing capabilities for the Enterprise RAG system, ensuring automated data flow from storage to retriever-ready format. The service supports multiple storage backends for managing and processing documents: `SeaweedFS`, `AWS S3`, and `S3-compatible` endpoints.
+The Intel® Chatbot Toolkit Enhanced Data Preparation (EDP) service provides advanced document processing capabilities for the Intel® Chatbot Toolkit system, ensuring automated data flow from storage to retriever-ready format. The service supports multiple storage backends for managing and processing documents: `SeaweedFS`, `AWS S3`, and `S3-compatible` endpoints.
 
 ## Table of Contents
 
@@ -30,7 +30,7 @@ The Intel AI for Enterprise RAG Enhanced Data Preparation (EDP) service provides
 
 - Python >=3.11 is required to run EDP.
 - A stand alone `redis` server for task management is required.
-- A stand alone vector database deployed is required. List of supported databases can be found in [deployment/components/vector_databases/README.md](../../deployment/components/vector_databases/README.md)
+- A stand alone vector database deployed is required. List of supported databases can be found in [Configuration Reference › Vector database](../../docs/customize/configuration.md#vector-database)
 - A stand alone `postgresql` server for storing file and link entries is required.
 - A S3 compatible storage (one of the following)
     - A stand alone `SeaweedFS` server for storing files. This is included and optional.
@@ -46,7 +46,7 @@ The Intel AI for Enterprise RAG Enhanced Data Preparation (EDP) service provides
 
 ## Configuration
 
-Similar to other Enterprise RAG components, EDP has its own section under `env/<name>/config.erag.yaml`. All possible configuration options are listed in [deployment/components/edp/values.yaml](../../deployment/components/edp/values.yaml).
+Similar to other Intel® Chatbot Toolkit components, EDP has its own section under `env/<name>/config.erag.yaml`. All possible configuration options are listed in [deployment/components/edp/values.yaml](../../deployment/components/edp/values.yaml).
 
 ### Storage endpoints
 Use the config.erag.yaml file to define the storage backend. Set the desired `storageType` under the edp section in your env config. Then, configure the appropriate sub-section based on the selected type.
@@ -105,7 +105,7 @@ Optionally, the environment variables (using the same names as in the legacy bas
 > [!NOTE]
 > If your S3-compatible backend does not support bucket event notifications, you must enable scheduled or manual synchronization. See the [Storage Synchronization section](#storage-synchronization) for instructions.
 
-Then deploy the application by following the instructions in [deployment/README.md](../../deployment/README.md). Deploy from the core installer root:
+Then deploy the application by following the instructions in [Deploy Intel® Chatbot Toolkit](../../docs/deploy/install_rag.md). Deploy from the core installer root:
 ```bash
 ./es_auto_installer.sh install erag --env <name>
 ```
@@ -117,7 +117,7 @@ curl -X PUT "https://localhost:9191/default/test.txt" --upload-file test.txt -H 
 ```
 
 ## Storage Synchronization
-If the configured S3-compatible storage does not support bucket notifications, files uploaded to the storage will not be automatically registered in the EDP database, and they won't be visible in the Intel AI for Enterprise RAG UI.
+If the configured S3-compatible storage does not support bucket notifications, files uploaded to the storage will not be automatically registered in the EDP database, and they won't be visible in the Intel® Chatbot Toolkit UI.
 
 To address this limitation, Enterprise DataPrep provides a pull-based synchronization mechanism. When enabled, it periodically scans the configured storage and updates the internal database accordingly.
 
@@ -363,7 +363,7 @@ And proceed to the following url `http://localhost:1234/docs`
 If you are unable to use bucket notifications through the `seaweedfs-event` URL or use `aws-sqs`, you will not receive notifications of file changes from your storage. To mitigate this, you have the option of manual or scheduled sync. Manual sync can be performed by sending a `POST /api/v1/edp/files/sync` request, which queries the storage buckets and compares them to the data in the EDP database. You can also perform a differential query without synchronization tasks by sending a `GET /api/v1/edp/files/sync` request. This will return a JSON array containing status of all files - either to be added, deleted, updated or skipped. Additionally, you can configure a scheduled sync job to perform the sync task at regular intervals. To set this up, configure the `celery.config.scheduledSync` options in the Helm chart ([deployment/components/edp/values.yaml](../../deployment/components/edp/values.yaml)) by enabling it and configuring the synchronization period. See the [Storage Synchronization section](#storage-synchronization) for instructions.
 
 ### File upload certificate error
-If you deployed Intel AI for Enterprise RAG with self-signed certificates, you might also need to accept the external storage certificate. Web browsers require acceptance of certificates for each domain they encounter, even if these are self-signed wildcard certificates. Therefore, you must accept certificates for both your Web GUI and the S3 endpoint. For instance, if your GUI is running under myrag.example.com and the storage is configured at s3.myrag.example.com, you need to visit both domains directly and accept their self-signed certificates. Alternatively, you can upload the self-signed certificates to your browser's certificate store.
+If you deployed Intel® Chatbot Toolkit with self-signed certificates, you might also need to accept the external storage certificate. Web browsers require acceptance of certificates for each domain they encounter, even if these are self-signed wildcard certificates. Therefore, you must accept certificates for both your Web GUI and the S3 endpoint. For instance, if your GUI is running under myrag.example.com and the storage is configured at s3.myrag.example.com, you need to visit both domains directly and accept their self-signed certificates. Alternatively, you can upload the self-signed certificates to your browser's certificate store.
 
 ### Protocol mismatch
 If you encounter a protocol mismatch error, it may be because edpExternalUrl has different scheme than other services in the solution. For example, if your deployment is at https://myrag.example.com and you set edpExternalUrl to http://s3.example.com, this will generate a presigned URL with an HTTP scheme, resulting in a protocol mismatch error on a https secured Web UI.

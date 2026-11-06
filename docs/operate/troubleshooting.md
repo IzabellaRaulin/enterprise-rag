@@ -1,12 +1,12 @@
 # Troubleshooting
 
-Common symptoms, causes, and fixes for Intel AI for Enterprise RAG deployments.
+Common symptoms, causes, and fixes for Intel® Chatbot Toolkit deployments.
 
 ## Deployment Issues
 
 | Symptom | Likely cause / fix |
 |---------|--------------------|
-| `install erag` fails with "inference layer not found" | The inference layer must be installed first. Run `./es_auto_installer.sh install inference --env <name>` before `install erag`. |
+| `install erag` fails with "inference layer not found" | Intel® Inference Toolkit must be installed first. Run `./es_auto_installer.sh install inference --env <name>` before `install erag`. |
 | Namespace stuck in `Terminating` during teardown | Finalizers or resources not cleaned up. Force-delete: `kubectl delete ns <namespace> --grace-period=0 --force`. |
 | Helm install fails with "release already exists" | Previous install failed mid-way. Uninstall: `helm uninstall <release> -n <namespace>`, then retry. |
 | Models not deployed after `install erag` | Models don't auto-deploy unless both `inference_models_enabled: true` AND the model has `autodeploy: true` in the catalog. Deploy manually: `./model-manager deploy <name> --wait`. |
@@ -58,7 +58,7 @@ Common symptoms, causes, and fixes for Intel AI for Enterprise RAG deployments.
 | Symptom | Likely cause / fix |
 |---------|--------------------|
 | Redis cluster pods crash-looping | Insufficient memory. Increase resource limits in `config.erag.yaml` under `vector_databases_stores.redis-cluster.resources`. |
-| MSSQL pod fails to start | EULA not accepted. Set `vector_databases_mssql_accept_eula: true` in `config.erag.yaml`. |
+| MSSQL pod fails to start | EULA not accepted. Re-run `install erag` and answer `Y`, or set `MSSQL_ACCEPT_EULA=Y` in the installer's environment. See [Configuration › Microsoft SQL Server 2025](../customize/configuration.md#microsoft-sql-server-2025). |
 | Queries return no results after algorithm change | Old index still exists. Re-upload all files to trigger re-indexing with the new algorithm. Verify only one index exists: `kubectl exec -it <redis-pod> -c redis -- redis-cli FT._LIST`. |
 
 ## Istio Mesh Issues
@@ -87,7 +87,7 @@ This collects pod logs, resource descriptions, config files (redacted), and Helm
 # Status of all installed components
 ./es_auto_installer.sh status --env <name>
 
-# Validate erag layer health
+# Validate Intel® Chatbot Toolkit
 ./es_auto_installer.sh validate erag --env <name>
 
 # Test ChatQnA pipeline
@@ -121,4 +121,4 @@ kubectl exec -it <redis-cluster-pod> -c redis -- redis-cli -a <password> FT._LIS
 kubectl exec -it <redis-cluster-pod> -c redis -- redis-cli -a <password> FT.INFO <index>
 ```
 
-For platform-level problems (cluster, storage, certificates, DNS) see the [solutions documentation](https://github.com/intel/enterprise-ai-solutions/blob/main/docs/README.md).
+For platform-level problems (cluster, storage, certificates, DNS) see the [Toolkit Manager documentation](https://github.com/intel/enterprise-ai-solutions/blob/main/docs/README.md).

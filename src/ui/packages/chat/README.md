@@ -1,6 +1,6 @@
 # @intel-enterprise-rag-ui/chat
 
-This package provides reusable UI components, layouts and utilites for the Intel® AI for Enterprise RAG UI applications with chat.
+This package provides reusable UI components, layouts and utilites for the Intel® Chatbot Toolkit UI applications with chat.
 
 ## Table of Contents
 

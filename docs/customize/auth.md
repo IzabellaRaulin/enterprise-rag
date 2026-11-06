@@ -2,7 +2,7 @@
 
 [← Customize](../README.md#customize)
 
-Intel® AI for Enterprise RAG supports multi-factor authentication and Microsoft Active Directory federation through Keycloak.
+Intel® Chatbot Toolkit supports multi-factor authentication and Microsoft Active Directory federation through Keycloak.
 
 Configure this when users should sign in with their existing corporate accounts rather than the local accounts created at install time. It changes who can reach the UI and the API, so it is usually the step that turns an evaluation deployment into something you can hand to a wider group.
 
@@ -12,7 +12,7 @@ MFA using Google Authenticator can be enabled on an already-running deployment t
 
 ### Prerequisites
 
-- Intel AI for Enterprise RAG deployed with Keycloak enabled
+- Intel® Chatbot Toolkit deployed with Keycloak enabled
 - Keycloak admin credentials (available in `env/<name>/logs/rag/default_credentials.txt` after install)
 
 ### Enable MFA
@@ -72,4 +72,4 @@ Users will be prompted to set up an OTP device the next time they log in. Follow
 | Topic | Link |
 |-------|------|
 | Single Sign-On with Microsoft Entra ID | [sharepoint.md](sharepoint.md) |
-| Enterprise AI Solutions configuration | [`../../docs/customize/configuration.md`](https://github.com/intel/enterprise-ai-solutions/blob/main/docs/customize/configuration.md) |
+| Toolkit Manager configuration | [`../../docs/customize/configuration.md`](https://github.com/intel/enterprise-ai-solutions/blob/main/docs/customize/configuration.md) |

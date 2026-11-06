@@ -1,6 +1,6 @@
-# Intel® AI for Enterprise RAG Text Splitter Microservice
+# Intel® Chatbot Toolkit Text Splitter Microservice
 
-Part of the Intel® AI for Enterprise RAG ecosystem.
+Part of the Intel® Chatbot Toolkit ecosystem.
 
 ## 🔍 Overview
 
@@ -8,7 +8,7 @@ The Text Splitter microservice is designed to split received text into chunks. R
 
 ## 🔗 Related Components
 
-This service integrates with other Intel® AI for Enterprise RAG components:
+This service integrates with other Intel® Chatbot Toolkit components:
 - Ingestion service for vector database integration
 - Embedding service for generating vector representations of documents for semantic search
 - EDP Enhanced Dataprep
@@ -16,6 +16,6 @@ This service integrates with other Intel® AI for Enterprise RAG components:
 
 ## License
 
-Intel® AI for Enterprise RAG is licensed under the Apache License, Version 2.0.
+Intel® Chatbot Toolkit is licensed under the Apache License, Version 2.0.
 
 Copyright © 2024–2026 Intel Corporation. All rights reserved.

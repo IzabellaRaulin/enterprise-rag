@@ -1,4 +1,4 @@
-# Meet Intel® AI for Enterprise RAG
+# Meet Intel® Chatbot Toolkit
 
 [← Docs Index](../README.md)
 
@@ -8,11 +8,11 @@ The theory before the commands: what this is, why it exists, and when you would 
 
 ## What it is
 
-Intel AI for Enterprise RAG is a complete retrieval-augmented generation application that you deploy on your own hardware. It takes your documents, makes them searchable by meaning, and answers questions about them with citations, through a web UI, a REST API, or as a tool exposed to AI agents.
+Intel® Chatbot Toolkit is a complete retrieval-augmented generation application that you deploy on your own hardware. It takes your documents, makes them searchable by meaning, and answers questions about them with citations, through a web UI, a REST API, or as a tool exposed to AI agents.
 
 It is not a library or a reference notebook. It is a running system: document ingestion, a vector database, the retrieval pipeline, guardrails, single sign-on, dashboards, and autoscaling, all deployed together by one command.
 
-Technically it is the **`erag` layer** of [Intel® AI for Enterprise Solutions](https://github.com/intel/enterprise-ai-solutions). The platform underneath provides Kubernetes, storage, service mesh, identity, and model serving. This layer provides the RAG application on top.
+[Toolkit Manager](https://github.com/intel/enterprise-ai-solutions) installs and operates it. The platform underneath provides Kubernetes, storage, service mesh, identity, and model serving through Intel® Inference Toolkit. This toolkit provides the RAG application on top. `erag` is the install target name.
 
 ## Why it exists
 
@@ -45,11 +45,11 @@ github.com/intel/enterprise-ai-solutions      <- start here; run all commands fr
 ```
 
 > [!IMPORTANT]
-> Do not clone this repository directly to deploy it. Clone the Enterprise AI Solutions repository, run `./es_auto_installer.sh init erag`, and it will fetch this one into `ext/` at a pinned revision. Every command in this documentation is run from the Solutions repo root.
+> Do not clone this repository directly to deploy it. Clone the Toolkit Manager repository, run `./es_auto_installer.sh init erag`, and it will fetch this one into `ext/` at a pinned revision. Every command in this documentation is run from the Toolkit Manager repo root.
 
 ## What gets deployed
 
-`install erag` builds the layers below it first, then the RAG application:
+`install erag` brings up the installer targets below it first, then Intel® Chatbot Toolkit. `inference` is Intel® Inference Toolkit. `erag` is this toolkit:
 
 ```
 infrastructure  ->  platform  ->  inference  ->  erag

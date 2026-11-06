@@ -1,6 +1,6 @@
 # Contributing
 
-We welcome community contributions to Intel® AI for Enterprise RAG.
+We welcome community contributions to Intel® Chatbot Toolkit.
 
 ## Table of contents
 
@@ -171,7 +171,7 @@ Add one short scope to the title when it helps identify the part of the project 
 - `<microservice>` — a single microservice under `src/comps/`, for example `embeddings`, `llms`, `retrievers`, `prompt_template`, `guardrails`, `text_extractor`, `text_splitter`, etc.
 - `edp` — Enhanced Dataprep Pipeline in `src/edp/`
 - `gmc` — GenAI Microservices Connector in `src/gmc/`
-- `ui` — Enterprise RAG UI in `src/ui/`
+- `ui` — Intel® Chatbot Toolkit UI in `src/ui/`
 - `deployment` — Ansible roles, Helm charts, pipelines, and manifests in `deployment/`
 - `debug-tool` — deployment debug tooling in `deployment/tools/`
 
@@ -196,19 +196,19 @@ Include additional context that may help reviewers assess the change, when appli
 
 ## Contributing across the AI Solutions portfolio
 
-Intel® AI for Enterprise Solutions is delivered as a portfolio of related projects maintained across multiple repositories. Each repository owns a specific layer or capability, while [`enterprise-ai-solutions`][ai-solutions] serves as the parent integration repository that assembles and releases the complete solution.
+AI Solutions is delivered as a portfolio of related projects maintained across multiple repositories. Each repository owns a specific layer or capability, while [`enterprise-ai-solutions`][ai-solutions] serves as the parent integration repository that assembles and releases the complete solution.
 
-Intel® AI for Enterprise RAG is one of the solutions within this portfolio. It uses the shared layers provided by AI Solutions, as well as capabilities from other portfolio solutions, such as [enterprise-inference][ai-inference], which provides inference and model-serving functionality.
+Intel® Chatbot Toolkit is one of the solutions within this portfolio. It uses the shared layers that Toolkit Manager installs, as well as capabilities from other portfolio solutions, such as [Intel® Inference Toolkit][ai-inference], which provides inference and model-serving functionality.
 
 
-Repositories relevant to Enterprise RAG include:
-- [`enterprise-ai-solutions`][ai-solutions] - repository containing all solutions, including Enterprise RAG
-- [`enterprise-inference`][ai-inference] - inference service used by Enterprise RAG.
+Repositories relevant to Intel® Chatbot Toolkit include:
+- [`enterprise-ai-solutions`][ai-solutions] - Toolkit Manager, which installs and operates Intel® Chatbot Toolkit
+- [`enterprise-inference`][ai-inference] - Intel® Inference Toolkit, the inference service used by Intel® Chatbot Toolkit.
 
 
 When implementing a feature or a fix, contributors should make changes in the repository that owns the functionality:
-  - changes to Enterprise RAG functionality belong to this repository.
-  - If the change requires adjustments in the inference layer that Enterprise RAG consumes, the corresponding changes must also be made in [`enterprise-inference`][ai-inference].
+  - changes to Intel® Chatbot Toolkit functionality belong to this repository.
+  - If the change requires adjustments in Intel® Inference Toolkit, which Intel® Chatbot Toolkit consumes, the corresponding changes must also be made in [`enterprise-inference`][ai-inference].
   - If the change affects the integration layer provided by [`enterprise-ai-solutions`][ai-solutions], the corresponding changes must also be applied in that repository.
 
 

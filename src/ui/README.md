@@ -1,6 +1,6 @@
-# Intel® AI for Enterprise RAG UI
+# Intel® Chatbot Toolkit UI
 
-This is the monorepo for the **Intel® AI for Enterprise RAG UI**, containing UI applications for different RAG solutions and supporting packages. It uses [pnpm](https://pnpm.io/) for fast, efficient package management and workspace support.
+This is the monorepo for the **Intel® Chatbot Toolkit UI**, containing UI applications for different RAG solutions and supporting packages. It uses [pnpm](https://pnpm.io/) for fast, efficient package management and workspace support.
 
 ## Table of Contents
 
@@ -78,7 +78,7 @@ This command runs `build` scripts defined inside `package.json` files of all pac
 
 ### Launch the UI development server
 
-To start the **Intel® AI for Enterprise RAG ChatQnA UI**, navigate to the `apps/chatqna` directory and run the development server:
+To start the **Intel® Chatbot Toolkit ChatQnA UI**, navigate to the `apps/chatqna` directory and run the development server:
 
 ```bash
 cd apps/chatqna
@@ -87,7 +87,7 @@ npm run dev
 
 The application will be available at `http://localhost:5173` by default.
 
-For additional details on running and deploying **Intel® AI for Enterprise RAG ChatQnA UI**, refer to its [README](apps/chatqna/README.md).
+For additional details on running and deploying **Intel® Chatbot Toolkit ChatQnA UI**, refer to its [README](apps/chatqna/README.md).
 
 ## Control plane parameters
 

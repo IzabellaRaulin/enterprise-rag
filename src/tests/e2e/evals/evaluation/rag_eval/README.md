@@ -59,7 +59,7 @@ Export the `PYTHONPATH` environment variable pointing to the `src` folder in thi
 
 ### Launch Service of RAG System
 
-Please refer to this [guide](../../../../../../deployment/README.md) to launch the service of RAG system.
+Please refer to this [guide](../../../../../../docs/deploy/install_rag.md) to launch the service of RAG system.
 
 > [!WARNING]
 > The RAG service must be accessible locally. Ensure no network restrictions or proxies block local access.

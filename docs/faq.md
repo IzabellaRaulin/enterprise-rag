@@ -2,27 +2,27 @@
 
 [← Docs Index](README.md)
 
-Short answers with links to the full detail. New here? Read [Meet Intel® AI for Enterprise RAG](meet/meet.md) first.
+Short answers with links to the full detail. New here? Read [Meet Intel® Chatbot Toolkit](meet/meet.md) first.
 
 ---
 
 ## Getting started
 
-### What is Intel® AI for Enterprise RAG?
+### What is Intel® Chatbot Toolkit?
 
-A complete retrieval-augmented generation application you deploy on your own hardware: document ingestion, vector search, retrieval pipelines, guardrails, chat UI, single sign-on, and dashboards. It installs as the `erag` layer of [Intel® AI for Enterprise Solutions](https://github.com/intel/enterprise-ai-solutions). See [Meet](meet/meet.md).
+A complete retrieval-augmented generation application you deploy on your own hardware: document ingestion, vector search, retrieval pipelines, guardrails, chat UI, single sign-on, and dashboards. [Toolkit Manager](https://github.com/intel/enterprise-ai-solutions) installs and operates it. The install target is `erag`. See [Meet](meet/meet.md).
 
 ### Which repository do I clone?
 
 Clone `github.com/intel/enterprise-ai-solutions` and run every command from its root. `init erag` clones this repository into `ext/enterprise.ai-erag` at a pinned revision. You never clone this repository directly to deploy it.
 
-### Do I have to install the platform before the RAG layer?
+### Do I have to install the platform before Intel® Chatbot Toolkit?
 
-No. `install erag` pulls its dependencies automatically, in order: infrastructure, platform, inference, then the RAG layer. Installing the platform first is optional and useful only when you want to confirm model serving works before adding RAG. See [Quick Start](quickstart/quickstart.md).
+No. `install erag` pulls its dependencies automatically, in order: infrastructure, the platform services, Intel® Inference Toolkit, then Intel® Chatbot Toolkit. Installing the platform first is optional and useful only when you want to confirm model serving works before adding the chatbot. See [Quick Start](quickstart/quickstart.md).
 
 ### How long does a deployment take?
 
-The RAG layer itself takes 20 to 30 minutes once the platform is up. A full deployment from bare metal, including Kubernetes provisioning and model downloads, takes longer and depends on your network.
+Intel® Chatbot Toolkit itself takes 20 to 30 minutes once the platform is up. A full deployment from bare metal, including Kubernetes provisioning and model downloads, takes longer and depends on your network.
 
 ### What hardware do I need?
 
@@ -82,7 +82,7 @@ Embedding dimensions change and the existing index is not rebuilt automatically,
 
 ### Where do my settings live, and why do nested keys not work?
 
-Everything is under `env/<name>/`: `config.erag.yaml` for RAG settings, `global_config.yaml` for platform settings, `models-rag.yaml` for the model catalog. The override surface is flat because files are merged shallowly; a nested dictionary replaces the role default instead of merging into it. See [Configuration](customize/configuration.md).
+Everything is under `env/<name>/`: `config.erag.yaml` for chatbot settings, `global_config.yaml` for platform settings, `models-rag.yaml` for the model catalog. The override surface is flat because files are merged shallowly; a nested dictionary replaces the role default instead of merging into it. See [Configuration](customize/configuration.md).
 
 ### Can I keep several deployments side by side?
 
@@ -114,7 +114,7 @@ Yes. SharePoint Online with scheduled sync is covered in [SharePoint](customize/
 
 ### Is traffic between services encrypted?
 
-RAG namespaces join the platform's Istio ambient mesh, which provides mutual TLS without sidecars. The current posture and its limits are documented in [Mesh](reference/mesh.md).
+Chatbot namespaces join the platform's Istio ambient mesh, which provides mutual TLS without sidecars. The current posture and its limits are documented in [Mesh](reference/mesh.md).
 
 ### Can AI agents use the retrieval and ingestion capabilities?
 
@@ -134,7 +134,7 @@ Installer and Ansible logs are in `env/<name>/logs/`, for example `install-erag-
 
 ### What can I see in Grafana?
 
-RAG-specific dashboards for per-service traffic, the ingestion pipeline, autoscaling, and LLM inference, alongside the platform dashboards. See [Telemetry](operate/telemetry.md).
+Dashboards for per-service traffic, the ingestion pipeline, autoscaling, and LLM inference, alongside the platform dashboards. See [Telemetry](operate/telemetry.md).
 
 ### An install failed halfway. Can I just re-run it?
 
@@ -146,7 +146,7 @@ Horizontal Pod Autoscaling is enabled by default (`hpa_enabled: true`) and disab
 
 ### How do I remove it?
 
-`teardown erag` removes the RAG layer in reverse order and undeploys its models, leaving the cluster, platform, and inference layers running. `teardown infrastructure` removes the cluster and everything on it. Teardown is environment-scoped: use the same `--env` you installed with.
+`teardown erag` removes Intel® Chatbot Toolkit in reverse order and undeploys its models, leaving the cluster, the platform, and Intel® Inference Toolkit running. `teardown infrastructure` removes the cluster and everything on it. Teardown is environment-scoped: use the same `--env` you installed with.
 
 ### Will switching models or pipelines re-download the weights?
 

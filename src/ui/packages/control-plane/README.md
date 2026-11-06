@@ -1,6 +1,6 @@
 # @intel-enterprise-rag-ui/control-plane
 
-This package provides reusable Control Plane panel component that displays microservices pipeline graph for the Intel® AI for Enterprise RAG UI.
+This package provides reusable Control Plane panel component that displays microservices pipeline graph for the Intel® Chatbot Toolkit UI.
 
 ## Table of Contents
 

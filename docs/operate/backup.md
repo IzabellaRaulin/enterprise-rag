@@ -1,13 +1,13 @@
 # Backup and Restore
 
-Intel® AI for Enterprise RAG can back up and restore everything a deployment has accumulated —
+Intel® Chatbot Toolkit can back up and restore everything a deployment has accumulated —
 ingested documents, embeddings, conversations, and the accounts and roles in the identity realm —
 through the platform's Velero-based backup mechanism. Opt-in and off by default.
 
-The platform provides the mechanism (Velero, CSI volume snapshots, the profile-driven engine); this
-layer declares what its own data is and drives that engine against it. See
-[Intel® AI for Enterprise Solutions](https://github.com/intel/enterprise-ai-solutions)'s
-`docs/customize/configuration.md` for the platform-level settings (`velero_enabled`,
+The platform provides the mechanism (Velero, CSI volume snapshots, the profile-driven engine). This
+toolkit declares what its own data is and drives that engine against it. See
+[Toolkit Manager](https://github.com/intel/enterprise-ai-solutions)'s
+`docs/customize/configuration.md` for the platform settings (`velero_enabled`,
 `storage_backend`).
 
 ## Enabling it
@@ -19,8 +19,8 @@ Two independent switches, both required:
 storage_backend: nfs                      # or ceph — must support CSI snapshots
 velero_enabled: true                      # deploys the mechanism
 
-# env/<name>/config.erag.yaml (this layer)
-backup_enabled: true                      # arms this solution's profile
+# env/<name>/config.erag.yaml (this toolkit)
+backup_enabled: true                      # arms this toolkit's profile
 ```
 
 Leaving either off is a safe no-op, not a silent partial backup: with `backup_enabled: false` the
@@ -130,7 +130,7 @@ Two consequences follow from the volume being **shared**:
 
 - The volume also holds every other database in the platform's cluster — on a stock deployment, the
   model proxy's and the tracing service's. A restore rolls those back to the same point in time along
-  with the realm. One volume, one replay. A deployment that cannot accept that should give this layer
+  with the realm. One volume, one replay. A deployment that cannot accept that should give this toolkit
   a database of its own.
 - The snapshot is crash-consistent, not transactional across volumes: a document ingested during a
   backup can end up present in one store and absent from another, because each store is snapshotted at
@@ -180,7 +180,7 @@ override.
 
 | Symptom | Likely cause / fix |
 |---------|--------------------|
-| A backup or restore run reports success but nothing seems to have happened | Check both `backup_enabled` (this layer) and `velero_enabled` (platform) — either off makes the trigger a no-op, and only `backup_enabled` gates it here |
+| A backup or restore run reports success but nothing seems to have happened | Check both `backup_enabled` (this toolkit) and `velero_enabled` (platform) — either off makes the trigger a no-op, and only `backup_enabled` gates it here |
 | `kubectl get backup` returns nothing, even though one clearly ran | The bare name resolves to the PostgreSQL operator's own `backups` CRD on this platform. Use `backups.velero.io` |
 | Every test in the backup-restore suite fails, unrelated to backup itself | An unrelated aggregated API (commonly `custom.metrics.k8s.io`, if it has joined Istio ambient) can fail cluster-wide discovery. The suite binds the Velero/CSI kinds it needs explicitly so this cannot take it down — but a bare `kubectl api-resources` hanging or erroring is the same underlying symptom |
 | A question answerable only from restored data fails or hangs after a restore, while every pod is `Running` | Check the vector store's cluster state (see above) before assuming the restore failed — a healthy-looking `Running` pod can still be part of a cluster with a chunk of its keyspace unreachable |
@@ -190,7 +190,7 @@ override.
 ## Known limitations
 
 - **The shared database volume is shared.** A restore rolls back every database on it, not only this
-  layer's realm.
+  toolkit's realm.
 - **No transaction boundary across stores.** Take backups when the system is idle for the most
   consistent result.
 - **No point-in-time recovery.** This is a snapshot-and-replay mechanism, not continuous backup.
