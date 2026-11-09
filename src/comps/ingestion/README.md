@@ -90,18 +90,35 @@ docker build -t erag/ingestion:latest -f comps/ingestion/impl/microservice/Docke
 Remember, you can pass configuration variables by passing them via `-e` option into docker run command, such as the vector database configuration and database endpoint.
 
 ```bash
-docker run -d --name="ingestion" --env-file comps/ingestion/impl/microservice/.env -p 6120:6120 erag/ingestion:latest
+docker run -d --name=ingestion --network=host --ipc=host  --env-file comps/ingestion/impl/microservice/.env erag/ingestion:latest
 ```
 
 ### Verify the Ingestion Microservice
 #### Example input
 
+Ingestion microservice as an input accepts a json. The input is required to have a list of documents, each with its text content and the matching embedding vector, optionally accompanied by metadata used later for filtering.
+
 ```bash
   curl http://localhost:6120/v1/ingestion \
     -X POST \
-    -d '{ docs: [ { "text": "What is Intel AVX-512?", "embedding": [1,2,3] } ] }' \
+    -d '{ "docs": [ { "text": "What is Intel AVX-512?", "embedding": [1,2,3] } ] }' \
     -H 'Content-Type: application/json'
 ```
+
+> [!NOTE]
+> The example above uses a short embedding vector for readability. The vector length has to match the `VECTOR_DIMS` value the collection or index was created with, otherwise the database rejects the document.
+
+For example, if the configured dimension is 768, the request must contain an embedding vector with exactly 768 values. A valid request could look as follows:
+
+```bash
+EMBEDDING=$(seq 768 | sed 's/.*/0.1/' | paste -sd,)
+
+curl http://localhost:6120/v1/ingestion \
+  -X POST \
+  -H 'Content-Type: application/json' \
+  -d "{\"docs\": [{\"text\": \"What is Intel AVX-512?\", \"embedding\": [$EMBEDDING]}]}"
+```
+
 #### Example output
 
 Output data, if the request is successfull, is equal to input data.

@@ -32,6 +32,55 @@ _SUPPORTED_DATATYPE = "FLOAT32"
 _API_PREFIX = "/v2/vectordb"
 _OUTPUT_FIELDS = ["text", "metadata"]
 
+_DATE_FIELDS = ("creation_date", "ingestion_date", "last_update_date")
+
+# Mirrors ConnectorRedis._FILENAME_EXTENSIONS so title filters behave the same on both stores.
+_FILENAME_EXTENSIONS = frozenset({
+    "pdf", "docx", "xlsx", "pptx", "doc", "xls", "ppt",
+    "txt", "md", "json", "yaml", "yml", "csv", "html", "xml", "log",
+})
+
+
+def _quote(value: Any) -> str:
+    """Renders a value as a Milvus string literal, neutralising expression injection."""
+    escaped = str(value).replace("\\", "\\\\").replace('"', '\\"')
+    return f'"{escaped}"'
+
+
+def _looks_like_filename(value: str) -> bool:
+    dot = value.rfind(".")
+    return dot > 0 and value[dot + 1:].lower() in _FILENAME_EXTENSIONS
+
+
+class MilvusFilter:
+    """A Milvus boolean expression that composes with & and | like redisvl's FilterExpression."""
+
+    def __init__(self, expression: str):
+        self.expression = expression
+
+    def _combine(self, other: "MilvusFilter", operator: str) -> "MilvusFilter":
+        if not isinstance(other, MilvusFilter):
+            return NotImplemented
+        return MilvusFilter(f"({self.expression}) {operator} ({other.expression})")
+
+    def __and__(self, other):
+        return self._combine(other, "and")
+
+    def __or__(self, other):
+        return self._combine(other, "or")
+
+    def __invert__(self):
+        return MilvusFilter(f"not ({self.expression})")
+
+    def __bool__(self) -> bool:
+        return bool(self.expression)
+
+    def __str__(self) -> str:
+        return self.expression
+
+    def __repr__(self) -> str:
+        return f"MilvusFilter({self.expression!r})"
+
 
 class ConnectorMilvus(VectorStoreConnector):
     """Talks to Milvus over its RESTful v2 API, served on the same port as gRPC."""
@@ -91,7 +140,7 @@ class ConnectorMilvus(VectorStoreConnector):
 
     def _headers(self) -> Dict[str, str]:
         user = sanitize_env(os.getenv("MILVUS_USERNAME", "root"))
-        password = sanitize_env(os.getenv("MILVUS_PASSWORD", ""))
+        password = sanitize_env(os.getenv("MILVUS_PASSWORD", None))
         return {"Authorization": f"Bearer {user}:{password}", "Accept": "application/json"}
 
     def _post(self, path: str, body: Dict[str, Any], tolerate: Optional[str] = None) -> Any:
@@ -179,7 +228,7 @@ class ConnectorMilvus(VectorStoreConnector):
 
     async def search_and_delete_by_metadata(self, field_name: str, field_value: str):
         try:
-            expression = 'metadata["{}"] == "{}"'.format(field_name, field_value)
+            expression = f'metadata[{_quote(field_name)}] == {_quote(field_value)}'
             self._post("/entities/delete", self._scoped(filter=expression))
             logger.debug(f"Deleted records from Milvus where {field_name} = {field_value}")
         except Exception as e:
@@ -188,7 +237,15 @@ class ConnectorMilvus(VectorStoreConnector):
 
     def _convert_to_text_doc(self, hit: dict) -> TextDoc:
         """REST returns output fields flattened onto the hit, next to id and distance."""
-        metadata = dict(hit.get("metadata") or {})
+        raw_metadata = hit.get("metadata") or {}
+        if isinstance(raw_metadata, str):
+            # JSON fields come back serialised on some Milvus versions.
+            try:
+                raw_metadata = json.loads(raw_metadata) if raw_metadata else {}
+            except ValueError:
+                logger.warning("Could not decode Milvus metadata payload; falling back to empty metadata.")
+                raw_metadata = {}
+        metadata = dict(raw_metadata)
         metadata["vector_distance"] = hit.get("distance")
         metadata["id"] = str(hit.get("id"))
         return TextDoc(text=hit.get("text", ""), metadata=metadata)
@@ -201,7 +258,7 @@ class ConnectorMilvus(VectorStoreConnector):
                 data=[embedding],
                 annsField="embedding",
                 limit=k,
-                filter=filter_expression or "",
+                filter=str(filter_expression) if filter_expression else "",
                 outputFields=_OUTPUT_FIELDS,
                 searchParams={"metricType": self.metric_type},
             )) or []
@@ -268,7 +325,7 @@ class ConnectorMilvus(VectorStoreConnector):
             ('metadata["start_index"] > {}'.format(start_index), False),
         ):
             rows = self._post("/entities/query", self._scoped(
-                filter='metadata["file_id"] == "{}" and {}'.format(file_id, expression),
+                filter='metadata["file_id"] == {} and {}'.format(_quote(file_id), expression),
                 outputFields=["id"] + _OUTPUT_FIELDS,
             )) or []
             if not rows:
@@ -277,15 +334,77 @@ class ConnectorMilvus(VectorStoreConnector):
             siblings.append(self._convert_to_text_doc(rows[-1] if pick_last else rows[0]))
         return siblings
 
-    def get_object_name_filter_expression(self, bucket_name: str, object_name: str):
-        return 'metadata["bucket_name"] == "{}" and metadata["object_name"] == "{}"'.format(bucket_name, object_name)
+    def get_object_name_filter_expression(self, bucket_name: str, object_name: str) -> MilvusFilter:
+        if not bucket_name or not object_name:
+            raise ValueError("bucket_name and object_name cannot be empty")
+        return MilvusFilter(
+            f'metadata["bucket_name"] == {_quote(bucket_name)} '
+            f'and metadata["object_name"] == {_quote(object_name)}'
+        )
 
-    def get_bucket_name_filter_expression(self, bucket_names: List[str]):
+    def get_bucket_name_filter_expression(self, bucket_names: List[str]) -> MilvusFilter:
         if not bucket_names:
-            return None
-        return "metadata[\"bucket_name\"] in {}".format(list(bucket_names))
+            raise ValueError("bucket_names cannot be empty")
+        values = ", ".join(_quote(name) for name in bucket_names)
+        return MilvusFilter(f'metadata["bucket_name"] in [{values}]')
 
-    def get_site_name_filter_expression(self, site_names: List[str]):
+    def get_site_name_filter_expression(self, site_names: List[str]) -> MilvusFilter:
         if not site_names:
-            return None
-        return "metadata[\"site_name\"] in {}".format(list(site_names))
+            raise ValueError("site_names cannot be empty")
+        values = ", ".join(_quote(name) for name in site_names)
+        return MilvusFilter(f'metadata["site_name"] in [{values}]')
+
+    def get_files_filter_expression(self) -> MilvusFilter:
+        """Links carry no file_id, so presence of the key distinguishes files from links."""
+        return MilvusFilter('not exists metadata["link_id"]')
+
+    def get_links_filter_expression(self) -> MilvusFilter:
+        return MilvusFilter('not exists metadata["file_id"]')
+
+    def get_author_filter_expression(self, authors: Union[str, List[str]]) -> MilvusFilter:
+        author_list = [authors] if isinstance(authors, str) else list(authors or [])
+        author_list = [a.strip() for a in author_list if a and a.strip()]
+        if not author_list:
+            raise ValueError("Author(s) cannot be empty")
+
+        expression = MilvusFilter(f'metadata["author"] like {_quote("%" + author_list[0] + "%")}')
+        for author in author_list[1:]:
+            expression |= MilvusFilter(f'metadata["author"] like {_quote("%" + author + "%")}')
+        return expression
+
+    def get_text_exclude_filter_expression(self, field: str, value: str) -> MilvusFilter:
+        if not field or not value or not value.strip():
+            raise ValueError("Field and value cannot be empty")
+        return ~MilvusFilter(f'metadata[{_quote(field)}] like {_quote("%" + value.strip() + "%")}')
+
+    def get_author_exclude_filter_expression(self, author: str) -> MilvusFilter:
+        return self.get_text_exclude_filter_expression("author", author)
+
+    def get_title_filter_expression(self, title_pattern: str, exact_match: bool = False) -> MilvusFilter:
+        if not title_pattern or not title_pattern.strip():
+            raise ValueError("Title pattern cannot be empty")
+        title_pattern = title_pattern.strip()
+
+        if exact_match:
+            title_filter = MilvusFilter(f'metadata["file_title"] == {_quote(title_pattern)}')
+        else:
+            title_filter = MilvusFilter(f'metadata["file_title"] like {_quote("%" + title_pattern + "%")}')
+
+        if _looks_like_filename(title_pattern):
+            return title_filter | MilvusFilter(
+                f'metadata["object_name"] like {_quote("%" + title_pattern + "%")}'
+            )
+        return title_filter
+
+    def get_date_range_filter_expression(self, field: str, start: int = None, end: int = None) -> MilvusFilter:
+        if field not in _DATE_FIELDS:
+            raise ValueError(f"Invalid date field: {field}")
+        if start is None and end is None:
+            raise ValueError("At least one of start or end timestamp required")
+
+        clauses = []
+        if start is not None:
+            clauses.append(f'metadata[{_quote(field)}] >= {int(start)}')
+        if end is not None:
+            clauses.append(f'metadata[{_quote(field)}] <= {int(end)}')
+        return MilvusFilter(" and ".join(clauses))

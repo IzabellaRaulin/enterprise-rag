@@ -83,10 +83,12 @@ def test_requests_carry_auth_and_scope(milvus_env, http):
     assert call["body"] == {"dbName": "default", "collectionName": "vdb"}
 
 
-def test_missing_url_is_rejected(milvus_env, http, monkeypatch):
+def test_missing_url_falls_back_to_host_and_port(milvus_env, http, monkeypatch):
     monkeypatch.delenv("MILVUS_URL", raising=False)
-    with pytest.raises(ValueError, match="MILVUS_URL"):
-        ConnectorMilvus()
+    monkeypatch.setenv("MILVUS_HOST", "milvus.vdb.svc")
+    monkeypatch.setenv("MILVUS_PORT", "19531")
+    connector = ConnectorMilvus()
+    assert connector._base_url() == "http://milvus.vdb.svc:19531/v2/vectordb"
 
 
 def test_milvus_error_code_raises(milvus_env, monkeypatch):
@@ -251,17 +253,41 @@ def test_similarity_search_without_hits(milvus_env, http):
 def test_filter_expressions(milvus_env, http):
     connector = ConnectorMilvus()
 
-    assert connector.get_object_name_filter_expression("bucket", "obj") == (
+    assert str(connector.get_object_name_filter_expression("bucket", "obj")) == (
         'metadata["bucket_name"] == "bucket" and metadata["object_name"] == "obj"'
     )
-    assert connector.get_bucket_name_filter_expression(["a", "b"]) == (
-        "metadata[\"bucket_name\"] in ['a', 'b']"
+    assert str(connector.get_bucket_name_filter_expression(["a", "b"])) == (
+        'metadata["bucket_name"] in ["a", "b"]'
     )
-    assert connector.get_site_name_filter_expression(["s1"]) == (
-        "metadata[\"site_name\"] in ['s1']"
+    assert str(connector.get_site_name_filter_expression(["s1"])) == (
+        'metadata["site_name"] in ["s1"]'
     )
-    assert connector.get_bucket_name_filter_expression([]) is None
-    assert connector.get_site_name_filter_expression([]) is None
+    # Empty scopes must not silently widen an RBAC filter.
+    with pytest.raises(ValueError):
+        connector.get_bucket_name_filter_expression([])
+    with pytest.raises(ValueError):
+        connector.get_site_name_filter_expression([])
+
+
+def test_filter_expressions_compose(milvus_env, http):
+    connector = ConnectorMilvus()
+
+    bucket = connector.get_bucket_name_filter_expression(["a"])
+    links = connector.get_links_filter_expression()
+
+    assert str(links) == 'not exists metadata["file_id"]'
+    assert str(connector.get_files_filter_expression()) == 'not exists metadata["link_id"]'
+    assert str(bucket | links) == (
+        '(metadata["bucket_name"] in ["a"]) or (not exists metadata["file_id"])'
+    )
+    assert str(connector.get_date_range_filter_expression("creation_date", 1, 2)) == (
+        'metadata["creation_date"] >= 1 and metadata["creation_date"] <= 2'
+    )
+    assert str(connector.get_author_filter_expression("Ann")) == 'metadata["author"] like "%Ann%"'
+    # Quotes in user input must not break out of the expression.
+    assert str(connector.get_bucket_name_filter_expression(['a" or 1==1'])) == (
+        'metadata["bucket_name"] in ["a\\" or 1==1"]'
+    )
 
 
 def _siblings_http(search_hit, query_pages):
