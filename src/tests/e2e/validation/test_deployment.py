@@ -19,7 +19,7 @@ import allure
 import kr8s
 import pytest
 
-from tests.e2e.validation.buildcfg import cfg
+from tests.e2e.validation.buildcfg import cfg, is_openshift
 from tests.e2e.validation.constants import LLM_INFERENCE_NAMESPACE
 
 logger = logging.getLogger(__name__)
@@ -27,6 +27,8 @@ logger = logging.getLogger(__name__)
 NRI_ANN_PREFIX = "balloon.balloons.resource-policy.nri.io/"
 NRI_PLUGIN_NAMESPACE = "kube-system"
 NRI_PLUGIN_DAEMONSET = "nri-resource-policy-balloons"
+OPENSHIFT_BALLOON_POD_LABEL = "kserve.io/component"
+OPENSHIFT_BALLOON_POD_LABEL_VALUE = "workload"
 
 
 def _nri_plugin_deployed() -> bool:
@@ -39,6 +41,20 @@ nri_balloons_only = pytest.mark.skipif(
     not _nri_plugin_deployed(),
     reason=f"NRI balloons policy not deployed (no DaemonSet '{NRI_PLUGIN_NAMESPACE}/{NRI_PLUGIN_DAEMONSET}')",
 )
+
+
+def _in_balloon(pod) -> bool:
+    """Return True when the BalloonsPolicy assigns this pod to a balloon.
+
+    OpenShift AI cannot annotate the pods of an LLMInferenceService, so there
+    the policy selects them by label instead (ai-solutions sets the tp1 balloon
+    to match kserve.io/component=workload). The pinning is still asserted from
+    the pod's cpuset either way.
+    """
+    if any(key.startswith(NRI_ANN_PREFIX) for key in pod.metadata.get("annotations") or {}):
+        return True
+    labels = pod.metadata.get("labels") or {}
+    return is_openshift() and labels.get(OPENSHIFT_BALLOON_POD_LABEL) == OPENSHIFT_BALLOON_POD_LABEL_VALUE
 
 
 def _parse_cpuset(spec: str) -> list[int]:
@@ -103,26 +119,19 @@ def balloon_pod_data(k8s_helper):
     """Collect NRI balloon pods, their cpusets, and node topology.
 
     Returns a dict with:
-        - balloon_pods: list of running pods with NRI balloon annotations
+        - balloon_pods: list of running pods with NRI balloon annotations, and on OpenShift
+          the KServe workload pods the BalloonsPolicy selects by their kserve.io/component label
         - pod_cpusets: dict of {pod.name: [cpu_ids]}
         - sibling_maps: dict of {node_name: {cpu_id: sibling_cpu_id}}
     """
-    pods = k8s_helper.list_pods(LLM_INFERENCE_NAMESPACE)
-    balloon_pods = []
-    for pod in pods:
-        if pod.status.phase != "Running":
-            continue
-        anns = pod.metadata.get("annotations", {}) or {}
-        for key in anns:
-            if key.startswith(NRI_ANN_PREFIX):
-                balloon_pods.append(pod)
-                break
+    balloon_pods = [pod for pod in k8s_helper.list_pods(LLM_INFERENCE_NAMESPACE)
+                    if pod.status.phase == "Running" and _in_balloon(pod)]
 
     assert len(balloon_pods) > 0, (
-        f"No running pods with NRI balloon annotations found in namespace '{LLM_INFERENCE_NAMESPACE}'. "
+        f"No running NRI balloon pods found in namespace '{LLM_INFERENCE_NAMESPACE}'. "
         "Ensure inference models are deployed."
     )
-    logger.info(f"Found {len(balloon_pods)} pods with NRI balloon annotations")
+    logger.info(f"Found {len(balloon_pods)} NRI balloon pods")
 
     sibling_maps = {}
     for pod in balloon_pods:
@@ -289,6 +298,10 @@ PSS_ENFORCE_LABEL = "pod-security.kubernetes.io/enforce"
 VALID_PSS_PROFILES = ("privileged", "baseline", "restricted")
 
 
+@pytest.mark.skipif(
+    is_openshift(),
+    reason="OpenShift enforces Pod Security through SCCs, so the installer stamps no PSS labels",
+)
 @pytest.mark.skipif(
     not cfg.get("enforce_pss", True),
     reason="enforce_pss is disabled for this deployment",
