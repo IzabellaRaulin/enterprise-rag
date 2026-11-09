@@ -26,7 +26,7 @@
     - -c
     - |
         if [ -z "$MILVUS_HOST" ]; then
-          echo "Environment variable MILVUS_HOST is not set. Skipping wait-for-milvus init container.";
+          echo "Environment variable MILVUS_HOST is not set. Failing wait-for-milvus init container.";
           exit 1
         else
           until curl -sf "http://${MILVUS_HOST}:9091/healthz"; do
