@@ -67,7 +67,7 @@ class VectorStoreConnector(ABC):
         raise NotImplementedError
     
     def get_links_filter_expression(self):
-        return NotImplementedError
+        raise NotImplementedError
 
     def get_bucket_name_filter_expression(self, bucket_names: List[str]):
         raise NotImplementedError

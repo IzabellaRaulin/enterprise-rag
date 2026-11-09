@@ -42,6 +42,7 @@ Support for specific vector databases:
 | -------------------------------------------------------- | --------- |
 | [REDIS](../vectorstores/README.md#redis)                 | &#x2713;  |
 | [REDIS-CLUSTER](../vectorstores/README.md#redis-cluster) | &#x2713;  |
+| [MILVUS](../vectorstores/README.md#milvus)               | &#x2713;  |
 
 ## Getting started
 
@@ -133,6 +134,19 @@ Alternatively, you can pass multiple docs but this will limit the retrieval only
     -X POST \
     -d '{ "docs": [ { "text": "What is Intel AVX-512?", "embedding": [0.024471128, 0.047724035, -0.02704641, 0.0013827643], "search_type": "similarity" } ] }' \
     -H 'Content-Type: application/json'
+```
+
+[!NOTE] The examples above use a short embedding vector for readability. This works with Redis-based vector stores, but Milvus validates the vector dimension against the target collection schema and rejects vectors whose length does not match the configured VECTOR_DIMS value.
+
+For example, if the collection dimension is 768, the request must contain an embedding vector with exactly 768 values. A valid request could look as follows:
+
+```bash
+EMBEDDING=$(seq 768 | sed 's/.*/0.1/' | paste -sd,)
+
+curl http://localhost:6620/v1/retrieval \
+  -X POST \
+  -H 'Content-Type: application/json' \
+  -d "{\"text\": \"What is Intel AVX-512?\", \"embedding\": [$EMBEDDING], \"search_type\": \"similarity\"}"
 ```
 
 ### Example output
