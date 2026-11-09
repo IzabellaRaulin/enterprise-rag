@@ -26,6 +26,9 @@ _INDEX_TYPES = {
 }
 _METRIC_TYPES = {"COSINE", "L2", "IP"}
 
+# The REST insert path sends vectors as JSON floats, so only FloatVector is usable here.
+_SUPPORTED_DATATYPE = "FLOAT32"
+
 _API_PREFIX = "/v2/vectordb"
 _OUTPUT_FIELDS = ["text", "metadata"]
 
@@ -47,6 +50,21 @@ class ConnectorMilvus(VectorStoreConnector):
         metric = str(sanitize_env(os.getenv("VECTOR_DISTANCE_METRIC", "COSINE"))).upper()
         self.metric_type = metric if metric in _METRIC_TYPES else "COSINE"
 
+        datatype = str(sanitize_env(os.getenv("VECTOR_DATATYPE", _SUPPORTED_DATATYPE))).upper()
+        if datatype != _SUPPORTED_DATATYPE:
+            logger.warning(
+                f"VECTOR_DATATYPE={datatype} is ignored by the Milvus connector; "
+                f"the collection is created as {_SUPPORTED_DATATYPE}."
+            )
+
+        if self.index_type == "HNSW" and any(os.getenv(v) for v in (
+            "VECTOR_HNSW_M", "VECTOR_HNSW_EF_CONSTRUCTION", "VECTOR_HNSW_EF_RUNTIME", "VECTOR_HNSW_EPSILON"
+        )):
+            logger.warning(
+                "VECTOR_HNSW_* settings are ignored by the Milvus connector; "
+                "Milvus applies its own HNSW defaults."
+            )
+
         try:
             self._ensure_database()
             self._ensure_collection()
@@ -63,14 +81,17 @@ class ConnectorMilvus(VectorStoreConnector):
         return self._pool
 
     def _base_url(self) -> str:
-        uri = os.getenv("MILVUS_URL")
+        uri = sanitize_env(os.getenv("MILVUS_URL"))
         if not uri:
-            raise ValueError("MILVUS_URL environment variable is not set.")
+            host = sanitize_env(os.getenv("MILVUS_HOST", "localhost"))
+            port = int(sanitize_env(str(os.getenv("MILVUS_PORT", 19530))))
+            schema = "https" if get_boolean_env_var("MILVUS_SSL", False) else "http"
+            uri = f"{schema}://{host}:{port}"
         return uri.rstrip("/") + _API_PREFIX
 
     def _headers(self) -> Dict[str, str]:
         user = sanitize_env(os.getenv("MILVUS_USERNAME", "root"))
-        password = os.getenv("MILVUS_PASSWORD", "")
+        password = sanitize_env(os.getenv("MILVUS_PASSWORD", ""))
         return {"Authorization": f"Bearer {user}:{password}", "Accept": "application/json"}
 
     def _post(self, path: str, body: Dict[str, Any], tolerate: Optional[str] = None) -> Any:

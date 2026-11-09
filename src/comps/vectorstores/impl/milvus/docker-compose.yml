@@ -1,0 +1,37 @@
+# Copyright (C) 2026 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+services:
+  milvus-vector-db:
+    image: milvusdb/milvus:v3.0.5
+    container_name: milvus-vector-db
+    runtime: runc
+    command: ["milvus", "run", "standalone"]
+    environment:
+      DEPLOY_MODE: STANDALONE
+      ETCD_USE_EMBED: "true"
+      ETCD_DATA_DIR: /var/lib/milvus/etcd
+      ETCD_CONFIG_PATH: /milvus/configs/embedEtcd.yaml
+      COMMON_STORAGETYPE: local
+      LOCALSTORAGE_PATH: /var/lib/milvus/data
+      COMMON_SECURITY_AUTHORIZATIONENABLED: "true"
+      COMMON_SECURITY_DEFAULTROOTPASSWORD: ${MILVUS_PASSWORD:-Milvus}
+      HTTP_PROXY: ""
+      HTTPS_PROXY: ""
+      NO_PROXY: "localhost,127.0.0.1,172.22.0.0/16"
+    volumes:
+      - ./embedEtcd.yaml:/milvus/configs/embedEtcd.yaml:ro
+      - ./user.yaml:/milvus/configs/user.yaml:ro
+      - milvus-data:/var/lib/milvus
+    ports:
+      - "19530:19530"
+      - "9091:9091"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
+      interval: 10s
+      start_period: 90s
+      timeout: 20s
+      retries: 6
+
+volumes:
+  milvus-data:

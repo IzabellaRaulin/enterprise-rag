@@ -9,8 +9,14 @@ This code implements an interface for connecting to multiple vector store databa
    - 3.1. [Database setup](#database-setup)
      - 3.1.1. [Redis](#redis)
      - 3.1.2. [Redis Cluster](#redis-cluster)
+     - 3.1.3. [Milvus](#milvus)
+     - 3.1.4. [Microsoft SQL Server](#microsoft-sql-server)
+     - 3.1.5. [PgVector](#pgvector)
    - 3.2. [VectorStore implementations](#vectorstore-implementations)
      - 3.2.1. [ConnectorRedis](#connectorredis)
+     - 3.2.2. [ConnectorMilvus](#connectormilvus)
+     - 3.2.3. [ConnectorMssql](#connectormssql)
+     - 3.2.4. [ConnectorPgVector](#connectorpgvector)
    - 3.3. [Example usage](#example-usage)
 4. [VectorStore methods](#vectorstore-methods)
    - 4.1. [search()](#search)
@@ -26,7 +32,7 @@ Support for specific vector databases:
 | -------------------| :---------: |
 | [REDIS](#redis)    | &#x2713; |
 | [REDIS-CLUSTER](#redis-cluster) | &#x2713;  |
-| [MILVUS](#connectormilvus) | &#x2713;  |
+| [MILVUS](#milvus) | &#x2713;  |
 | [MSSQL](#microsoft-sql-server) | Experimental |
 | [PGVECTOR](#pgvector) | Deployment only |
 
@@ -52,6 +58,21 @@ To configure VectorStore to use Redis, please refer to [ConnectorRedis](#Connect
 #### Redis Cluster
 
 Configuration is exactly the same as for Redis.
+
+#### Milvus
+
+For more information on this database, refer to https://milvus.io/docs.
+
+The example compose file runs Milvus in standalone mode with embedded etcd and local storage:
+
+To run an instance of this database, run the following code:
+```bash
+cd impl/milvus
+MILVUS_PASSWORD='<your-password>' docker compose up -d
+```
+
+
+To configure VectorStore to use Milvus, please refer to [ConnectorMilvus](#ConnectorMilvus).
 
 #### Microsoft SQL Server
 
@@ -92,6 +113,26 @@ Or use more specific configuration for endpoint URL:
 | REDIS_USERNAME       | Not set       | Database username (Optional)                                                |
 | REDIS_PASSWORD       | Not set       | Database password (Optional)                                                |
 
+
+#### ConnectorMilvus
+
+Configure the full endpoint URL:
+
+| Environment Variable      | Default Value | Description                                                                 |
+|---------------------------|---------------|-----------------------------------------------------------------------------|
+| MILVUS_URL                | Not set       | Full URL for Redis database endpoint                                        |
+
+Or use more specific configuration for endpoint URL:
+
+| Environment Variable      | Default Value | Description                                                                 |
+|---------------------------|---------------|-----------------------------------------------------------------------------|
+| MILVUS_HOST               | localhost     | Hostname or IP Address of the Milvus endpoint                               |
+| MILVUS_PORT               | 19530         | Port of the Milvus endpoint                                                 |
+| MILVUS_SSL                | false         | Schema to use, if `true` is passed, `https://` schema is used               |
+| MILVUS_USERNAME           | Not set       | Database username (Optional)                                                |
+| MILVUS_PASSWORD           | Not set       | Database password (Optional)                                                |
+
+
 #### ConnectorMssql
 
 Configure the full endpoint URL:
@@ -110,15 +151,6 @@ Or use more specific configuration for endpoint URL:
 | MSSQL_USER           | 'edp'         | Database username |
 | MSSQL_PASSWORD       | Not set       | Database password |
 
-#### ConnectorMilvus
-
-| Environment Variable      | Default Value | Description                                                                 |
-|---------------------------|---------------|-----------------------------------------------------------------------------|
-| MILVUS_URL                | Not set       | Endpoint URI, for example `http://milvus.vdb.svc:19530` |
-| MILVUS_USERNAME           | 'root'        | Database username |
-| MILVUS_PASSWORD           | Not set       | Database password |
-| MILVUS_DB                 | 'default'     | Milvus database, created on first use when not `default` |
-| MILVUS_VECTOR_COLLECTION  | 'vdb'         | Collection holding the embeddings |
 
 #### ConnectorPgVector
 
@@ -137,6 +169,7 @@ Or use more specific configuration for endpoint URL:
 | POSTGRES_DB             | 'vdb'         | Default database name |
 | POSTGRES_USERNAME       | 'edp'         | Database username |
 | POSTGRES_PASSWORD       | Not set       | Database password |
+
 
 ### Example usage
 

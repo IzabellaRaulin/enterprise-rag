@@ -1,0 +1,8 @@
+# Copyright (C) 2026 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+listen-client-urls: http://localhost:2379
+advertise-client-urls: http://localhost:2379
+quota-backend-bytes: 4294967296
+auto-compaction-mode: revision
+auto-compaction-retention: '1000'
