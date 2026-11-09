@@ -38,6 +38,7 @@ Support for specific vector databases:
 | -------------------------------------------------------- | --------- |
 | [REDIS](../vectorstores/README.md#redis)                 | &#x2713;  |
 | [REDIS-CLUSTER](../vectorstores/README.md#redis-cluster) | &#x2713;  |
+| [MILVUS](../vectorstores/README.md#milvus)               | &#x2713;  |
 
 ## Getting started
 
