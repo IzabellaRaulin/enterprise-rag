@@ -36,6 +36,24 @@ milvus:
     authorizationEnabled: true
   # Merged verbatim into /milvus/configs/user.yaml, which overrides milvus.yaml.
   extraConfig: {}
+  # The image ships /milvus/bin/milvus and /milvus/lib as 0774 owned by uid/gid
+  # 999, so the chart-wide uid 1000 cannot exec the binary — Milvus runs as 999.
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 999
+    runAsGroup: 999
+    fsGroup: 999
+    seccompProfile:
+      type: RuntimeDefault
+  securityContext:
+    capabilities:
+      drop:
+      - ALL
+    readOnlyRootFilesystem: false
+    allowPrivilegeEscalation: false
+    runAsNonRoot: true
+    runAsUser: 999
+    runAsGroup: 999
   persistence:
     enabled: true
     size: "10Gi"
