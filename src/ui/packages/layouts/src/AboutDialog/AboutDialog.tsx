@@ -84,7 +84,7 @@ export const AboutDialog = ({
             <ExternalLinkIcon fontSize={10} />
           </a>
           . Select <b className="font-medium">Software</b> and{" "}
-          <b className="font-medium">Intel&reg; AI for Enterprise</b>.
+          <b className="font-medium">Intel&reg; Chatbot Toolkit</b>.
         </p>
       </div>
     </Dialog>

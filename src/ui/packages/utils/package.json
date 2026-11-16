@@ -4,7 +4,7 @@
   "version": "3.0.0",
   "type": "module",
   "license": "Apache-2.0",
-  "description": "Utility functions for Intel Enterprise RAG UI",
+  "description": "Utility functions for Intel Chatbot Toolkit UI",
   "module": "./dist/intel-enterprise-rag-ui-utils.js",
   "types": "./dist/index.d.ts",
   "exports": {

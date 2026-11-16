@@ -4,7 +4,7 @@
   "version": "3.0.0",
   "type": "module",
   "license": "Apache-2.0",
-  "description": "Data ingestion admin panel components for Intel Enterprise RAG UI",
+  "description": "Data ingestion admin panel components for Intel Chatbot Toolkit UI",
   "module": "./dist/intel-enterprise-rag-ui-data-ingestion.js",
   "types": "./dist/index.d.ts",
   "style": "./dist/style.css",

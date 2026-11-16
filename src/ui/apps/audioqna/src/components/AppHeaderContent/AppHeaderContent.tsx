@@ -20,7 +20,7 @@ import { getAudioQnAAppEnv } from "@/utils";
 
 const viewSwitchButton = <ViewSwitchButton />;
 
-const APP_NAME = "Intel® AI for Enterprise RAG";
+const APP_NAME = "Intel® Chatbot Toolkit";
 const APP_VERSION =
   getAudioQnAAppEnv("ERAG_VERSION") || import.meta.env.VITE_APP_VERSION;
 const MAINTENANCE_MODE = getAudioQnAAppEnv("MAINTENANCE_MODE");

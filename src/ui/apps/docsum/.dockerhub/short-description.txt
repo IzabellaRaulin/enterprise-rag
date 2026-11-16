@@ -1,1 +1,1 @@
-Intel® AI for Enterprise RAG Document Summarization User Interface
+Intel® Chatbot Toolkit Document Summarization User Interface

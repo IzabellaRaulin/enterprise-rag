@@ -4,7 +4,7 @@
   "version": "3.0.0",
   "type": "module",
   "license": "Apache-2.0",
-  "description": "Icons for Intel Enterprise RAG UI",
+  "description": "Icons for Intel Chatbot Toolkit UI",
   "module": "./dist/intel-enterprise-rag-ui-icons.js",
   "types": "./dist/index.d.ts",
   "exports": {
