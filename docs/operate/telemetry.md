@@ -26,7 +26,7 @@ On the Grafana login page, select **Sign in with Keycloak** and enter your usern
 
 ## Dashboards
 
-Click **Dashboards** in the left pane. Dashboards prefixed with `EnterpriseRAG` are tailored to Intel® Chatbot Toolkit services. The Grafana instance also provides standard Kubernetes, Node Exporter, and Prometheus Overview dashboards for cluster-level monitoring.
+Click **Dashboards** in the left pane. Dashboards prefixed with `Chatbot Toolkit` are tailored to Intel® Chatbot Toolkit services. The Grafana instance also provides standard Kubernetes, Node Exporter, and Prometheus Overview dashboards for cluster-level monitoring.
 
 ![dashboard](../images/telemetry/dashboards.png)
 
@@ -34,24 +34,24 @@ Eight dashboards ship with this toolkit, each provisioned by the component that 
 
 | Dashboard | Shipped by | Covers |
 |---|---|---|
-| `EnterpriseRAG / Services / Details` | `app_pipeline` (gmc chart) | Per-service resource use, API traffic, and logs |
-| `EnterpriseRAG / Services / Top` | `app_pipeline` (gmc chart) | Cross-service summary of the busiest microservices |
-| `EnterpriseRAG / Services / GMConnector (router)` | `app_pipeline` (gmc chart) | Pipeline router throughput and per-step timing |
-| `EnterpriseRAG / Services / EDP` | `app_edp` | Ingestion counts, chunks, stages, and errors |
-| `EnterpriseRAG / Services / Audio` | `app_audio` | ASR and TTS activity (AudioQnA flavour only) |
-| `EnterpriseRAG / HPA` | `app_hpa` | Replica counts and scaling decisions |
-| `EnterpriseRAG / VectorDB / Redis` | `app_vector_databases` | Redis vector store health and query load |
-| `EnterpriseRAG / VectorDB / Microsoft SQL Server` | `app_vector_databases` | MSSQL vector store health and query load |
+| `Chatbot Toolkit / Services / Details` | `app_pipeline` (gmc chart) | Per-service resource use, API traffic, and logs |
+| `Chatbot Toolkit / Services / Top` | `app_pipeline` (gmc chart) | Cross-service summary of the busiest microservices |
+| `Chatbot Toolkit / Services / GMConnector (router)` | `app_pipeline` (gmc chart) | Pipeline router throughput and per-step timing |
+| `Chatbot Toolkit / Services / EDP` | `app_edp` | Ingestion counts, chunks, stages, and errors |
+| `Chatbot Toolkit / Services / Audio` | `app_audio` | ASR and TTS activity (AudioQnA flavour only) |
+| `Chatbot Toolkit / HPA` | `app_hpa` | Replica counts and scaling decisions |
+| `Chatbot Toolkit / VectorDB / Redis` | `app_vector_databases` | Redis vector store health and query load |
+| `Chatbot Toolkit / VectorDB / Microsoft SQL Server` | `app_vector_databases` | MSSQL vector store health and query load |
 
 A dashboard only appears if its component is enabled, so the Audio and VectorDB dashboards depend on the flavour and the `vector_databases_vector_store` you chose.
 
 The three most-used ones are described below.
 
-### EnterpriseRAG / Services / Details
+### Chatbot Toolkit / Services / Details
 
 Overview of resource usage and service activity for selected namespace and services.
 
-![Dashboard EnterpriseRAG / Services / Details](../images/telemetry/dashboard_01_services_details.png)
+![Dashboard Chatbot Toolkit / Services / Details](../images/telemetry/dashboard_01_services_details.png)
 
 Key panels:
 - **System Resource Utilization**: CPU and memory usage per service
@@ -59,11 +59,11 @@ Key panels:
 - **Internal API Traffic**: Monitoring and health-check requests (independent of user activity)
 - **Logs**: Recent log entries filterable by namespace or service. For deeper log analysis use Grafana's **Explore -> Logs** feature in the left panel.
 
-### EnterpriseRAG / Services / EDP
+### Chatbot Toolkit / Services / EDP
 
 Metrics from the Enhanced Data Preparation (EDP) service: ingested documents, links, chunks, and processing statuses.
 
-![Dashboard EnterpriseRAG / Services / EDP](../images/telemetry/dashboard_02_services_edp.png)
+![Dashboard Chatbot Toolkit / Services / EDP](../images/telemetry/dashboard_02_services_edp.png)
 
 Key panels:
 - **General**: Total ingested files and links, chunks, blocked documents (unsafe content), files in error state
@@ -73,11 +73,11 @@ Key panels:
 
 See [EDP documentation](../../src/edp/README.md) for service details.
 
-### EnterpriseRAG / HPA
+### Chatbot Toolkit / HPA
 
 Horizontal Pod Autoscaler activity: replica count, scaling actions over time, and the metrics used for scaling decisions (current value + threshold).
 
-![Dashboard EnterpriseRAG / HPA](../images/telemetry/dashboard_03_hpa.png)
+![Dashboard Chatbot Toolkit / HPA](../images/telemetry/dashboard_03_hpa.png)
 
 The top panel shows current replica count for each HPA-managed service. Below, each service has a section with replica changes over time and the scaling metric.
 

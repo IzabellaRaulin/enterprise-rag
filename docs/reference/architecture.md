@@ -209,10 +209,10 @@ See [Mesh](mesh.md) for how to add a new service to the mesh.
 
 ## Telemetry
 
-Grafana dashboards tagged `EnterpriseRAG`:
-- `EnterpriseRAG / Services / Details` - per-service CPU/memory, request rates, logs
-- `EnterpriseRAG / Services / EDP` - ingestion stats, processing stages, errors
-- `EnterpriseRAG / HPA` - autoscaler activity and thresholds
+Grafana dashboards prefixed with `Chatbot Toolkit`:
+- `Chatbot Toolkit / Services / Details` - per-service CPU/memory, request rates, logs
+- `Chatbot Toolkit / Services / EDP` - ingestion stats, processing stages, errors
+- `Chatbot Toolkit / HPA` - autoscaler activity and thresholds
 
 Additionally, Intel® Inference Toolkit dashboards (`modelserving` tag) show vLLM/KServe metrics.
 

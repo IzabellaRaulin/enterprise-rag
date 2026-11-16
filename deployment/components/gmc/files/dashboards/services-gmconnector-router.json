@@ -36,7 +36,7 @@
         "entrag"
       ],
       "targetBlank": false,
-      "title": "Enterprise RAG dashboards",
+      "title": "Chatbot Toolkit dashboards",
       "tooltip": "",
       "type": "dashboards",
       "url": ""
@@ -1449,7 +1449,7 @@
   },
   "timepicker": {},
   "timezone": "browser",
-  "title": "EnterpriseRAG / Services / GMConnector (router)",
+  "title": "Chatbot Toolkit / Services / GMConnector (router)",
   "uid": "ddusxu5kgjr40e",
   "version": 2,
   "weekStart": ""

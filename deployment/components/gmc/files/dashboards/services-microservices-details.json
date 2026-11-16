@@ -29,7 +29,7 @@
         "entrag"
       ],
       "targetBlank": false,
-      "title": "Enterprise RAG dashboards",
+      "title": "Chatbot Toolkit dashboards",
       "tooltip": "",
       "type": "dashboards",
       "url": ""
@@ -1362,7 +1362,7 @@
     ]
   },
   "timezone": "browser",
-  "title": "EnterpriseRAG / Services / Details",
+  "title": "Chatbot Toolkit / Services / Details",
   "uid": "aduqd7fgbf1fkc",
   "version": 2,
   "weekStart": ""

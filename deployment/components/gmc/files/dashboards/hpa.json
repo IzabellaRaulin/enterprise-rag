@@ -28,7 +28,7 @@
         "entrag"
       ],
       "targetBlank": false,
-      "title": "Enterprise RAG dashboards",
+      "title": "Chatbot Toolkit dashboards",
       "tooltip": "",
       "type": "dashboards",
       "url": ""
@@ -560,7 +560,7 @@
     "to": "now"
   },
   "timezone": "browser",
-  "title": "EnterpriseRAG / HPA",
+  "title": "Chatbot Toolkit / HPA",
   "version": 2,
   "uid": "dek9qyfkazev4e",
   "id": 42
