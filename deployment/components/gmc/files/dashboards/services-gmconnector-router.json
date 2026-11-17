@@ -33,7 +33,7 @@
       "includeVars": false,
       "keepTime": true,
       "tags": [
-        "entrag"
+        "chatbot"
       ],
       "targetBlank": false,
       "title": "Chatbot Toolkit dashboards",
@@ -1262,7 +1262,7 @@
   "refresh": "30s",
   "schemaVersion": 40,
   "tags": [
-    "entrag",
+    "chatbot",
     "microservices"
   ],
   "templating": {

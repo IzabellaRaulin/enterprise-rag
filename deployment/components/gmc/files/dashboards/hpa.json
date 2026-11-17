@@ -25,7 +25,7 @@
       "includeVars": false,
       "keepTime": true,
       "tags": [
-        "entrag"
+        "chatbot"
       ],
       "targetBlank": false,
       "title": "Chatbot Toolkit dashboards",
@@ -518,7 +518,7 @@
   "refresh": "30s",
   "schemaVersion": 42,
   "tags": [
-    "entrag",
+    "chatbot",
     "hpa"
   ],
   "templating": {

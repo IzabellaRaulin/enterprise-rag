@@ -26,7 +26,7 @@
       "includeVars": false,
       "keepTime": true,
       "tags": [
-        "entrag"
+        "chatbot"
       ],
       "targetBlank": false,
       "title": "Chatbot Toolkit dashboards",
@@ -1571,7 +1571,7 @@
   },
   "timezone": "browser",
   "tags": [
-    "entrag",
+    "chatbot",
     "vectordb"
   ],
   "title": "Chatbot Toolkit / VectorDB / Redis",
