@@ -1,1 +1,1 @@
-Intel® AI for Enterprise RAG Enhanced DataPrep Service to facilitate advanced doc processing
+Intel® Chatbot Toolkit Enhanced DataPrep Service to facilitate advanced doc processing

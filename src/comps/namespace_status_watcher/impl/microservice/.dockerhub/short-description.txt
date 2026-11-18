@@ -1,1 +1,1 @@
-Intel® AI for Enterprise RAG Namespace Status Watcher Microservice for Kubernetes monitoring
+Intel® Chatbot Toolkit Namespace Status Watcher Microservice for Kubernetes monitoring

@@ -48,9 +48,9 @@ service:
 image:
   ui:
 {% if pipeline_type == "docsum" %}
-    name: enterprise-rag-docsum-ui
+    name: chatbot-toolkit-docsum-ui
 {% elif pipeline_type == "chatqna" and audio_enabled is defined and audio_enabled %}
-    name: enterprise-rag-audioqna-ui
+    name: chatbot-toolkit-audioqna-ui
 {% endif %}
     tag: "{{ tag }}"
     repository: "{{ registry }}"

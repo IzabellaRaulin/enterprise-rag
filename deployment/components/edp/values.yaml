@@ -210,7 +210,7 @@ minimalResources:
 
 celery:
   nameOverride: "edp-celery"
-  name: "enterprise-rag-enhanced-dataprep"
+  name: "chatbot-toolkit-enhanced-dataprep"
   repository: "docker.io/intel"
   tag: latest
   pullPolicy: Always
@@ -391,7 +391,7 @@ celery:
 flower:
   enabled: true
   nameOverride: "edp-flower"
-  name: "enterprise-rag-enhanced-dataprep"
+  name: "chatbot-toolkit-enhanced-dataprep"
   repository: "docker.io/intel"
   tag: latest
   pullPolicy: Always
@@ -606,7 +606,7 @@ backend:
           "default"
         ]
   nameOverride: "edp-backend"
-  name: "enterprise-rag-enhanced-dataprep"
+  name: "chatbot-toolkit-enhanced-dataprep"
   repository: "docker.io/intel"
   tag: latest
   pullPolicy: Always
@@ -621,7 +621,7 @@ backend:
 
 textExtractor:
   nameOverride: "edp-text-extractor"
-  name: "enterprise-rag-text-extractor"
+  name: "chatbot-toolkit-text-extractor"
   repository: "docker.io/intel"
   tag: latest
   pullPolicy: Always
@@ -676,7 +676,7 @@ textExtractor:
 
 textCompression:
   nameOverride: "edp-text-compression"
-  name: "enterprise-rag-text-compression"
+  name: "chatbot-toolkit-text-compression"
   repository: "docker.io/intel"
   tag: latest
   pullPolicy: Always
@@ -698,7 +698,7 @@ textCompression:
 
 textSplitter:
   nameOverride: "edp-text-splitter"
-  name: "enterprise-rag-text-splitter"
+  name: "chatbot-toolkit-text-splitter"
   repository: "docker.io/intel"
   tag: latest
   pullPolicy: Always
@@ -725,7 +725,7 @@ textSplitter:
 dpguard:
   enabled: false
   nameOverride: "edp-dpguard"
-  name: "enterprise-rag-dpguard"
+  name: "chatbot-toolkit-dpguard"
   repository: "docker.io/intel"
   tag: latest
   pullPolicy: Always
@@ -755,7 +755,7 @@ embedding:
     timeout: "120"
     eragLoggerLevel: "INFO"
   nameOverride: "edp-embedding"
-  name: "enterprise-rag-embedding"
+  name: "chatbot-toolkit-embedding"
   repository: "docker.io/intel"
   tag: latest
   pullPolicy: Always
@@ -770,7 +770,7 @@ embedding:
 
 ingestion:
   nameOverride: "edp-ingestion"
-  name: "enterprise-rag-ingestion"
+  name: "chatbot-toolkit-ingestion"
   repository: "docker.io/intel"
   tag: latest
   config:
@@ -825,7 +825,7 @@ awsSqs:
           key: AWS_SECRET_ACCESS_KEY
   enabled: false
   nameOverride: "edp-aws"
-  name: "enterprise-rag-enhanced-dataprep"
+  name: "chatbot-toolkit-enhanced-dataprep"
   repository: "docker.io/intel"
   tag: latest
   pullPolicy: Always

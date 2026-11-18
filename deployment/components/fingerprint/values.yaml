@@ -8,7 +8,7 @@ fullnameOverride: "fingerprint-svc"
 
 image:
   fingerprint:
-    name: "enterprise-rag-system-fingerprint"
+    name: "chatbot-toolkit-system-fingerprint"
     repository: "docker.io/intel"
     tag: "latest"
     pullPolicy: Always

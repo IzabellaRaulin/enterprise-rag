@@ -1,1 +1,1 @@
-Intel® AI for Enterprise RAG ASR Microservice for converting audio to text
+Intel® Chatbot Toolkit ASR Microservice for converting audio to text

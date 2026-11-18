@@ -180,34 +180,34 @@ pvc:
 
 images:
   gmcManager:
-    image: "enterprise-rag-gmcmanager"
+    image: "chatbot-toolkit-gmcmanager"
     repository: *repo
     tag: *tag
     pullPolicy: Always
   gmcRouter:
-    image: "enterprise-rag-gmcrouter"
+    image: "chatbot-toolkit-gmcrouter"
     repository: *repo
     tag: *tag
     pullPolicy: Always
   text-extractor-usvc:
-    image: "enterprise-rag-text-extractor"
+    image: "chatbot-toolkit-text-extractor"
     repository: *repo
     tag: *tag
     pullPolicy: Always
   text-compression-usvc:
-    image: "enterprise-rag-text-compression"
+    image: "chatbot-toolkit-text-compression"
     repository: *repo
     tag: *tag
     pullPolicy: Always
   text-splitter-usvc:
-    image: "enterprise-rag-text-splitter"
+    image: "chatbot-toolkit-text-splitter"
     repository: *repo
     tag: *tag
     pullPolicy: Always
     envs:
       EMBEDDING_SERVICE_ENDPOINT: "http://embedding-usvc:6000/v1/embeddings"
   embedding-usvc:
-    image: "enterprise-rag-embedding"
+    image: "chatbot-toolkit-embedding"
     repository: *repo
     tag: *tag
     pullPolicy: Always
@@ -216,26 +216,26 @@ images:
       EMBEDDING_TIMEOUT_SECONDS: "120"
       ERAG_LOGGER_LEVEL: "INFO"
   reranking-usvc:
-    image: "enterprise-rag-reranking"
+    image: "chatbot-toolkit-reranking"
     repository: *repo
     tag: *tag
     pullPolicy: Always
     envs:
       RERANKING_MODEL_NAME: *reranking_model_name
   prompt-template-usvc:
-    image: "enterprise-rag-prompt_template"
+    image: "chatbot-toolkit-prompt_template"
     repository: *repo
     tag: *tag
     pullPolicy: Always
   retriever-usvc:
-    image: "enterprise-rag-retriever"
+    image: "chatbot-toolkit-retriever"
     repository: *repo
     tag: *tag
     pullPolicy: Always
     envs:
       EMBEDDING_MODEL_NAME: *embedding_model_name
   ovms_ner:
-    image: "enterprise-rag-ovms_ner"
+    image: "chatbot-toolkit-ovms_ner"
     repository: *repo
     tag: *tag
     pullPolicy: Always
@@ -245,47 +245,47 @@ images:
       OVMS_INTERNAL_PORT: "9000"
       GATEWAY_PORT: "9001"
   ingestion-usvc:
-    image: "enterprise-rag-ingestion"
+    image: "chatbot-toolkit-ingestion"
     repository: *repo
     tag: *tag
     pullPolicy: Always
   llm-usvc:
-    image: "enterprise-rag-llm"
+    image: "chatbot-toolkit-llm"
     repository: *repo
     tag: *tag
     pullPolicy: Always
   in-guard-usvc:
-    image: "enterprise-rag-in-guard"
+    image: "chatbot-toolkit-in-guard"
     repository: *repo
     tag: *tag
     pullPolicy: Always
   out-guard-usvc:
-    image: "enterprise-rag-out-guard"
+    image: "chatbot-toolkit-out-guard"
     repository: *repo
     tag: *tag
     pullPolicy: Always
   ui-usvc:
-    image: "enterprise-rag-chatqna-conversation-ui"
+    image: "chatbot-toolkit-chatqna-conversation-ui"
     repository: *repo
     tag: *tag
     pullPolicy: Always
   langdtct-usvc:
-    image: "enterprise-rag-language-detection"
+    image: "chatbot-toolkit-language-detection"
     repository: *repo
     tag: *tag
     pullPolicy: Always
   docsum-usvc:
-    image: "enterprise-rag-docsum"
+    image: "chatbot-toolkit-docsum"
     repository: *repo
     tag: *tag
     pullPolicy: Always
   query-rewrite-usvc:
-    image: "enterprise-rag-query-rewrite"
+    image: "chatbot-toolkit-query-rewrite"
     repository: *repo
     tag: *tag
     pullPolicy: Always
   init-container:
-    image: "enterprise-rag-init-container"
+    image: "chatbot-toolkit-init-container"
     repository: *repo
     tag: *tag
     pullPolicy: Always

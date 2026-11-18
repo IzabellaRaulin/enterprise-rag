@@ -103,7 +103,7 @@ Each step of a RAG answer is its own service, which is what lets you swap a rera
 | `text_splitter` | Chunking service | `edp` |
 | `tts` | Text-to-speech | `audioqna` |
 
-Images built from `src/comps/*/impl/microservice/Dockerfile`, published to `docker.io/intel/enterprise-rag-<service>`. Default tag matches the solution version (`3.0.0`).
+Images built from `src/comps/*/impl/microservice/Dockerfile`, published to `docker.io/intel/chatbot-toolkit-<service>`. Default tag matches the solution version (`3.0.0`).
 
 ## GMC Operator
 
@@ -115,7 +115,7 @@ The GMC operator (`src/gmc/`) is a kubebuilder-based controller that composes mi
 | `Ensemble` | Parallel branches whose outputs are merged | Two retriever branches feeding one fusion step |
 | `Switch` | Conditional routing | Supported by the operator; no shipped flavour uses it |
 
-The router pod (`intel/enterprise-rag-gmcrouter`) sits at the pipeline's edge and dispatches requests step-by-step. The manager pod (`intel/enterprise-rag-gmcmanager`) reconciles `GMConnector` CRs and provisions step Services/Deployments/ConfigMaps.
+The router pod (`intel/chatbot-toolkit-gmcrouter`) sits at the pipeline's edge and dispatches requests step-by-step. The manager pod (`intel/chatbot-toolkit-gmcmanager`) reconciles `GMConnector` CRs and provisions step Services/Deployments/ConfigMaps.
 
 ## Pipeline Composition
 
@@ -168,7 +168,7 @@ Endpoints: `/v1/dataprep` (upload), `/v1/dataprep/get_files`, `/v1/dataprep/dele
 | `docsum` | Document summarization | `https://erag-gateway.<domain>/` |
 | `audioqna` | Audio question answering | `https://erag-gateway.<domain>/` |
 
-Each app is packaged as `docker.io/intel/enterprise-rag-<app>-ui` and deployed via the `ui` Helm chart. The UI hits the APISIX gateway, which routes to the GMC router service.
+Each app is packaged as `docker.io/intel/chatbot-toolkit-<app>-ui` and deployed via the `ui` Helm chart. The UI hits the APISIX gateway, which routes to the GMC router service.
 
 ## MCP Gateway
 

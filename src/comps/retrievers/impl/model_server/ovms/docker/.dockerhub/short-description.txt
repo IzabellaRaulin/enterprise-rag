@@ -1,1 +1,1 @@
-Intel® AI for Enterprise RAG NER Model Server powered by OpenVINO™
+Intel® Chatbot Toolkit NER Model Server powered by OpenVINO™

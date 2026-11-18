@@ -1,1 +1,1 @@
-Intel® AI for Enterprise RAG Fingerprint Service to ensure configuration integrity
+Intel® Chatbot Toolkit Fingerprint Service to ensure configuration integrity

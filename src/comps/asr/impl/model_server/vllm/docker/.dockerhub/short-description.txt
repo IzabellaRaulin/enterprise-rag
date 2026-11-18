@@ -1,1 +1,1 @@
-Intel® AI for Enterprise RAG VLLM Audio Model Server for converting audio to text
+Intel® Chatbot Toolkit VLLM Audio Model Server for converting audio to text

@@ -50,7 +50,7 @@
     - name: "app_keycloak_config | Set teardown variables"
       ansible.builtin.set_fact:
         teardown_job_name: "keycloak-teardown-{{ ansible_date_time.epoch }}"
-        init_container_image: "{{ registry }}/enterprise-rag-init-container:{{ tag | default(default_image_tag) }}"
+        init_container_image: "{{ registry }}/chatbot-toolkit-init-container:{{ tag | default(default_image_tag) }}"
         keycloak_internal_url: "http://keycloak-service.{{ keycloak_namespace }}.svc:8080{{ erag_keycloak_path_prefix }}"
 
     - name: "app_keycloak_config | Ensure ServiceAccount exists for teardown Job"

@@ -70,7 +70,7 @@ data_consistency_edp_count_sql: "SELECT count(*) FROM files;"
 # --- Identity provider. The identity server's image carries no HTTP client, so
 #     the query runs the same initialization image the identity configurator Job
 #     uses. The endpoint is the in-cluster Service, so no proxy is involved. ---
-data_consistency_init_container_image: "{{ registry }}/enterprise-rag-init-container:{{ tag }}"
+data_consistency_init_container_image: "{{ registry }}/chatbot-toolkit-init-container:{{ tag }}"
 data_consistency_keycloak_url: >-
   http://{{ keycloak_service_name }}.{{ keycloak_namespace }}.svc:8080{{ erag_keycloak_path_prefix }}
 

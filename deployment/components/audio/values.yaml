@@ -18,7 +18,7 @@ asr:
   fullnameOverride: "asr-svc"
 
   image:
-    name: "enterprise-rag-asr"
+    name: "chatbot-toolkit-asr"
     repository: "docker.io/intel"
     tag: "latest"
     pullPolicy: Always
@@ -58,7 +58,7 @@ vllmAudioCpu:
   fullnameOverride: "vllm-audio-cpu"
 
   image:
-    name: "enterprise-rag-vllm-audio"
+    name: "chatbot-toolkit-vllm-audio"
     repository: "docker.io/intel"
     tag: "latest"
     pullPolicy: Always
@@ -84,7 +84,7 @@ tts:
   fullnameOverride: "tts-svc"
 
   image:
-    name: "enterprise-rag-tts"
+    name: "chatbot-toolkit-tts"
     repository: "docker.io/intel"
     tag: "latest"
     pullPolicy: Always
@@ -117,7 +117,7 @@ ttsFastapiModelServer:
   fullnameOverride: "tts-fastapi-model-server"
 
   image:
-    name: "enterprise-rag-tts-fastapi-model-server"
+    name: "chatbot-toolkit-tts-fastapi-model-server"
     repository: "docker.io/intel"
     tag: "latest"
     pullPolicy: Always
@@ -139,7 +139,7 @@ ttsFastapiModelServer:
 namespaceStatusWatcher:
   enabled: true
   image:
-    name: "enterprise-rag-namespace-status-watcher"
+    name: "chatbot-toolkit-namespace-status-watcher"
     repository: "docker.io/intel"
     tag: "latest"
     pullPolicy: Always

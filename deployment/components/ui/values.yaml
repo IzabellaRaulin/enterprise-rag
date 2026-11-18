@@ -47,7 +47,7 @@ extraUiConfigVars:
 image:
   ui:
     repository: "docker.io/intel"
-    name: enterprise-rag-chatqna-conversation-ui
+    name: chatbot-toolkit-chatqna-conversation-ui
     pullPolicy: Always
     tag: "latest"
 

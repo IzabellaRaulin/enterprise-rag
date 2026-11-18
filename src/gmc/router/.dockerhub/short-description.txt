@@ -1,1 +1,1 @@
-Routing service for Intel® AI for Enterprise RAG service communication
+Routing service for Intel® Chatbot Toolkit service communication

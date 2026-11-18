@@ -1,1 +1,1 @@
-Management service for Intel® AI for Enterprise RAG services orchestration
+Management service for Intel® Chatbot Toolkit services orchestration

@@ -1,1 +1,1 @@
-Intel® AI for Enterprise RAG Query Rewrite Microservice for improving retrieval quality
+Intel® Chatbot Toolkit Query Rewrite Microservice for improving retrieval quality

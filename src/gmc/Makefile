@@ -2,8 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # Image URL to use all building/pushing image targets
-CTR_IMG ?= enterprise-rag-gmcmanager
-ROUTER_IMG ?= enterprise-rag-gmcrouter
+CTR_IMG ?= chatbot-toolkit-gmcmanager
+ROUTER_IMG ?= chatbot-toolkit-gmcrouter
 VERSION ?= latest
 DOCKER_REGISTRY ?= docker.io/intel
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.

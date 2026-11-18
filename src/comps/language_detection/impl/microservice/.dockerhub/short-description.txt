@@ -1,1 +1,1 @@
-Intel® AI for Enterprise RAG Language Detection Service
+Intel® Chatbot Toolkit Language Detection Service

@@ -8,7 +8,7 @@ fullnameOverride: "chat-history-svc"
 
 image:
   chat_history:
-    name: "enterprise-rag-chat-history"
+    name: "chatbot-toolkit-chat-history"
     repository: "docker.io/intel"
     tag: "latest"
     pullPolicy: Always

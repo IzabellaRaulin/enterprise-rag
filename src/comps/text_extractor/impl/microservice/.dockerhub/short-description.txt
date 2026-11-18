@@ -1,1 +1,1 @@
-Intel® AI for Enterprise RAG Text Extractor Service
+Intel® Chatbot Toolkit Text Extractor Service

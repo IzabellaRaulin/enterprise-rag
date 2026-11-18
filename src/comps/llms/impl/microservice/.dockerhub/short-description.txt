@@ -1,1 +1,1 @@
-Intel® AI for Enterprise RAG LLM Microservice for interacting with a LLM model server endpoint
+Intel® Chatbot Toolkit LLM Microservice for interacting with a LLM model server endpoint

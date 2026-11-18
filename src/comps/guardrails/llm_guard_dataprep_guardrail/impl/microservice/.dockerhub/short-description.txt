@@ -1,1 +1,1 @@
-Intel® AI for Enterprise RAG Dataprep Guardrail Service
+Intel® Chatbot Toolkit Dataprep Guardrail Service

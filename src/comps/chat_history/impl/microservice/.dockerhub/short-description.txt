@@ -1,1 +1,1 @@
-Intel® AI for Enterprise RAG Chat History Microservice
+Intel® Chatbot Toolkit Chat History Microservice

@@ -1,1 +1,1 @@
-Intel® AI for Enterprise RAG Output Guardrail Service
+Intel® Chatbot Toolkit Output Guardrail Service

@@ -1,1 +1,1 @@
-Intel® AI for Enterprise RAG Docsum Microservice for running summarization on a document
+Intel® Chatbot Toolkit Docsum Microservice for running summarization on a document
