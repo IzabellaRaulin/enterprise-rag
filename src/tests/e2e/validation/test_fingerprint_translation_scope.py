@@ -11,6 +11,7 @@ paramsKind; PromptTemplate must not, so llm is the only group seeded here.
 Needs a running translation deployment; skipped on other pipeline types.
 """
 
+import allure
 import logging
 
 import pytest
@@ -30,7 +31,7 @@ PARAMS_KEY = "llm"
 REQUIRED_FIELDS = {"max_new_tokens", "stream"}
 
 
-# IMPORTANT: the Allure testcase id for this test must come from the validation team.
+@allure.testcase("DSPTV-T438")
 @pytest.mark.smoke
 def test_translation_llm_group_is_seeded(fingerprint_api_helper):
     response = fingerprint_api_helper.read_config(PARAMS_KEY, pipeline=PIPELINE, tenant=TENANT)
@@ -44,7 +45,7 @@ def test_translation_llm_group_is_seeded(fingerprint_api_helper):
     assert not missing, f"'{PARAMS_KEY}' is missing seeded field(s) {sorted(missing)}"
 
 
-# IMPORTANT: the Allure testcase id for this test must come from the validation team.
+@allure.testcase("DSPTV-T439")
 def test_translation_scope_write_is_read_back(fingerprint_api_helper):
     before = fingerprint_api_helper.read_config(PARAMS_KEY, pipeline=PIPELINE, tenant=TENANT)
     assert before.status_code == 200, (

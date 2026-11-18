@@ -3,6 +3,7 @@
 # Copyright (C) 2026 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+import allure
 import logging
 import re
 
@@ -27,7 +28,7 @@ LANGUAGE_PAIRS = [
 ]
 
 
-# IMPORTANT: the Allure testcase id for this test must come from the validation team.
+@allure.testcase("DSPTV-T432")
 @pytest.mark.smoke
 @pytest.mark.parametrize("text, target_language, target_script", LANGUAGE_PAIRS,
                          ids=[pair[1] for pair in LANGUAGE_PAIRS])
@@ -41,7 +42,7 @@ def test_translation_language_pairs(translation_helper, text, target_language, t
     assert target_script.search(translation), f"Translation is not in {target_language}: '{translation}'"
 
 
-# IMPORTANT: the Allure testcase id for this test must come from the validation team.
+@allure.testcase("DSPTV-T433")
 def test_translation_streams_response(translation_helper):
     response = translation_helper.call("Good morning, how are you?", "German")
     assert response.status_code == 200, f"Unexpected status code: {response.status_code}, {response.text}"
@@ -52,7 +53,7 @@ def test_translation_streams_response(translation_helper):
     assert data_lines[-1] == "data: [DONE]", f"Stream did not end with [DONE]: {data_lines[-1]}"
 
 
-# IMPORTANT: the Allure testcase id for this test must come from the validation team.
+@allure.testcase("DSPTV-T434")
 def test_translation_honours_stream_false(translation_helper):
     response = translation_helper.call("Good morning, how are you?", "German", stream=False)
     assert response.status_code == 200, f"Unexpected status code: {response.status_code}, {response.text}"
@@ -61,7 +62,7 @@ def test_translation_honours_stream_false(translation_helper):
     assert translation_helper.get_text(response).strip(), f"Empty translation: {response.text}"
 
 
-# IMPORTANT: the Allure testcase id for this test must come from the validation team.
+@allure.testcase("DSPTV-T435")
 def test_translation_requires_authentication(translation_helper):
     response = translation_helper.call_with_payload(
         {"text": "Hello", "target_language": "German"}, headers={"Content-Type": "application/json"})
@@ -69,7 +70,7 @@ def test_translation_requires_authentication(translation_helper):
         f"Expected 401/403 without a token, got {response.status_code}: {response.text}")
 
 
-# IMPORTANT: the Allure testcase id for this test must come from the validation team.
+@allure.testcase("DSPTV-T436")
 @pytest.mark.parametrize("payload", [
     {"text": "Hello"},
     {"target_language": "German"},
@@ -83,7 +84,7 @@ def test_translation_rejects_bad_request(translation_helper, payload):
         f"Expected {BAD_REQUEST_STATUS_CODES} for {payload}, got {response.status_code}: {response.text}")
 
 
-# IMPORTANT: the Allure testcase id for this test must come from the validation team.
+@allure.testcase("DSPTV-T437")
 def test_translation_keeps_language_detection_prompt_template(translation_helper, k8s_helper):
     """
     A paramsKind on the PromptTemplate step makes the router replace the template that
