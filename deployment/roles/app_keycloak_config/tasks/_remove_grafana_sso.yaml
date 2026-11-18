@@ -1,0 +1,63 @@
+# Copyright (C) 2026 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+---
+# =============================================================================
+# app_keycloak_config | Remove the Grafana SSO earlier releases injected
+# =============================================================================
+# Their grafana-sso-env Secret overrides the platform's Grafana sign-in and
+# outlives this role's realm. Run from install and teardown; a no-op once gone.
+
+- name: "app_keycloak_config | grafana-sso | Remove the injected Grafana sign-in"
+  vars:
+    # Foreign: owned by observability (Toolkit Manager)
+    _ns: "{{ observability_namespace | default('monitoring') }}"
+    _restart:
+      metadata:
+        annotations:
+          erag.intel.com/grafana-sso-config-hash: null
+          kubectl.kubernetes.io/restartedAt: "{{ now(utc=true).isoformat() }}"
+  block:
+    - name: "app_keycloak_config | grafana-sso | Delete the grafana-sso-env Secret"
+      kubernetes.core.k8s:
+        state: absent
+        api_version: v1
+        kind: Secret
+        name: grafana-sso-env
+        namespace: "{{ _ns }}"
+      register: _app_keycloak_config_grafana_sso_secret
+
+    # Grafana reads it through an optional envFrom: a restart drops its values.
+    # state: patched skips a Grafana that is not there.
+    - name: "app_keycloak_config | grafana-sso | Restart Grafana"
+      kubernetes.core.k8s:
+        state: patched
+        merge_type: merge
+        api_version: apps/v1
+        kind: Deployment
+        name: kube-prometheus-stack-grafana
+        namespace: "{{ _ns }}"
+        definition:
+          spec:
+            template: "{{ _restart }}"
+      when:
+        - _app_keycloak_config_grafana_sso_secret is changed
+        - not _keycloak_config_grafana_operator | bool
+
+    # The operator owns the Deployment and reverts patches to it: restart through the Grafana CR.
+    - name: "app_keycloak_config | grafana-sso | Restart Grafana (OpenShift)"
+      kubernetes.core.k8s:
+        state: patched
+        merge_type: merge
+        api_version: grafana.integreatly.org/v1beta1
+        kind: Grafana
+        # Foreign: owned by observability (Toolkit Manager)
+        name: "{{ observability_openshift_grafana_name | default('grafana-platform') }}"
+        namespace: "{{ _ns }}"
+        definition:
+          spec:
+            deployment:
+              spec:
+                template: "{{ _restart }}"
+      when:
+        - _app_keycloak_config_grafana_sso_secret is changed
+        - _keycloak_config_grafana_operator | bool

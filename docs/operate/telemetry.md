@@ -20,9 +20,9 @@ kubectl get secret -n monitoring grafana-admin-credentials \
 # Username: admin
 ```
 
-### Keycloak SSO
+### Platform Keycloak SSO
 
-On the Grafana login page, select **Sign in with Keycloak** and enter your username and password. Only users in the `erag-admins` or `erag-maintainers` Keycloak group can access Grafana.
+On the Grafana login page, select **Sign in with Keycloak** and sign in with your platform account, for example `platform-admin`. Its password is in `env/<name>/logs/rag/default_credentials.yaml` (`PLATFORM_ADMIN_PASSWORD`).
 
 ## Dashboards
 

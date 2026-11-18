@@ -89,13 +89,14 @@ URLs: `https://solutions.ai` (RAG UI), `https://keycloak.solutions.ai`, `https:/
 
 ### Credentials
 
-All in `env/<name>/logs/rag/default_credentials.yaml` (one-time passwords; change after first login):
+Chatbot Toolkit accounts are in `env/<name>/logs/rag/` (one-time passwords; change after first login). The platform's Keycloak and Grafana accounts are in Kubernetes Secrets:
 
 | Service | Username | Location |
 |---------|----------|----------|
-| UI admin/user | (in file) | default_credentials.yaml |
-| Keycloak | admin | default_credentials.yaml |
-| Grafana | admin | default_credentials.yaml |
+| UI admin/user/maintainer (realm `EnterpriseRAG`) | `erag-admin`, `erag-user`, `erag-maintainer` | default_credentials.txt |
+| Keycloak admin console (realm `master`) | admin | `keycloak-admin-secret` Secret, namespace `keycloak` |
+| Grafana, **Sign in with Keycloak** (realm `platform`) | platform-admin | `platform-bootstrap-admin` Secret, namespace `keycloak` (temporary; change at first login) |
+| Grafana, local admin on the login form | admin | `grafana-admin-credentials` Secret, namespace `monitoring` |
 | Vector store | (varies) | default_credentials.yaml |
 | SeaweedFS S3 | (access/secret keys) | default_credentials.yaml |
 | SeaweedFS Admin | (user/pass) | default_credentials.yaml |

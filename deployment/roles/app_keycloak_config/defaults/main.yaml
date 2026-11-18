@@ -65,23 +65,7 @@ erag_keycloak_federation_admin_group_ldap_filter: "(cn=erag-admin-group)"
 edp_minio_domain_name: "seaweedfs.{{ base_domain_name | default('solutions.ai') }}"      # app_edp
 edp_seaweedfs_path_prefix: ""  # app_edp
 ui_domain_name: "{{ base_domain_name | default('solutions.ai') }}"      # app_ui
-telemetry_domain_name: "grafana.{{ base_domain_name | default('solutions.ai') }}"
-telemetry_path_prefix: ""                          # app_pre_install (solution_config);
 rag_log_dir: "{{ log_dir }}/rag"                   # app_pre_install (derived from log_dir)
 rag_tmp_dir: "{{ tmp_dir }}/rag"                   # app_pre_install (derived from tmp_dir)
 secure_logs: true                                  # global
 mcp_enabled: false                                 # pipelines/<flavour>/config.yaml
-
-# --- Grafana OAuth SSO ---
-grafana_oauth_domain: "{{ telemetry_domain_name }}"
-grafana_oauth_path_prefix: "{{ telemetry_path_prefix | default('') }}"
-# Pinned to the realm the configurator Job creates the grafana-oauth client in.
-grafana_oauth_realm: "EnterpriseRAG"
-grafana_oauth_client_secret: ""  # generated/reused at runtime
-grafana_oauth_namespace: "{{ observability_namespace | default('monitoring') }}"
-grafana_oauth_grafana_cr: "{{ observability_openshift_grafana_name | default('grafana-platform') }}"
-grafana_oauth_deployment: >-
-  {{ grafana_oauth_grafana_cr ~ '-deployment' if _keycloak_config_grafana_operator | bool else 'kube-prometheus-stack-grafana' }}
-grafana_oauth_secret_name: "grafana-sso-env"
-grafana_oauth_keycloak_internal_url: >-
-  http://keycloak-service.{{ keycloak_namespace | default('keycloak') }}.svc.cluster.local:8080{{ erag_keycloak_path_prefix }}

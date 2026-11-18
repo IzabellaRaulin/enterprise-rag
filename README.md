@@ -32,7 +32,7 @@ Pipelines are composed, not hardcoded. A flavour declares an ordered flow of ste
 
 ### What makes it enterprise-grade
 
-- **Access control, not just an API key** - Keycloak OIDC single sign-on across the UI, Grafana and Keycloak itself, a guardrail on every query by default, and opt-in role-based access control that scopes retrieval to the documents each user is cleared to see.
+- **Access control, not just an API key** - Keycloak OIDC single sign-on across the UI and Keycloak itself, a guardrail on every query by default, and opt-in role-based access control that scopes retrieval to the documents each user is cleared to see.
 - **Modular pipelines, not a monolith** - a flavour declares an ordered flow of steps, the composer renders it into a `GMConnector` resource, and the operator reconciles the microservices behind it. Changing retrieval strategy or adding output guardrails is a config edit, not a rewrite.
 - **Integrated, not bolted on** - identity, TLS, object storage, PostgreSQL and Grafana come from the shared platform, so the chatbot is one more governed workload instead of a second stack to operate.
 - **Secure by default** - Pod Security Standards enforcement, Istio ambient mTLS between services, and generated credentials with no secrets in the repo.

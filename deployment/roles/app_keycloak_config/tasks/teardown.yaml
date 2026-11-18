@@ -151,43 +151,7 @@
     label: "{{ item.metadata.name }}"
   when: _kc_cfg_jobs.resources | default([]) | length > 0
 
-# --- Phase 3: Remove Grafana SSO wiring ---
+# --- Phase 3: Remove the Grafana SSO earlier releases injected ---
 
-- name: "app_keycloak_config | grafana-sso | Look up platform Grafana Deployment"
-  kubernetes.core.k8s_info:
-    api_version: apps/v1
-    kind: Deployment
-    name: "{{ grafana_oauth_deployment }}"
-    namespace: "{{ grafana_oauth_namespace }}"
-  register: _grafana_deploy_td
-  failed_when: false
-
-- name: "app_keycloak_config | grafana-sso | Remove SSO from platform Grafana"
-  when: (_grafana_deploy_td.resources | default([])) | length > 0
-  block:
-    - name: "app_keycloak_config | grafana-sso | Delete grafana-sso-env Secret"
-      kubernetes.core.k8s:
-        state: absent
-        api_version: v1
-        kind: Secret
-        name: "{{ grafana_oauth_secret_name }}"
-        namespace: "{{ grafana_oauth_namespace }}"
-
-    - name: "app_keycloak_config | grafana-sso | Unwire Secret from Grafana + roll"
-      kubernetes.core.k8s:
-        state: patched
-        merge_type: strategic-merge
-        api_version: apps/v1
-        kind: Deployment
-        name: "{{ grafana_oauth_deployment }}"
-        namespace: "{{ grafana_oauth_namespace }}"
-        definition:
-          spec:
-            template:
-              metadata:
-                annotations:
-                  erag.intel.com/grafana-sso-config-hash: null
-              spec:
-                containers:
-                  - name: grafana
-                    envFrom: []
+- name: "app_keycloak_config | teardown | Remove the Grafana SSO earlier releases injected"
+  ansible.builtin.include_tasks: _remove_grafana_sso.yaml

@@ -1301,74 +1301,14 @@ map_client_role_to_group "$KEYCLOAK_REALM" "erag-maintainer-group" "EnterpriseRA
 map_client_role_to_group "$KEYCLOAK_REALM" "erag-maintainer-group" "EnterpriseRAG-oidc-minio" "erag-user-group"
 map_client_role_to_group "$KEYCLOAK_REALM" "erag-maintainer-group" "EnterpriseRAG-oidc-minio" "erag-maintainer-group"
 
-# Grafana OAuth client (SSO — same Keycloak session used by the ERAG UI)
-if [ -n "${GRAFANA_DOMAIN:-}" ]; then
-  log_info "Creating Grafana OAuth client..."
-  if [ -n "${GRAFANA_PATH_PREFIX:-}" ]; then
-    grafana_base_url="https://${GRAFANA_DOMAIN}${GRAFANA_PATH_PREFIX}"
-    grafana_redirect_uri="https://${GRAFANA_DOMAIN}${GRAFANA_PATH_PREFIX}/login/generic_oauth"
+# Earlier releases signed people in to Grafana through this realm; the platform realm does now.
+grafana_client_uuid=$(get_client_id "$KEYCLOAK_REALM" "grafana-oauth")
+if [ -n "$grafana_client_uuid" ]; then
+  if curl_keycloak "${KEYCLOAK_URL}/admin/realms/${KEYCLOAK_REALM}/clients/${grafana_client_uuid}" "" DELETE; then
+    log_success "Deleted the obsolete grafana-oauth client"
   else
-    grafana_base_url="https://$GRAFANA_DOMAIN"
-    grafana_redirect_uri="https://$GRAFANA_DOMAIN/login/generic_oauth"
+    log_error "Failed to delete the obsolete grafana-oauth client (HTTP $HTTP_CODE)"
   fi
-
-  # Confidential client with authorization code flow (standardFlow via create_client)
-  create_client "$KEYCLOAK_REALM" "grafana-oauth" "false" "false" "false" "$grafana_base_url" "$grafana_redirect_uri" "true"
-
-  # Register Grafana's post-logout redirect URIs
-  grafana_client_uuid=$(get_client_id "$KEYCLOAK_REALM" "grafana-oauth")
-  get_access_token
-  HTTP_CODE=$(curl -sk -o /dev/null -w "%{http_code}" \
-    -X PUT \
-    -H "Authorization: Bearer ${ACCESS_TOKEN}" \
-    -H "Content-Type: application/json" \
-    -d '{"attributes": {"post.logout.redirect.uris": "'"${grafana_base_url}/login##${grafana_base_url}/"'"}}' \
-    "${KEYCLOAK_URL}/admin/realms/${KEYCLOAK_REALM}/clients/${grafana_client_uuid}")
-  if [[ "$HTTP_CODE" == "204" || "$HTTP_CODE" == "200" ]]; then
-    log_success "Grafana OAuth post-logout redirect URIs set"
-  else
-    log_error "Failed to set Grafana post-logout redirect URIs (HTTP $HTTP_CODE)"
-  fi
-
-  # Set the client secret to match what Grafana is configured with
-  if [ -n "${GRAFANA_OAUTH_CLIENT_SECRET:-}" ]; then
-    local_client_uuid=$(get_client_id "$KEYCLOAK_REALM" "grafana-oauth")
-    get_access_token
-    HTTP_CODE=$(curl -sk -o /dev/null -w "%{http_code}" \
-      -X PUT \
-      -H "Authorization: Bearer ${ACCESS_TOKEN}" \
-      -H "Content-Type: application/json" \
-      -d '{
-        "clientId": "grafana-oauth",
-        "secret": "'"$GRAFANA_OAUTH_CLIENT_SECRET"'",
-        "publicClient": false,
-        "standardFlowEnabled": true,
-        "directAccessGrantsEnabled": true
-      }' \
-      "${KEYCLOAK_URL}/admin/realms/${KEYCLOAK_REALM}/clients/${local_client_uuid}")
-    if [[ "$HTTP_CODE" == "204" || "$HTTP_CODE" == "200" ]]; then
-      log_success "Grafana OAuth client secret set"
-    else
-      log_error "Failed to set Grafana OAuth client secret (HTTP $HTTP_CODE)"
-    fi
-  fi
-
-  # Grafana role mapping: only admin/editor. Regular ERAG users are intentionally
-  # NOT granted any Grafana role so that, combined with Grafana's
-  # role_attribute_strict, only erag-admin and erag-maintainer can log in.
-  create_client_role "$KEYCLOAK_REALM" "grafana-oauth" "admin"
-  create_client_role "$KEYCLOAK_REALM" "grafana-oauth" "editor"
-
-  # Map ERAG admin -> Grafana admin, maintainer -> editor (regular users: no access)
-  assign_user_client_role "$KEYCLOAK_REALM" "erag-admin" "admin" "grafana-oauth"
-  assign_user_client_role "$KEYCLOAK_REALM" "erag-maintainer" "editor" "grafana-oauth"
-
-  # Add roles claim mapper so Grafana receives client roles in the token
-  add_client_scope_mapper "$KEYCLOAK_REALM" "grafana-oauth-dedicated" "grafana-oauth" "roles" "grafana_roles" "grafana-oauth"
-
-  # Map Grafana roles to groups (admin/maintainer only)
-  map_client_role_to_group "$KEYCLOAK_REALM" "erag-admin-group" "grafana-oauth" "admin"
-  map_client_role_to_group "$KEYCLOAK_REALM" "erag-maintainer-group" "grafana-oauth" "editor"
 fi
 
 # OIDC Identity Provider (if configured)
@@ -1382,9 +1322,6 @@ if [[ "$OIDC_ENDPOINT" =~ ^https?:// ]]; then
   assign_role_realm_role "$KEYCLOAK_REALM" "ERAG-SSO-Admin" "EnterpriseRAG-oidc-backend" "ERAG-admin"
   assign_role_realm_role "$KEYCLOAK_REALM" "ERAG-SSO-Admin" "EnterpriseRAG-oidc-minio" "erag-admin-group"
   assign_role_realm_role "$KEYCLOAK_REALM" "ERAG-SSO-Admin" "EnterpriseRAG-oidc-minio" "consoleAdmin"
-  if [ -n "${GRAFANA_DOMAIN:-}" ]; then
-    assign_role_realm_role "$KEYCLOAK_REALM" "ERAG-SSO-Admin" "grafana-oauth" "admin"
-  fi
 
   create_role "$KEYCLOAK_REALM" "ERAG-SSO-User"
   assign_role_realm_role "$KEYCLOAK_REALM" "ERAG-SSO-User" "EnterpriseRAG-oidc" "ERAG-user"
@@ -1398,9 +1335,6 @@ if [[ "$OIDC_ENDPOINT" =~ ^https?:// ]]; then
   assign_role_realm_role "$KEYCLOAK_REALM" "ERAG-SSO-Maintainer" "EnterpriseRAG-oidc-backend" "ERAG-maintainer"
   assign_role_realm_role "$KEYCLOAK_REALM" "ERAG-SSO-Maintainer" "EnterpriseRAG-oidc-minio" "erag-user-group"
   assign_role_realm_role "$KEYCLOAK_REALM" "ERAG-SSO-Maintainer" "EnterpriseRAG-oidc-minio" "erag-maintainer-group"
-  if [ -n "${GRAFANA_DOMAIN:-}" ]; then
-    assign_role_realm_role "$KEYCLOAK_REALM" "ERAG-SSO-Maintainer" "grafana-oauth" "editor"
-  fi
 
   # Create SSO claim-to-role mappers
   create_oidc_role_mapper "$KEYCLOAK_REALM" "$OIDC_ALIAS" "SSO-Admin-Mapper" "roles" "EnterpriseRAG.AdminAccess" "ERAG-SSO-Admin"

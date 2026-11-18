@@ -130,7 +130,15 @@ Then add the same line to your local `/etc/hosts`.
 - Keycloak: `https://keycloak.solutions.ai`
 - Grafana: `https://grafana.solutions.ai`
 
-**Credentials:** `env/local/logs/rag/default_credentials.yaml` (one-time passwords; change after first login).
+**Credentials:** `env/local/logs/rag/default_credentials.txt` for the UI accounts and `default_credentials.yaml` for the services (one-time passwords; change after first login).
+
+**Grafana:** click **Sign in with Keycloak** and sign in as `platform-admin` (realm `platform`). Its temporary password, which must be changed at first login, is in a Secret:
+
+```bash
+kubectl -n keycloak get secret platform-bootstrap-admin -o jsonpath='{.data.value}' | base64 -d; echo
+```
+
+The local `admin` signs in on the same login form; see [Telemetry](../operate/telemetry.md#login).
 
 ## Next steps
 

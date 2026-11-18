@@ -119,18 +119,6 @@ spec:
             - name: MINIO_PATH_PREFIX
               value: "{{ minio_path_prefix }}"
 {% endif %}
-{% if grafana_oauth_domain is defined and grafana_oauth_domain %}
-            - name: GRAFANA_DOMAIN
-              value: "{{ grafana_oauth_domain }}"
-{% if grafana_oauth_path_prefix is defined and grafana_oauth_path_prefix %}
-            - name: GRAFANA_PATH_PREFIX
-              value: "{{ grafana_oauth_path_prefix }}"
-{% endif %}
-{% if grafana_oauth_client_secret is defined and grafana_oauth_client_secret %}
-            - name: GRAFANA_OAUTH_CLIENT_SECRET
-              value: "{{ grafana_oauth_client_secret }}"
-{% endif %}
-{% endif %}
             - name: MCP_ENABLED
               value: "{{ mcp_enabled | default(false) | bool | lower }}"
 {% if mcp_enabled | default(false) | bool %}

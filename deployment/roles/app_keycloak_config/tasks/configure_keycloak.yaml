@@ -16,29 +16,6 @@
     credentials_secret_name: "erag-credentials"
     configurator_job_name: "keycloak-configurator-{{ ansible_date_time.epoch }}"
 
-- name: "app_keycloak_config | Check for existing Grafana SSO env Secret"
-  kubernetes.core.k8s_info:
-    api_version: v1
-    kind: Secret
-    name: "{{ grafana_oauth_secret_name }}"
-    namespace: "{{ grafana_oauth_namespace }}"
-  register: _kc_grafana_sso
-  failed_when: false
-
-- name: "app_keycloak_config | Reuse existing Grafana OAuth client secret"
-  ansible.builtin.set_fact:
-    grafana_oauth_client_secret: "{{ _kc_grafana_sso.resources[0].data['GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET'] | b64decode }}"
-  when:
-    - (_kc_grafana_sso.resources | default([])) | length > 0
-    - _kc_grafana_sso.resources[0].data['GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET'] is defined
-  no_log: "{{ secure_logs | default(true) }}"
-
-- name: "app_keycloak_config | Generate Grafana OAuth client secret (first run)"
-  ansible.builtin.set_fact:
-    grafana_oauth_client_secret: "{{ lookup('password', '/dev/null length=32 chars=ascii_letters,digits') }}"
-  when: grafana_oauth_client_secret | default('') | length == 0
-  no_log: "{{ secure_logs | default(true) }}"
-
 - name: "app_keycloak_config | Find previous configurator Jobs"
   kubernetes.core.k8s_info:
     api_version: batch/v1
@@ -146,6 +123,31 @@
   no_log: "{{ secure_logs }}"
   when: erag_credentials_secret.resources | length > 0
 
-- name: "app_keycloak_config | Inject Grafana SSO into platform Grafana"
-  ansible.builtin.include_tasks: configure_grafana_sso.yaml
-  when: grafana_oauth_domain | default('') | length > 0
+# Grafana's Keycloak sign-in uses the platform realm's first admin; absent when the platform creates none.
+- name: "app_keycloak_config | install | Read the platform admin's password"
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: Secret
+    name: platform-bootstrap-admin
+    namespace: "{{ keycloak_namespace }}"
+  register: _app_keycloak_config_platform_admin
+  no_log: "{{ secure_logs | default(true) | bool }}"
+
+- name: "app_keycloak_config | install | Add the platform admin to default_credentials.yaml"
+  ansible.builtin.lineinfile:
+    path: "{{ rag_log_dir }}/default_credentials.yaml"
+    regexp: "^{{ item.key }}:"
+    line: "{{ item.key }}: {{ item.value }}"
+    create: true
+    mode: "0600"
+  loop:
+    # Foreign: owned by keycloak (Toolkit Manager)
+    - {key: PLATFORM_ADMIN_USERNAME, value: "{{ keycloak_platform_bootstrap_admin_user | default('platform-admin') }}"}
+    - {key: PLATFORM_ADMIN_PASSWORD, value: "{{ ((_app_keycloak_config_platform_admin.resources | first | default({})).data | default({})).value | default('') | b64decode }}"}
+  loop_control:
+    label: "{{ item.key }}"
+  no_log: "{{ secure_logs | default(true) | bool }}"
+  when: _app_keycloak_config_platform_admin.resources | default([]) | length > 0
+
+- name: "app_keycloak_config | install | Remove the Grafana SSO earlier releases injected"
+  ansible.builtin.include_tasks: _remove_grafana_sso.yaml

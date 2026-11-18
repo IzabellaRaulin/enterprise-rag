@@ -3,6 +3,5 @@
 ---
 # Its Jobs are applied without Helm, so the post-renderer never sees them.
 _keycloak_config_fixed_uids: false
-# Grafana is the Grafana Operator's instance (core roles/observability); its
-# grafana container already reads grafana_oauth_secret_name.
+# Grafana is the Grafana Operator's instance (core roles/observability).
 _keycloak_config_grafana_operator: true
