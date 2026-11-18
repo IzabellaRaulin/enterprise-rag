@@ -15,8 +15,8 @@
       ======================================================
        RAG Deployment — INSTALL {{ 'SUCCEEDED' if check_pods_healthy | default(false) | bool else 'COMPLETED' }}
       ======================================================
-      UI:        https://{{ ui_domain_name | default('solutions.ai') }}
-      Keycloak:  https://{{ erag_keycloak_domain_name | default('keycloak.solutions.ai') }}
+      UI:        https://{{ ui_domain_name }}
+      Keycloak:  https://{{ erag_keycloak_domain_name }}{{ erag_keycloak_path_prefix }}
       {% if telemetry_enabled | default(false) %}
       Grafana:   https://{{ telemetry_domain_name | default('grafana.solutions.ai') }}
       {% endif %}

@@ -72,7 +72,7 @@ data_consistency_edp_count_sql: "SELECT count(*) FROM files;"
 #     uses. The endpoint is the in-cluster Service, so no proxy is involved. ---
 data_consistency_init_container_image: "{{ registry }}/enterprise-rag-init-container:{{ tag }}"
 data_consistency_keycloak_url: >-
-  http://{{ keycloak_service_name }}.{{ keycloak_namespace }}.svc:8080{{ erag_keycloak_path_prefix | default('') }}
+  http://{{ keycloak_service_name }}.{{ keycloak_namespace }}.svc:8080{{ erag_keycloak_path_prefix }}
 
 # --- Cross-role shared defaults - Owned by other roles; declared here so this role is standalone-runnable.
 #     The enable flags carry the same defaults as deployment/components.yaml, so
@@ -93,5 +93,6 @@ keycloak_admin_secret_name: "keycloak-admin-secret"    # app_keycloak_config
 keycloak_admin_user: "admin"                           # app_keycloak_config
 keycloak_service_name: "keycloak-service"              # keycloak, platform layer
 erag_keycloak_realm: "EnterpriseRAG"                   # app_keycloak_config
-erag_keycloak_path_prefix: ""                          # app_keycloak_config
+erag_keycloak_default_path_prefix: "{{ keycloak_path | default('/keycloak') }}"  # app_keycloak_config
+erag_keycloak_path_prefix: "{{ erag_keycloak_default_path_prefix if (routing_mode | default('subdomain')) == 'path' else '' }}"  # app_keycloak_config
 rag_tmp_dir: "{{ tmp_dir }}/rag"                       # app_pre_install (derived from tmp_dir)

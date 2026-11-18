@@ -19,13 +19,11 @@
 
 # --- Realm + domain ---
 erag_keycloak_realm: "EnterpriseRAG"
-erag_keycloak_domain_name: "auth.solutions.ai"
-# erag_keycloak_path_prefix is '' in subdomain mode; set to erag_keycloak_default_path_prefix
-# in path mode by app_pre_install/tasks/solution_config.yaml.
-erag_keycloak_path_prefix: ""
-# Must match where the platform serves Keycloak in path mode (keycloak role:
-# keycloak_path, default /keycloak); a different prefix breaks every issuer URL.
+erag_keycloak_domain_name: "{{ (base_domain_name | default('solutions.ai')) if (routing_mode | default('subdomain')) == 'path' else 'keycloak.' ~ (base_domain_name | default('solutions.ai')) }}"
+# Must match where the platform serves Keycloak in path mode (keycloak role: keycloak_path,
+# default /keycloak); a different prefix breaks every issuer URL.
 erag_keycloak_default_path_prefix: "{{ keycloak_path | default('/keycloak') }}"
+erag_keycloak_path_prefix: "{{ erag_keycloak_default_path_prefix if (routing_mode | default('subdomain')) == 'path' else '' }}"
 
 # --- Client registration (used by get_secret_id.yaml) ---
 erag_keycloak_client_id: "EnterpriseRAG-oidc-backend"

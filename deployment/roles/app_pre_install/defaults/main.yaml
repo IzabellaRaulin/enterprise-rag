@@ -17,11 +17,11 @@ reranking_model_name: ""                           # app_inference_models
 # vector_databases_vector_dims is deliberately NOT declared here: unset means
 # "auto-detect", and load_settings.yaml keys the detection gate off that.
 
-# --- Cross-role shared defaults - derived from base_domain_name in tasks/solution_config.yaml; declared here for standalone runs. ---
-ui_domain_name: "solutions.ai"                                                       # app_ui
-erag_keycloak_domain_name: "auth.solutions.ai"                                        # app_keycloak_config
-erag_keycloak_path_prefix: ""                                                     # app_keycloak_config
-erag_keycloak_default_path_prefix: "{{ keycloak_path | default('/keycloak') }}"  # app_keycloak_config; = platform keycloak_path
+# --- Cross-role shared defaults - declared here for standalone runs. ---
+ui_domain_name: "{{ base_domain_name | default('solutions.ai') }}"  # app_ui
+erag_keycloak_domain_name: "{{ (base_domain_name | default('solutions.ai')) if (routing_mode | default('subdomain')) == 'path' else 'keycloak.' ~ (base_domain_name | default('solutions.ai')) }}"  # app_keycloak_config
+erag_keycloak_default_path_prefix: "{{ keycloak_path | default('/keycloak') }}"  # app_keycloak_config
+erag_keycloak_path_prefix: "{{ erag_keycloak_default_path_prefix if (routing_mode | default('subdomain')) == 'path' else '' }}"  # app_keycloak_config
 edp_minio_domain_name: "seaweedfs.{{ base_domain_name | default('solutions.ai') }}"  # app_edp
 edp_minio_api_domain_name: "s3.{{ base_domain_name | default('solutions.ai') }}"     # app_edp
 edp_seaweedfs_path_prefix: ""                                                    # app_edp

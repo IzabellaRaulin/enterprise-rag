@@ -8,7 +8,7 @@
 
 # --- Deployment target ---
 ui_namespace: "rag-ui"
-ui_domain_name: "solutions.ai"
+ui_domain_name: "{{ base_domain_name | default('solutions.ai') }}"
 
 # --- Helm ---
 ui_helm_version: "{{ helm_version }}"
@@ -39,8 +39,9 @@ ui_path_prefix: ""
 edp_minio_api_domain_name: "s3.{{ base_domain_name | default('solutions.ai') }}"  # app_edp
 edp_storage_type: "seaweedfs"                   # app_edp — gates UI useBearerTokenAuth (S3_SEND_BEARER_TOKEN)
 edp_rbac_enabled: false                         # app_edp — gates UI useBearerTokenAuth (S3_SEND_BEARER_TOKEN)
-erag_keycloak_domain_name: "auth.solutions.ai"   # app_keycloak_config
-erag_keycloak_path_prefix: ""   # app_keycloak_config
+erag_keycloak_domain_name: "{{ (base_domain_name | default('solutions.ai')) if (routing_mode | default('subdomain')) == 'path' else 'keycloak.' ~ (base_domain_name | default('solutions.ai')) }}"  # app_keycloak_config
+erag_keycloak_default_path_prefix: "{{ keycloak_path | default('/keycloak') }}"  # app_keycloak_config
+erag_keycloak_path_prefix: "{{ erag_keycloak_default_path_prefix if (routing_mode | default('subdomain')) == 'path' else '' }}"  # app_keycloak_config
 istio_enabled: false                               # global
 enforce_pss: false                                 # global
 telemetry_domain_name: "grafana.solutions.ai"      # app_pre_install (solution_config)

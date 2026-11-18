@@ -13,7 +13,7 @@ pip3 install -r requirements.txt
   * this variable has the impact on all the bash helpers
   * for python based benchmark see the relevant section to specify your domain
 * benchmark and the bash helpers rely only on https protocol and can be run from any machine with https connection to the RAG deployment, so you need to ensure that you have network (https) access to `solutions.ai` (or your own domain):
-  * configure `/etc/hosts`, so `solutions.ai` domain and subdomains points to your RAG deployment IP, for example: `127.0.0.1 minio.solutions.ai grafana.solutions.ai s3.solutions.ai solutions.ai auth.solutions.ai`
+  * configure `/etc/hosts`, so `solutions.ai` domain and subdomains points to your RAG deployment IP, for example: `127.0.0.1 minio.solutions.ai grafana.solutions.ai s3.solutions.ai solutions.ai keycloak.solutions.ai`
   * export both `no_proxy` and `NO_PROXY` env variables, so they contain  `solutions.ai` and `.solutions.ai` domains
 * export UI username and password of the account with administrative rights using `KEYCLOAK_ERAG_ADMIN_USERNAME` and `KEYCLOAK_ERAG_ADMIN_PASSWORD` env variables. You can read them directly from the `erag-credentials` secret in the `keycloak` namespace:
 ```bash

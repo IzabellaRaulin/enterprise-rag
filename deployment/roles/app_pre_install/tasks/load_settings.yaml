@@ -82,7 +82,7 @@
 
       Domain Configuration:
         • UI: {{ base_domain_name | default('undefined') }}
-        • Keycloak: {{ erag_keycloak_domain_name | default('undefined') }}
+        • Keycloak: {{ erag_keycloak_domain_name }}{{ erag_keycloak_path_prefix }}
         • Telemetry: {{ telemetry_domain_name | default('undefined') }}
       {% if edp_enabled | default(false) | bool %}
         • EDP Storage: {{ edp_storage_type | default('seaweedfs') }}

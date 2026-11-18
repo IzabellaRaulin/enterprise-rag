@@ -101,7 +101,7 @@ spec:
           command: ["/bin/bash", "/scripts/configurator.sh"]
           env:
             - name: KEYCLOAK_URL
-              value: "http://keycloak-service.{{ keycloak_namespace }}.svc:8080{{ erag_keycloak_path_prefix | default('') }}"
+              value: "http://keycloak-service.{{ keycloak_namespace }}.svc:8080{{ erag_keycloak_path_prefix }}"
             - name: KEYCLOAK_REALM
               value: "{{ erag_keycloak_realm }}"
             - name: KEYCLOAK_ADMIN_USER

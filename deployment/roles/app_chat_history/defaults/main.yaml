@@ -31,7 +31,9 @@ apisix_oidc_client_id: "EnterpriseRAG-oidc-backend"  # app_apisix
 keycloak_namespace: "keycloak"     # core/keycloak
 pipeline_namespace: "{{ pipeline_type | default('chatqna') }}"     # app_pipeline
 erag_keycloak_realm: "EnterpriseRAG"     # app_keycloak_config
-ui_domain_name: "solutions.ai"         # app_ui
+ui_domain_name: "{{ base_domain_name | default('solutions.ai') }}"  # app_ui
+erag_keycloak_default_path_prefix: "{{ keycloak_path | default('/keycloak') }}"  # app_keycloak_config
+erag_keycloak_path_prefix: "{{ erag_keycloak_default_path_prefix if (routing_mode | default('subdomain')) == 'path' else '' }}"  # app_keycloak_config
 ui_keycloak_realm: "EnterpriseRAG"      # app_ui
 rag_tmp_dir: "{{ tmp_dir }}/rag"                   # app_pre_install (derived from tmp_dir)
 secure_logs: true                                  # global

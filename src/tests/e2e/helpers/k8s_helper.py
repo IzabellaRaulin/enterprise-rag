@@ -212,6 +212,12 @@ class K8sHelper:
         """List secrets in a namespace"""
         return list(kr8s.get("secrets", namespace=namespace))
 
+    def get_configmap_data(self, name, namespace):
+        """Return a ConfigMap's data as a dict, or None when the ConfigMap or its namespace is absent"""
+        for cm in kr8s.get("configmaps", namespace=namespace, field_selector=f"metadata.name={name}"):
+            return cm.raw.get("data") or {}
+        return None
+
     def list_crd_groups(self):
         """Return the set of API groups across all CustomResourceDefinitions in the cluster"""
         groups = set()

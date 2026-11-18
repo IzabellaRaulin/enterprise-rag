@@ -7,7 +7,11 @@ import logging
 from pathlib import Path
 
 import allure
+import requests
 import yaml
+
+from tests.e2e.validation.buildcfg import cfg, keycloak_base_url
+from tests.e2e.validation.constants import VITE_KEYCLOAK_REALM
 
 logger = logging.getLogger(__name__)
 
@@ -16,6 +20,36 @@ _BASE_NAMESPACES = ["default", "kube-system", "kube-public", "kube-node-lease", 
 # Secrets that legitimately exist in any namespace and are not application leftovers.
 _INFRA_SECRET_TYPES = {"kubernetes.io/service-account-token", "helm.sh/release.v1"}
 _INFRA_SECRET_PREFIXES = ("default-token", "sh.helm.release")
+# Platform gateway (enterprise-ai-solutions roles/gateway): path-mode apex grants, one key
+# per path ('_root' is '/', 'a.b' is '/a/b'), each mapped to the namespace that owns it.
+_GATEWAY_NAMESPACE = "envoy-gateway-system"
+_PATH_GRANTS_CONFIGMAP = "gateway-path-grants"
+
+
+def _grant_path(key):
+    return "/" if key == "_root" else "/" + key.replace(".", "/")
+
+
+def _realm_status(url):
+    try:
+        return requests.get(url, verify=False, timeout=15).status_code, None
+    except requests.RequestException as e:
+        return None, e
+
+
+def _realm_deleted_problems(base_url):
+    """Problems if the erag realm is not provably gone from the Keycloak at base_url."""
+    master_url = f"{base_url}/realms/master"
+    status, err = _realm_status(master_url)
+    if status != 200:
+        return [f"Cannot verify realm deletion: {master_url} returned {status or err} (expected 200)"]
+    realm_url = f"{base_url}/realms/{VITE_KEYCLOAK_REALM}"
+    status, err = _realm_status(realm_url)
+    if status == 404:
+        return []
+    if status == 200:
+        return [f"Keycloak realm '{VITE_KEYCLOAK_REALM}' still exists ({realm_url})"]
+    return [f"Cannot verify realm deletion: {realm_url} returned {status or err} (expected 404)"]
 
 
 def _load_layer_map():
@@ -102,6 +136,27 @@ def _verify_layer(k8s_helper, layer):
     bad_pods = [p.name for p in k8s_helper.list_pods(namespace="default") if p.name.startswith("rag-")]
     if bad_pods:
         problems.append(f"Unexpected pods in 'default' namespace: {bad_pods}")
+
+    # 8) Path mode: every apex path grant must belong to a namespace that still exists and was
+    #    not torn down. The grants live in the gateway namespace, so deleting the owner's
+    #    namespace does not release them. No ConfigMap (subdomain mode, gateway gone): skip.
+    grants = k8s_helper.get_configmap_data(
+        _PATH_GRANTS_CONFIGMAP,
+        cfg.get("gateway_namespace", _GATEWAY_NAMESPACE),
+    )
+    if grants:
+        stale = sorted(
+            f"{_grant_path(k)} -> {ns}" for k, ns in grants.items() if ns not in current_ns or ns in removed_ns_set
+        )
+        if stale:
+            problems.append(f"Path grants still owned by removed or missing namespaces: {stale}")
+
+    # 9) erag teardown deletes its realm through the platform Keycloak, which stays installed.
+    #    The realm endpoint needs no token, so this works after erag-credentials is gone. The
+    #    master realm is checked first: a 404 only proves the realm is gone if the same base URL
+    #    serves master (a wrong path prefix also answers 404).
+    if layer == "erag":
+        problems.extend(_realm_deleted_problems(keycloak_base_url()))
 
     assert not problems, (
         f"Uninstall verification failed for layer '{layer}':\n  - " + "\n  - ".join(problems)

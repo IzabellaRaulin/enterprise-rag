@@ -26,14 +26,14 @@ extraNginxVars:
   statusEndpoint: "http://auth-apisix-gateway.auth-apisix.svc"
 
 extraUiConfigVars:
-  keycloakDomainName: "auth.solutions.ai"
+  keycloakDomainName: "keycloak.solutions.ai"
   keycloakRealm: "EnterpriseRAG"
   keycloakClientId: "EnterpriseRAG-oidc"
   adminResourceRole: "ERAG-admin"
   userResourceRole: "ERAG-user"
   maintainerResourceRole: "ERAG-maintainer"
   grafanaDomainName: "grafana.solutions.ai"
-  keycloakAdminPanelDomainName: "auth.solutions.ai"
+  keycloakAdminPanelDomainName: "keycloak.solutions.ai"
   s3DomainName: "s3.solutions.ai"
   chatDisclaimerText: "Responses from this solution may require further verification. You are solely responsible for verifying the accuracy of the information provided and how you choose to use it."
   chatMaintenanceMode: "false"

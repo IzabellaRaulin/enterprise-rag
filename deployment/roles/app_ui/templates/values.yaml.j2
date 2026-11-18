@@ -13,7 +13,7 @@ domainName: &dname {{ ui_domain_name }}
 
 extraUiConfigVars:
   keycloakDomainName: "{{ erag_keycloak_domain_name }}"
-{% if erag_keycloak_path_prefix | default("") | length > 0 %}
+{% if erag_keycloak_path_prefix | length > 0 %}
   keycloakPathPrefix: "{{ erag_keycloak_path_prefix }}"
 {% endif %}
   keycloakRealm: "{{ ui_keycloak_realm }}"

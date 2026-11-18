@@ -12,8 +12,6 @@
 # Subdomain routing: each service lives at <prefix>.<base_domain_name>.
 - name: "app_pre_install | Set flat domain-name facts (subdomain routing)"
   ansible.builtin.set_fact:
-    ui_domain_name: "{{ base_domain_name | default(ui_domain_name) }}"
-    erag_keycloak_domain_name: "keycloak.{{ base_domain_name | default(erag_keycloak_domain_name | regex_replace('^keycloak\\.', '')) }}"
     telemetry_domain_name: "grafana.{{ base_domain_name | default(telemetry_domain_name | regex_replace('^grafana\\.', '')) }}"
     edp_minio_domain_name: "minio.{{ base_domain_name | default(edp_minio_domain_name | regex_replace('^minio\\.', '') | regex_replace('^seaweedfs\\.', '')) }}"
     edp_minio_api_domain_name: "s3.{{ base_domain_name | default(edp_minio_api_domain_name | regex_replace('^s3\\.', '')) }}"
@@ -22,9 +20,6 @@
 # Path routing: every service shares base_domain_name; a pathPrefix disambiguates.
 - name: "app_pre_install | Set flat domain-name + path-prefix facts (path-based routing)"
   ansible.builtin.set_fact:
-    ui_domain_name: "{{ base_domain_name | default(ui_domain_name) }}"
-    erag_keycloak_domain_name: "{{ base_domain_name | default(ui_domain_name) }}"
-    erag_keycloak_path_prefix: "{{ erag_keycloak_default_path_prefix | default('/keycloak') }}"
     telemetry_domain_name: "{{ base_domain_name | default(ui_domain_name) }}"
     telemetry_path_prefix: "{{ telemetry_default_path_prefix | default('/grafana') }}"
     edp_minio_domain_name: "{{ base_domain_name | default(ui_domain_name) }}"
