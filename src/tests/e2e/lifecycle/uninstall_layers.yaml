@@ -49,7 +49,6 @@ layers:
     removed_crd_groups:
       - serving.kserve.io
       - aigateway.envoyproxy.io
-      - config.nri
       - leaderworkerset.x-k8s.io
     retained_namespaces:      # platform still installed below inference
       - istio-system
@@ -73,6 +72,7 @@ layers:
       - monitoring.coreos.com
       - metallb.io
       - postgresql.cnpg.io
+      - config.nri            # nri_cpu_balloons is a platform component; teardown inference keeps it
       - gateway.envoyproxy.io
       - networking.istio.io
       - security.istio.io
