@@ -6,7 +6,7 @@ import io
 import os
 import time
 import uuid
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures.process import BrokenProcessPool
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -23,6 +23,7 @@ from comps.cores.mega.constants import MegaServiceEndpoint, ServiceType
 from comps.cores.mega.logger import change_erag_logger_level, get_erag_logger
 from comps.cores.mega.micro_service import erag_microservices, register_microservice
 from comps.cores.proto.docarray import TextDoc, TextExtractorInput, TextSplitterInput
+from comps.cores.utils.process_pool import new_process_pool, replace_if_broken
 from comps.text_extractor.utils.file_loaders.load_pdf import LoadPdf, _process_single_page_from_file
 
 
@@ -92,7 +93,7 @@ _max_workers = int(os.getenv('TEXT_EXTRACTOR_MAX_WORKERS', 4))
 # container with a SemLock rebuild error — recycling the fork pool when idle is the safe
 # equivalent. 0 disables.
 _recycle_after = int(os.getenv('TEXT_EXTRACTOR_MAX_TASKS_PER_CHILD', 100))
-pool = ProcessPoolExecutor(max_workers=_max_workers)
+pool = new_process_pool(_max_workers)
 logger.info(
     f"ProcessPoolExecutor initialized with max_workers={_max_workers}, "
     f"recycle_after={_recycle_after or 'disabled'} tasks "
@@ -111,26 +112,79 @@ def _recycle_pool_if_idle():
     if _recycle_after <= 0 or _inflight != 0 or _completed_since_recycle < _recycle_after:
         return
     old = pool
-    pool = ProcessPoolExecutor(max_workers=_max_workers)
+    pool = new_process_pool(_max_workers)
     _completed_since_recycle = 0
     old.shutdown(wait=False)
     logger.info("Recycled process pool to release worker memory")
 
 
+def _replace_broken_pool(broken):
+    """A worker that died (OOM kill, native crash) breaks the whole pool: every later task
+    fails until the pod restarts, and the health check does not notice. Start a new pool."""
+    global pool, _completed_since_recycle
+    replacement = replace_if_broken(pool, broken, _max_workers)
+    if replacement is not pool:
+        pool = replacement
+        _completed_since_recycle = 0
+        logger.warning("Process pool broken (a worker died); started a new one")
+
+
 def _submit(func, *args):
     """Submit a task to the pool, tracking in-flight/completed counts to drive recycling."""
     global _inflight
+    loop = asyncio.get_event_loop()
+    for retry in (False, True):
+        current = pool
+        try:
+            future = loop.run_in_executor(current, func, *args)
+            break
+        except BrokenProcessPool:
+            if retry:
+                raise
+            _replace_broken_pool(current)
     _inflight += 1
-    task = asyncio.ensure_future(asyncio.get_event_loop().run_in_executor(pool, func, *args))
+    task = asyncio.ensure_future(future)
 
-    def _on_done(_):
+    def _on_done(done):
         global _inflight, _completed_since_recycle
         _inflight -= 1
         _completed_since_recycle += 1
+        if not done.cancelled() and isinstance(done.exception(), BrokenProcessPool):
+            _replace_broken_pool(current)
         _recycle_pool_if_idle()
 
     task.add_done_callback(_on_done)
     return task
+
+
+# Temporary PDFs and the page tasks still reading them. A request that fails cannot stop the
+# pages its workers are running, so their file is removed once the last of them is done.
+_pdf_readers: dict[str, int] = {}
+_pdf_remove_when_read: set[str] = set()
+
+
+def _hold_pdf(pdf_path: str, task) -> None:
+    """Keep pdf_path until the page task is done."""
+    _pdf_readers[pdf_path] = _pdf_readers.get(pdf_path, 0) + 1
+
+    def _release(_):
+        _pdf_readers[pdf_path] -= 1
+        if not _pdf_readers[pdf_path]:
+            del _pdf_readers[pdf_path]
+            if pdf_path in _pdf_remove_when_read:
+                _pdf_remove_when_read.discard(pdf_path)
+                _remove_pdf(pdf_path)
+
+    task.add_done_callback(_release)
+
+
+def _remove_pdf(pdf_path: str) -> None:
+    """Remove a temporary PDF now, or once the page tasks still reading it are done."""
+    if pdf_path in _pdf_readers:
+        _pdf_remove_when_read.add(pdf_path)
+    elif os.path.exists(pdf_path):
+        os.remove(pdf_path)
+        logger.info(f"Removed temporary PDF {pdf_path}")
 
 
 async def _process_pdf_windowed(pdf_path: str, filename: str, page_count: int, metadata: dict) -> TextDoc:
@@ -159,6 +213,7 @@ async def _process_pdf_windowed(pdf_path: str, filename: str, page_count: int, m
             while next_page < page_count and len(inflight) < _max_workers:
                 page_num = next_page
                 task = _submit(_process_single_page_from_file, pdf_path, page_num)
+                _hold_pdf(pdf_path, task)
                 inflight[task] = page_num
                 next_page += 1
 
@@ -191,9 +246,8 @@ async def _process_pdf_windowed(pdf_path: str, filename: str, page_count: int, m
 
     finally:
         pdf_path_to_remove = metadata.get('_pdf_path')
-        if pdf_path_to_remove and os.path.exists(pdf_path_to_remove):
-            os.remove(pdf_path_to_remove)
-            logger.info(f"Removed temporary PDF {pdf_path_to_remove}")
+        if pdf_path_to_remove:
+            _remove_pdf(pdf_path_to_remove)
 
 # Register the multipart file-upload endpoint. Used by EDP for file ingestion and
 # by the DocSum pipeline, whose uploads the GMC router forwards here (it sends a
@@ -235,13 +289,15 @@ async def process_multipart(
     if not decoded_files and not links and not texts:
         raise HTTPException(status_code=400, detail="No files, links or texts provided.")
 
-    loaded_docs: list[TextDoc] = []
-    if decoded_files:
-        loaded_docs.extend((await _process_files(decoded_files)).loaded_docs)
-    if links or texts:
-        loaded_docs.extend((await _process_links_and_texts(link_list=links, texts=texts)).loaded_docs)
+    async def load() -> list[TextDoc]:
+        loaded_docs: list[TextDoc] = []
+        if decoded_files:
+            loaded_docs.extend((await _process_files(decoded_files)).loaded_docs)
+        if links or texts:
+            loaded_docs.extend((await _process_links_and_texts(link_list=links, texts=texts)).loaded_docs)
+        return loaded_docs
 
-    result = TextSplitterInput(loaded_docs=loaded_docs)
+    result = TextSplitterInput(loaded_docs=await _http_errors_only(load()))
     statistics_dict[USVC_NAME].append_latency(time.time() - start, None)
     return result
 
@@ -267,9 +323,21 @@ async def process(input: TextExtractorInput) -> TextSplitterInput:
     if not link_list and not texts:
         raise HTTPException(status_code=400, detail="No links or texts provided.")
 
-    result = await _process_links_and_texts(link_list=link_list, texts=texts)
+    result = await _http_errors_only(_process_links_and_texts(link_list=link_list, texts=texts))
     statistics_dict[USVC_NAME].append_latency(time.time() - start, None)
     return result
+
+
+async def _http_errors_only(coro):
+    """Await coro, turning an unexpected error into a 500: unhandled, uvicorn resets the
+    connection, and a keep-alive client (a sidecar) sends its next request into it."""
+    try:
+        return await coro
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception(e)
+        raise HTTPException(status_code=500, detail=f"An error occurred while processing: {str(e)}")
 
 
 async def _process_files(decoded_files: list[tuple[str, bytes]]) -> TextSplitterInput:
@@ -277,6 +345,7 @@ async def _process_files(decoded_files: list[tuple[str, bytes]]) -> TextSplitter
 
     # Collect async tasks: one windowed coroutine per PDF, one future per non-PDF.
     all_tasks: list = []
+    pdf_paths: list[str] = []
 
     # Non-PDF files — one pool task each
     for filename, file_bytes in decoded_files:
@@ -287,57 +356,69 @@ async def _process_files(decoded_files: list[tuple[str, bytes]]) -> TextSplitter
     # The windowed approach submits only _max_workers pages at a time and yields
     # to the event loop after each completion. This ensures concurrent requests
     # interleave their pages in the pool instead of one request monopolising all workers.
-    for filename, file_bytes in decoded_files:
-        if not filename.lower().endswith('.pdf'):
-            continue
-        Path(upload_folder).mkdir(parents=True, exist_ok=True)
-        pdf_path = os.path.join(upload_folder, f"{uuid.uuid4()}_{filename}")
-        with open(pdf_path, 'wb') as fout:
-            fout.write(file_bytes)
-        os.chmod(pdf_path, 0o600)
-
-        doc = pymupdf.open(pdf_path)
-        page_count = doc.page_count
-        doc.close()
-        logger.info(f"{filename}: {page_count} pages — starting windowed processing ({_max_workers} workers)")
-
-        # Extract document metadata (title, author, dates) using LoadPdf
-        try:
-            metadata = LoadPdf(pdf_path).extract_metadata()
-            # extract_metadata() derives filename from the temp path which
-            # carries a uuid prefix for uniqueness. here we override it with the original filename for clarity in the metadata
-            metadata['filename'] = filename
-        except Exception as e:
-            logger.warning(f"PDF metadata extraction failed for {filename}: {e}. Using basic metadata.")
-            metadata = {'filename': filename}
-        metadata['_pdf_path'] = pdf_path
-        all_tasks.append(asyncio.ensure_future(_process_pdf_windowed(pdf_path, filename, page_count, metadata)))
-
     loaded_docs: list[TextDoc] = []
-    if all_tasks:
-        try:
-            results = await asyncio.gather(*all_tasks)
-        except HTTPError as e:
-            logger.exception(e)
-            raise HTTPException(status_code=400, detail=f"A HTTP Error occurred while processing files: {str(e)}")
-        except (ConnectionError, ProxyError) as e:
-            logger.exception(e)
-            raise HTTPException(status_code=400, detail=f"Could not connect to remote server: {str(e)}")
-        except ValueError as e:
-            logger.exception(e)
-            raise HTTPException(status_code=400, detail=f"A Value Error occurred while processing: {str(e)}")
-        except MaxRetryError as e:
-            logger.exception(e)
-            raise HTTPException(status_code=503, detail=f"Could not connect to remote server: {str(e)}")
-        except Exception as e:
-            logger.exception(e)
-            raise HTTPException(status_code=500, detail=f"An error occurred while processing: {str(e)}")
+    try:
+        for filename, file_bytes in decoded_files:
+            if not filename.lower().endswith('.pdf'):
+                continue
+            Path(upload_folder).mkdir(parents=True, exist_ok=True)
+            pdf_path = os.path.join(upload_folder, f"{uuid.uuid4()}_{filename}")
+            # Recorded before the write, so a failed write or chmod is cleaned up too.
+            pdf_paths.append(pdf_path)
+            with open(pdf_path, 'wb') as fout:
+                fout.write(file_bytes)
+            os.chmod(pdf_path, 0o600)
 
-        for result in results:
-            if isinstance(result, TextDoc):
-                loaded_docs.append(result)      # PDF windowed coroutine result
-            elif isinstance(result, list):
-                loaded_docs.extend(result)      # non-PDF file result list
+            try:
+                with pymupdf.open(pdf_path) as doc:
+                    page_count = doc.page_count
+            except pymupdf.FileDataError as e:
+                logger.error(f"{filename} is not a readable PDF: {e}")
+                raise HTTPException(status_code=400, detail=f"File {filename} is not a readable PDF.") from e
+            logger.info(f"{filename}: {page_count} pages — starting windowed processing ({_max_workers} workers)")
+
+            # Extract document metadata (title, author, dates) using LoadPdf
+            try:
+                metadata = LoadPdf(pdf_path).extract_metadata()
+                # extract_metadata() derives filename from the temp path which
+                # carries a uuid prefix for uniqueness. here we override it with the original filename for clarity in the metadata
+                metadata['filename'] = filename
+            except Exception as e:
+                logger.warning(f"PDF metadata extraction failed for {filename}: {e}. Using basic metadata.")
+                metadata = {'filename': filename}
+            metadata['_pdf_path'] = pdf_path
+            all_tasks.append(asyncio.ensure_future(_process_pdf_windowed(pdf_path, filename, page_count, metadata)))
+
+        if all_tasks:
+            try:
+                results = await asyncio.gather(*all_tasks)
+            except HTTPError as e:
+                logger.exception(e)
+                raise HTTPException(status_code=400, detail=f"A HTTP Error occurred while processing files: {str(e)}")
+            except (ConnectionError, ProxyError) as e:
+                logger.exception(e)
+                raise HTTPException(status_code=400, detail=f"Could not connect to remote server: {str(e)}")
+            except ValueError as e:
+                logger.exception(e)
+                raise HTTPException(status_code=400, detail=f"A Value Error occurred while processing: {str(e)}")
+            except MaxRetryError as e:
+                logger.exception(e)
+                raise HTTPException(status_code=503, detail=f"Could not connect to remote server: {str(e)}")
+
+            for result in results:
+                if isinstance(result, TextDoc):
+                    loaded_docs.append(result)      # PDF windowed coroutine result
+                elif isinstance(result, list):
+                    loaded_docs.extend(result)      # non-PDF file result list
+    finally:
+        # On success every task is done and has removed its own file. On a failure, here or in
+        # another task, drop this request's remaining work; a PDF task cancelled before it starts
+        # does not reach its finally, so remove what is left of the files here.
+        for task in all_tasks:
+            if not task.done():
+                task.cancel()
+        for path in pdf_paths:
+            _remove_pdf(path)
 
     if not loaded_docs:
         raise HTTPException(status_code=400, detail="No documents were extracted from the provided input.")
@@ -378,9 +459,6 @@ async def _process_links_and_texts(
         except MaxRetryError as e:
             logger.exception(e)
             raise HTTPException(status_code=503, detail=f"Could not connect to remote server: {str(e)}")
-        except Exception as e:
-            logger.exception(e)
-            raise HTTPException(status_code=500, detail=f"An error occurred while processing: {str(e)}")
 
         for result in results:
             if isinstance(result, list):

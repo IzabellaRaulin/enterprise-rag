@@ -4,7 +4,7 @@
 import asyncio
 import os
 import time
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures.process import BrokenProcessPool
 
 from dotenv import load_dotenv
 from fastapi import HTTPException
@@ -15,6 +15,7 @@ from comps.cores.mega.constants import MegaServiceEndpoint, ServiceType
 from comps.cores.mega.logger import change_erag_logger_level, get_erag_logger
 from comps.cores.mega.micro_service import erag_microservices, register_microservice
 from comps.cores.proto.docarray import TextSplitterInput, TextDocList
+from comps.cores.utils.process_pool import new_process_pool, replace_if_broken
 from comps.cores.utils.utils import sanitize_env
 from utils import erag_textsplitter
 
@@ -57,7 +58,16 @@ def run_splitter(loaded_docs, chunk_size, chunk_overlap, use_semantic_chunking):
 # https://github.com/fastapi/fastapi/issues/3725#issuecomment-902629033
 # https://luis-sena.medium.com/how-to-optimize-fastapi-for-ml-model-serving-6f75fb9e040d
 
-pool = ProcessPoolExecutor(max_workers=1)
+pool = new_process_pool(1)
+
+
+def _replace_broken_pool(broken):
+    """The worker died (OOM kill, native crash): the pool fails every later task."""
+    global pool
+    replacement = replace_if_broken(pool, broken, 1)
+    if replacement is not pool:
+        pool = replacement
+        logger.warning("Process pool broken (the worker died); started a new one")
 
 # Register the microservice with the specified configuration.
 @register_microservice(
@@ -83,8 +93,9 @@ async def process(input: TextSplitterInput) -> TextDocList:
 
     textdocs = None
     loop = asyncio.get_event_loop()
+    current = pool
     try:
-        textdocs = await loop.run_in_executor(pool, run_splitter, loaded_docs, chunk_size, chunk_overlap, use_semantic_chunking)
+        textdocs = await loop.run_in_executor(current, run_splitter, loaded_docs, chunk_size, chunk_overlap, use_semantic_chunking)
     except ValueError as e:
         logger.exception(e)
         raise HTTPException(status_code=400, detail=f"An internal error occurred while processing: {str(e)}")
@@ -93,6 +104,8 @@ async def process(input: TextSplitterInput) -> TextDocList:
         raise HTTPException(status_code=503, detail=f"Could not connect to remote server: {str(e)}")
     except Exception as e:
         logger.exception(e)
+        if isinstance(e, BrokenProcessPool):
+            _replace_broken_pool(current)
         raise HTTPException(status_code=500, detail=f"An error occurred while processing: {str(e)}")
 
     statistics_dict[USVC_NAME].append_latency(time.time() - start, None)

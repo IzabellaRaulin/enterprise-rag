@@ -10,7 +10,7 @@ import time
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
-from concurrent.futures import ProcessPoolExecutor, as_completed
+from concurrent.futures import as_completed
 
 # ONNXRuntime 1.28 pins each intra-op thread to a host CPU by default; under the
 # pod's cpuset those pins fail (EINVAL), flooding logs at startup and spawning ~one
@@ -48,6 +48,7 @@ import pymupdf4llm.helpers.document_layout as pymupdf4llm_dl
 import tabulate
 
 from comps.cores.mega.logger import get_erag_logger
+from comps.cores.utils.process_pool import new_process_pool
 from comps.text_extractor.utils.file_loaders.abstract_loader import AbstractLoader
 from comps.text_extractor.utils.file_loaders.load_image import LoadImage
 from comps.text_extractor.utils.nltk_data import ensure_nltk_data
@@ -609,7 +610,7 @@ class LoadPdf(AbstractLoader):
             logger.info(f"[{self.file_path}] Using parallel processing with {max_workers} workers")
             results = {}
             
-            with ProcessPoolExecutor(max_workers=max_workers) as executor:
+            with new_process_pool(max_workers) as executor:
                 # Submit all pages for processing
                 future_to_page = {
                     executor.submit(_process_single_page_from_file, self.file_path, i): i
