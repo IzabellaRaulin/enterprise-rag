@@ -30,6 +30,8 @@ def milvus_env(monkeypatch):
     monkeypatch.delenv("VECTOR_ALGORITHM", raising=False)
     monkeypatch.delenv("VECTOR_DISTANCE_METRIC", raising=False)
     monkeypatch.delenv("VECTOR_DIMS", raising=False)
+    for name in ("VECTOR_HNSW_M", "VECTOR_HNSW_EF_CONSTRUCTION", "VECTOR_HNSW_EF_RUNTIME", "VECTOR_HNSW_EPSILON"):
+        monkeypatch.delenv(name, raising=False)
 
 
 class Seq(list):
@@ -119,18 +121,75 @@ def test_index_type_mapping(milvus_env, http, monkeypatch, algorithm, expected_i
     assert ConnectorMilvus().index_type == expected_index
 
 
-@pytest.mark.parametrize(
-    "metric, expected_metric",
-    [("COSINE", "COSINE"), ("L2", "L2"), ("ip", "IP"), ("HAMMING", "COSINE")],
-)
-def test_metric_type_mapping(milvus_env, http, monkeypatch, metric, expected_metric):
-    monkeypatch.setenv("VECTOR_DISTANCE_METRIC", metric)
-    assert ConnectorMilvus().metric_type == expected_metric
+def test_metric_type_is_always_cosine(milvus_env, http, monkeypatch):
+    monkeypatch.setenv("VECTOR_DISTANCE_METRIC", "L2")
+    assert ConnectorMilvus().metric_type == "COSINE"
+
+
+def test_vector_schema_from_env(milvus_env, http, monkeypatch):
+    monkeypatch.setenv("VECTOR_ALGORITHM", "hnsw")
+    monkeypatch.setenv("VECTOR_DIMS", "1024")
+    monkeypatch.setenv("VECTOR_DATATYPE", "FLOAT16")
+    monkeypatch.setenv("VECTOR_DISTANCE_METRIC", "L2")
+
+    assert ConnectorMilvus()._vector_schema_from_env() == {
+        "algorithm": "HNSW",
+        "dims": 1024,
+        "datatype": "FLOAT32",
+        "distance_metric": "COSINE",
+    }
 
 
 def test_existing_collection_is_not_recreated(milvus_env, http):
     ConnectorMilvus()
     assert http.bodies("/collections/create") == []
+
+
+def test_hnsw_index_and_search_params(milvus_env, monkeypatch):
+    monkeypatch.setenv("VECTOR_ALGORITHM", "HNSW")
+    monkeypatch.setenv("VECTOR_HNSW_M", "24")
+    monkeypatch.setenv("VECTOR_HNSW_EF_CONSTRUCTION", "120")
+    monkeypatch.setenv("VECTOR_HNSW_EF_RUNTIME", "12")
+    fake = FakeHttp({"/collections/has": {"has": False}})
+    with mock.patch(
+        "comps.vectorstores.utils.connectors.connector_milvus.urllib3.PoolManager",
+        return_value=fake,
+    ):
+        connector = ConnectorMilvus()
+        asyncio.run(connector.similarity_search_by_vector("q", [0.1], k=20))
+
+    assert fake.bodies("/collections/create")[0]["indexParams"][0]["params"] == {"M": 24, "efConstruction": 120}
+    assert fake.bodies("/entities/search")[0]["searchParams"] == {"metricType": "COSINE", "params": {"ef": 20}}
+
+
+def test_hnsw_runtime_above_limit_and_unsupported_epsilon(milvus_env, http, monkeypatch, caplog):
+    monkeypatch.setenv("VECTOR_ALGORITHM", "HNSW")
+    monkeypatch.setenv("VECTOR_HNSW_EF_RUNTIME", "40")
+    monkeypatch.setenv("VECTOR_HNSW_EPSILON", "0.01")
+    connector = ConnectorMilvus()
+
+    asyncio.run(connector.similarity_search_by_vector("q", [0.1], k=10))
+
+    assert http.bodies("/entities/search")[0]["searchParams"]["params"] == {"ef": 40}
+    assert "VECTOR_HNSW_EPSILON" in caplog.text
+
+
+def test_hnsw_settings_are_not_used_for_flat(milvus_env, http, monkeypatch):
+    monkeypatch.setenv("VECTOR_HNSW_EF_RUNTIME", "40")
+    connector = ConnectorMilvus()
+
+    asyncio.run(connector.similarity_search_by_vector("q", [0.1], k=10))
+
+    assert http.bodies("/entities/search")[0]["searchParams"] == {"metricType": "COSINE"}
+
+
+@pytest.mark.parametrize("name,value", [("VECTOR_HNSW_M", "1"), ("VECTOR_HNSW_EF_CONSTRUCTION", "0"),
+                                       ("VECTOR_HNSW_EF_RUNTIME", "0")])
+def test_invalid_hnsw_params(milvus_env, http, monkeypatch, name, value):
+    monkeypatch.setenv("VECTOR_ALGORITHM", "HNSW")
+    monkeypatch.setenv(name, value)
+    with pytest.raises(ValueError, match=name):
+        ConnectorMilvus()
 
 
 def test_collection_created_when_absent(milvus_env, monkeypatch):
@@ -231,7 +290,7 @@ def test_similarity_search_maps_flat_hits(milvus_env, monkeypatch):
     doc = result.retrieved_docs[0]
     assert doc.text == "hello"
     assert doc.metadata["file_id"] == "f1"
-    assert doc.metadata["vector_distance"] == 0.25
+    assert doc.metadata["vector_distance"] == 0.75
     assert doc.metadata["id"] == "7"
 
     body = fake.bodies("/entities/search")[0]
@@ -324,6 +383,28 @@ def test_siblings_pick_nearest_chunk_on_each_side(milvus_env):
     assert fake.bodies("/entities/query")[0]["filter"] == (
         'metadata["file_id"] == "f1" and metadata["start_index"] < 100'
     )
+
+
+def test_siblings_preserve_retrieval_filter(milvus_env):
+    fake = _siblings_http(
+        {"id": 7, "distance": 0.1, "text": "match",
+         "metadata": {"file_id": "f1", "start_index": 100}},
+        [[], []],
+    )
+    with mock.patch(
+        "comps.vectorstores.utils.connectors.connector_milvus.urllib3.PoolManager",
+        return_value=fake,
+    ):
+        connector = ConnectorMilvus()
+        allowed = connector.get_bucket_name_filter_expression(["allowed"])
+        filter_expression = allowed | connector.get_links_filter_expression()
+        asyncio.run(connector.similarity_search_with_siblings("q", [0.1], k=1, filter_expression=filter_expression))
+
+    assert fake.bodies("/entities/search")[0]["filter"] == str(filter_expression)
+    assert [body["filter"] for body in fake.bodies("/entities/query")] == [
+        f'({filter_expression}) and (metadata["file_id"] == "f1" and metadata["start_index"] < 100)',
+        f'({filter_expression}) and (metadata["file_id"] == "f1" and metadata["start_index"] > 100)',
+    ]
 
 
 def test_siblings_skipped_when_chunk_metadata_missing(milvus_env):

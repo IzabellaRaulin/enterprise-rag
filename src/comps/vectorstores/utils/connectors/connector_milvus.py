@@ -1,37 +1,27 @@
 # Copyright (C) 2026 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+import asyncio
 import json
 import os
-from typing import Any, Dict, Iterable, List, Optional, Union # noqa: F401
+from typing import Any, Dict, List, Optional, Union
 
 import urllib3
 
 from comps.cores.mega.logger import change_erag_logger_level, get_erag_logger
-from comps.cores.proto.docarray import SearchedDoc, TextDoc # noqa: F401
-from comps.cores.utils.utils import get_boolean_env_var, sanitize_env # noqa: F401
+from comps.cores.proto.docarray import SearchedDoc, TextDoc
+from comps.cores.utils.utils import get_boolean_env_var, sanitize_env
 from comps.vectorstores.utils.connectors.connector import VectorStoreConnector
 
 
 logger = get_erag_logger(f"{__file__.split('comps/')[1].split('/', 1)[0]}")
 change_erag_logger_level(logger, log_level=os.getenv("ERAG_LOGGER_LEVEL", "INFO"))
 
-# VECTOR_ALGORITHM is shared across all vector stores; anything Milvus does not
-# implement falls back to AUTOINDEX rather than failing the ingestion pipeline.
-_INDEX_TYPES = {
-    "FLAT": "FLAT",
-    "HNSW": "HNSW",
-    "IVF_FLAT": "IVF_FLAT",
-    "AUTOINDEX": "AUTOINDEX",
-}
-_METRIC_TYPES = {"COSINE", "L2", "IP"}
-
 # The REST insert path sends vectors as JSON floats, so only FloatVector is usable here.
 _SUPPORTED_DATATYPE = "FLOAT32"
 
 _API_PREFIX = "/v2/vectordb"
 _OUTPUT_FIELDS = ["text", "metadata"]
-
 _DATE_FIELDS = ("creation_date", "ingestion_date", "last_update_date")
 
 # Mirrors ConnectorRedis._FILENAME_EXTENSIONS so title filters behave the same on both stores.
@@ -78,41 +68,21 @@ class MilvusFilter:
     def __str__(self) -> str:
         return self.expression
 
-    def __repr__(self) -> str:
-        return f"MilvusFilter({self.expression!r})"
-
-
 class ConnectorMilvus(VectorStoreConnector):
     """Talks to Milvus over its RESTful v2 API, served on the same port as gRPC."""
 
     def __init__(self, batch_size: int = 32):
         self.batch_size = batch_size
-        self.index_dict = {}
         self._pool = None
         self.collection_name = str(sanitize_env(os.getenv("MILVUS_VECTOR_COLLECTION", "vdb")))
         self.database_name = str(sanitize_env(os.getenv("MILVUS_DB", "default")))
-        self.dims = int(sanitize_env(str(os.getenv("VECTOR_DIMS", 768))))
         self.timeout = float(sanitize_env(str(os.getenv("MILVUS_TIMEOUT", 30))))
-        self.index_type = _INDEX_TYPES.get(
-            str(sanitize_env(os.getenv("VECTOR_ALGORITHM", "FLAT"))).upper(), "AUTOINDEX"
-        )
-        metric = str(sanitize_env(os.getenv("VECTOR_DISTANCE_METRIC", "COSINE"))).upper()
-        self.metric_type = metric if metric in _METRIC_TYPES else "COSINE"
-
-        datatype = str(sanitize_env(os.getenv("VECTOR_DATATYPE", _SUPPORTED_DATATYPE))).upper()
-        if datatype != _SUPPORTED_DATATYPE:
-            logger.warning(
-                f"VECTOR_DATATYPE={datatype} is ignored by the Milvus connector; "
-                f"the collection is created as {_SUPPORTED_DATATYPE}."
-            )
-
-        if self.index_type == "HNSW" and any(os.getenv(v) for v in (
-            "VECTOR_HNSW_M", "VECTOR_HNSW_EF_CONSTRUCTION", "VECTOR_HNSW_EF_RUNTIME", "VECTOR_HNSW_EPSILON"
-        )):
-            logger.warning(
-                "VECTOR_HNSW_* settings are ignored by the Milvus connector; "
-                "Milvus applies its own HNSW defaults."
-            )
+        vector_schema = self._vector_schema_from_env()
+        self.dims = vector_schema["dims"]
+        self.index_type = vector_schema["algorithm"]
+        self.metric_type = vector_schema["distance_metric"]
+        self.hnsw_params = vector_schema.get("hnsw_params", {})
+        self.hnsw_ef = vector_schema.get("hnsw_ef")
 
         try:
             self._ensure_database()
@@ -122,7 +92,45 @@ class ConnectorMilvus(VectorStoreConnector):
             logger.error(f"Error initializing Milvus collection: {e}")
             raise
 
-    # --- transport -----------------------------------------------------------
+    def _vector_schema_from_env(self):
+        vector_schema = {
+            "algorithm": str(sanitize_env(os.getenv("VECTOR_ALGORITHM", "FLAT"))).upper(),
+            "dims": int(sanitize_env(str(os.getenv("VECTOR_DIMS", 768)))),
+            "datatype": _SUPPORTED_DATATYPE,
+            "distance_metric": "COSINE",
+        }
+        if vector_schema["algorithm"] not in {"FLAT", "HNSW", "IVF_FLAT", "AUTOINDEX"}:
+            vector_schema["algorithm"] = "AUTOINDEX"
+
+        datatype = str(sanitize_env(os.getenv("VECTOR_DATATYPE", _SUPPORTED_DATATYPE))).upper()
+        if datatype != _SUPPORTED_DATATYPE:
+            logger.warning(
+                f"VECTOR_DATATYPE={datatype} is ignored by the Milvus connector; "
+                f"the collection is created as {_SUPPORTED_DATATYPE}."
+            )
+
+        if vector_schema["algorithm"] == "HNSW":
+            hnsw_params = {}
+            for env_name, param_name, minimum, maximum in (
+                ("VECTOR_HNSW_M", "M", 2, 2048),
+                ("VECTOR_HNSW_EF_CONSTRUCTION", "efConstruction", 1, 2147483647),
+                ("VECTOR_HNSW_EF_RUNTIME", "ef", 1, 2147483647),
+            ):
+                value = os.getenv(env_name)
+                if value is not None:
+                    value = int(sanitize_env(value))
+                    if not minimum <= value <= maximum:
+                        raise ValueError(f"{env_name} must be between {minimum} and {maximum}")
+                    if param_name == "ef":
+                        vector_schema["hnsw_ef"] = value
+                    else:
+                        hnsw_params[param_name] = value
+            if hnsw_params:
+                vector_schema["hnsw_params"] = hnsw_params
+            if os.getenv("VECTOR_HNSW_EPSILON") is not None:
+                logger.warning("VECTOR_HNSW_EPSILON is not supported by the Milvus connector and is ignored.")
+
+        return vector_schema
 
     def get_client(self) -> urllib3.PoolManager:
         if self._pool is None:
@@ -168,10 +176,11 @@ class ConnectorMilvus(VectorStoreConnector):
             return None
         raise RuntimeError(f"Milvus {path} failed (code {payload.get('code')}): {message}")
 
+    async def _apost(self, path: str, body: Dict[str, Any], tolerate: Optional[str] = None) -> Any:
+        return await asyncio.to_thread(self._post, path, body, tolerate)
+
     def _scoped(self, **body: Any) -> Dict[str, Any]:
         return {"dbName": self.database_name, "collectionName": self.collection_name, **body}
-
-    # --- bootstrap -----------------------------------------------------------
 
     def _ensure_database(self) -> None:
         """Milvus does not create databases implicitly, unlike collections."""
@@ -204,6 +213,8 @@ class ConnectorMilvus(VectorStoreConnector):
             "indexType": self.index_type,
             "metricType": self.metric_type,
         }]
+        if self.hnsw_params:
+            index_params[0]["params"] = self.hnsw_params
 
         self._post(
             "/collections/create",
@@ -212,8 +223,6 @@ class ConnectorMilvus(VectorStoreConnector):
         )
         self._post("/collections/load", self._scoped())
 
-    # --- data ----------------------------------------------------------------
-
     async def add_texts(self, texts, embeddings, metadatas=None):
         try:
             rows = [
@@ -221,7 +230,7 @@ class ConnectorMilvus(VectorStoreConnector):
                 for text, embedding, metadata in zip(texts, embeddings, metadatas or [None] * len(texts))
             ]
             for start in range(0, len(rows), self.batch_size):
-                self._post("/entities/insert", self._scoped(data=rows[start:start + self.batch_size]))
+                await self._apost("/entities/insert", self._scoped(data=rows[start:start + self.batch_size]))
         except Exception as e:
             logger.error(f"Error inserting into Milvus: {e}")
             raise
@@ -229,11 +238,15 @@ class ConnectorMilvus(VectorStoreConnector):
     async def search_and_delete_by_metadata(self, field_name: str, field_value: str):
         try:
             expression = f'metadata[{_quote(field_name)}] == {_quote(field_value)}'
-            self._post("/entities/delete", self._scoped(filter=expression))
+            await self._apost("/entities/delete", self._scoped(filter=expression))
             logger.debug(f"Deleted records from Milvus where {field_name} = {field_value}")
         except Exception as e:
             logger.error(f"Error deleting from Milvus: {e}")
             raise
+
+
+    def _calculate_vector_distance(self, distance: float) -> float:
+        return 1.0 - float(distance)
 
     def _convert_to_text_doc(self, hit: dict) -> TextDoc:
         """REST returns output fields flattened onto the hit, next to id and distance."""
@@ -246,7 +259,8 @@ class ConnectorMilvus(VectorStoreConnector):
                 logger.warning("Could not decode Milvus metadata payload; falling back to empty metadata.")
                 raw_metadata = {}
         metadata = dict(raw_metadata)
-        metadata["vector_distance"] = hit.get("distance")
+        similarity_distance = hit.get("distance")
+        metadata["vector_distance"] = self._calculate_vector_distance(similarity_distance) if similarity_distance is not None else None
         metadata["id"] = str(hit.get("id"))
         return TextDoc(text=hit.get("text", ""), metadata=metadata)
 
@@ -254,14 +268,25 @@ class ConnectorMilvus(VectorStoreConnector):
                                           distance_threshold: float = None, filter_expression=None,
                                           parse_result: bool = True) -> SearchedDoc:
         try:
-            hits = self._post("/entities/search", self._scoped(
+            search_params = {"metricType": self.metric_type}
+            if self.hnsw_ef is not None:
+                search_params["params"] = {"ef": max(self.hnsw_ef, k)}
+            hits = await self._apost("/entities/search", self._scoped(
                 data=[embedding],
                 annsField="embedding",
                 limit=k,
                 filter=str(filter_expression) if filter_expression else "",
                 outputFields=_OUTPUT_FIELDS,
-                searchParams={"metricType": self.metric_type},
+                searchParams=search_params,
             )) or []
+            logger.debug(f"Raw Milvus search response sample: {hits[:1]}")
+
+            if distance_threshold is not None:
+                hits = [
+                    hit for hit in hits
+                    if hit.get("distance") is not None
+                    and self._calculate_vector_distance(hit["distance"]) <= distance_threshold
+                ]
 
             if parse_result is False:
                 return hits
@@ -305,7 +330,7 @@ class ConnectorMilvus(VectorStoreConnector):
                 continue
 
             try:
-                all_sibling_docs[sibling_id] = self._fetch_siblings(file_id, int(start_index))
+                all_sibling_docs[sibling_id] = await self._fetch_siblings(file_id, int(start_index), filter_expression)
             except Exception as e:
                 logger.error(f"Error retrieving siblings from Milvus: {e}")
                 continue
@@ -317,21 +342,27 @@ class ConnectorMilvus(VectorStoreConnector):
             user_prompt=input_text
         )
 
-    def _fetch_siblings(self, file_id: str, start_index: int) -> List[TextDoc]:
+    async def _fetch_siblings(self, file_id: str, start_index: int, filter_expression=None) -> List[TextDoc]:
         """Milvus cannot order by a JSON path, so the nearest chunk is picked here."""
         siblings = []
         for expression, pick_last in (
             ('metadata["start_index"] < {}'.format(start_index), True),
             ('metadata["start_index"] > {}'.format(start_index), False),
         ):
-            rows = self._post("/entities/query", self._scoped(
-                filter='metadata["file_id"] == {} and {}'.format(_quote(file_id), expression),
+            sibling_filter = 'metadata["file_id"] == {} and {}'.format(_quote(file_id), expression)
+            if filter_expression is not None:
+                sibling_filter = f'({filter_expression}) and ({sibling_filter})'
+            rows = await self._apost("/entities/query", self._scoped(
+                filter=sibling_filter,
+                limit=100,
                 outputFields=["id"] + _OUTPUT_FIELDS,
             )) or []
             if not rows:
                 continue
             rows.sort(key=lambda row: int((row.get("metadata") or {}).get("start_index", 0)))
-            siblings.append(self._convert_to_text_doc(rows[-1] if pick_last else rows[0]))
+            sibling = self._convert_to_text_doc(rows[-1] if pick_last else rows[0])
+            sibling.metadata["vector_distance"] = -1
+            siblings.append(sibling)
         return siblings
 
     def get_object_name_filter_expression(self, bucket_name: str, object_name: str) -> MilvusFilter:
@@ -355,7 +386,7 @@ class ConnectorMilvus(VectorStoreConnector):
         return MilvusFilter(f'metadata["site_name"] in [{values}]')
 
     def get_files_filter_expression(self) -> MilvusFilter:
-        """Links carry no file_id, so presence of the key distinguishes files from links."""
+        """Exclude links by requiring the link_id metadata key to be absent."""
         return MilvusFilter('not exists metadata["link_id"]')
 
     def get_links_filter_expression(self) -> MilvusFilter:

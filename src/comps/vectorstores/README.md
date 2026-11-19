@@ -120,7 +120,7 @@ Configure the full endpoint URL:
 
 | Environment Variable      | Default Value | Description                                                                 |
 |---------------------------|---------------|-----------------------------------------------------------------------------|
-| MILVUS_URL                | Not set       | Full URL for Redis database endpoint                                        |
+| MILVUS_URL                | Not set       | Full URL for Milvus database endpoint                                        |
 
 Or use more specific configuration for endpoint URL:
 

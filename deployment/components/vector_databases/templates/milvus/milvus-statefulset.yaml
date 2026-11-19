@@ -24,16 +24,12 @@ spec:
         app.kubernetes.io/instance: milvus
     spec:
       serviceAccountName: {{ .Values.milvus.serviceAccount.name }}
-      {{- with (.Values.milvus.podSecurityContext | default .Values.podSecurityContext) }}
       securityContext:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
         - name: milvus
-          {{- with (.Values.milvus.securityContext | default .Values.securityContextWithTemp) }}
           securityContext:
-            {{- toYaml . | nindent 12 }}
-          {{- end }}
+            {{- toYaml .Values.securityContext | nindent 10 }}
           image: "{{ .Values.milvus.image.repository }}:{{ .Values.milvus.image.tag }}"
           imagePullPolicy: {{ .Values.milvus.image.pullPolicy | default "IfNotPresent" }}
           command: ["milvus", "run", "standalone"]

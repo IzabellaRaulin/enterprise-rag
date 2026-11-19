@@ -134,7 +134,7 @@ See [`src/comps/vectorstores/CONTRIBUTING.md`](../../src/comps/vectorstores/CONT
 |---------|---------|---------|
 | `edp_namespace` | `edp` | |
 | `edp_storage_type` | `seaweedfs` | `seaweedfs` \| `s3` \| `s3compatible` |
-| `edp_rbac_enabled` | `false` | Must be `false` for ONTAP S3, MSSQL |
+| `edp_rbac_enabled` | `false` | Enables retrieval RBAC for Redis or Milvus; must be `false` for ONTAP S3 and MSSQL |
 | `edp_scheduled_sync_enabled` | `false` | For S3-compatible sans SQS |
 
 Backends: **seaweedfs** (in-cluster), **s3** (AWS + SQS), **s3compatible** (ONTAP S3, external MinIO). See [object_store.md](object_store.md).
