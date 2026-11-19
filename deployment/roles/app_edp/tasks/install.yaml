@@ -150,6 +150,27 @@
   vars:
     _sp_ttl: "{{ edp_sp_sync_lock_ttl_seconds | default('', true) | string | trim }}"
 
+- name: "app_edp | Check KEDA's ScaledObject API"
+  when:
+    - hpa_enabled | default(false) | bool
+    - _edp_hpa_provider == 'keda'
+  block:
+    - name: "app_edp | Look up the ScaledObject CRD"
+      kubernetes.core.k8s_info:
+        api_version: apiextensions.k8s.io/v1
+        kind: CustomResourceDefinition
+        name: scaledobjects.keda.sh
+      register: _edp_keda_crd
+
+    - name: "app_edp | Assert KEDA is installed"
+      ansible.builtin.assert:
+        that: _edp_keda_crd.resources | length > 0
+        fail_msg: >-
+          hpa_enabled scales the text extractor with KEDA on this platform, and the
+          cluster has no scaledobjects.keda.sh. Install the Custom Metrics Autoscaler
+          from OperatorHub into {{ _edp_keda_operator_namespace }}, or set hpa_enabled: false.
+        quiet: true
+
 - name: "app_edp | Generate override values file from template"
   ansible.builtin.template:
     src: "values.yaml.j2"

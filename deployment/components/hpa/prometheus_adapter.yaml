@@ -6,6 +6,8 @@ rules:
   default: false
   resources: []
   custom:
+    # The text extractor's queues; edp/templates/textExtractor/text-extractor-hpa.yaml
+    # has the same queries for KEDA.
     - seriesQuery: '{__name__="edp_files_uploaded_total",service="edp-backend"}'
       seriesFilters: []
       resources:

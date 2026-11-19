@@ -146,7 +146,7 @@ spec:
         - name: user-cache
           emptyDir: {}
 ---
-{{- if .Values.hpa_enabled }}
+{{- if and .Values.hpa_enabled (eq .Values.hpaProvider "prometheus-adapter") }}
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:

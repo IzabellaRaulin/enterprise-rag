@@ -294,3 +294,7 @@ monitoring:
   enabled: true
   # Namespace Grafana's sidecar watches for dashboard ConfigMaps.
   dashboardNamespace: monitoring
+
+# What makes the HPAs with hpa_enabled: prometheus-adapter, or keda, which has no
+# rules for the guards (only the EDP text extractor scales then).
+hpaProvider: prometheus-adapter

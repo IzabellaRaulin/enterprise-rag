@@ -1,0 +1,26 @@
+{{- if include "helm-edp.textExtractor.keda" . }}
+{{- $name := include "helm-edp.textExtractor.scaledName" . }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $name }}-keda-ca
+  labels:
+    {{- include "helm-edp.selectorLabels" . | nindent 4 }}
+  annotations:
+    service.beta.openshift.io/inject-cabundle: "true"
+---
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: {{ $name }}-prometheus
+  labels:
+    {{- include "helm-edp.selectorLabels" . | nindent 4 }}
+spec:
+  boundServiceAccountToken:
+    - parameter: bearerToken
+      serviceAccountName: {{ $name }}-keda
+  configMapTargetRef:
+    - parameter: ca
+      name: {{ $name }}-keda-ca
+      key: service-ca.crt
+{{- end }}

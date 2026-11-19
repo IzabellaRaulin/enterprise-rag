@@ -17,6 +17,14 @@ pipelineNamespace: "chatqna"
 # by the app_edp role; drives MAX_NEW_WORKERS and CELERY_BATCH_SIZE.
 embeddingReplicas: 1
 
+# What scales the text extractor with hpa_enabled: an HPA on the Prometheus
+# Adapter's metrics (prometheus-adapter), or a KEDA ScaledObject (keda).
+hpaProvider: prometheus-adapter
+keda:
+  prometheus:
+    serverAddress: ""
+  operatorNamespace: keda
+
 proxy:
   http_proxy: ""
   https_proxy: ""
@@ -626,6 +634,10 @@ textExtractor:
   tag: latest
   pullPolicy: Always
   replicas: 1
+  # A part takes up to ~400 s (100 pages of a large PDF), and celery doesn't retry a part whose
+  # pod went away, so a scale-down must let the parts in flight finish. The extractor doesn't stop
+  # on SIGTERM, so a terminating pod is only killed when this runs out, idle or not.
+  terminationGracePeriodSeconds: 450
   environment:
     - name: OMP_NUM_THREADS
       value: "1"

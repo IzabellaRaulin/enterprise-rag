@@ -3,4 +3,4 @@
 ---
 _edp_post_renderer: ""
 _edp_fixed_uids: true
-_edp_hpa_supported: true
+_edp_hpa_provider: prometheus-adapter

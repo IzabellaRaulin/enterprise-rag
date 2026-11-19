@@ -3,4 +3,6 @@
 ---
 _edp_post_renderer: "{{ role_path }}/../../scripts/openshift_post_renderer.py"
 _edp_fixed_uids: false
-_edp_hpa_supported: false
+_edp_hpa_provider: keda
+_edp_keda_prometheus_url: "https://thanos-querier.openshift-monitoring.svc.cluster.local:9092"
+_edp_keda_operator_namespace: openshift-keda

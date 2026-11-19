@@ -3,5 +3,5 @@
 ---
 _pipeline_post_renderer: "{{ role_path }}/../../scripts/openshift_post_renderer.py"
 _pipeline_fixed_uids: false
-_pipeline_hpa_supported: false
+_pipeline_hpa_provider: keda
 _pipeline_service_ca: "/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt"

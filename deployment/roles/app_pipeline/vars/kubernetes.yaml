@@ -3,5 +3,5 @@
 ---
 _pipeline_post_renderer: ""
 _pipeline_fixed_uids: true
-_pipeline_hpa_supported: true
+_pipeline_hpa_provider: prometheus-adapter
 _pipeline_service_ca: ""

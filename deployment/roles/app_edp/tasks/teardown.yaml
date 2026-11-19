@@ -51,6 +51,21 @@
     wait_timeout: "300s"
   when: edp_enabled | default(false)
 
+# The extractor doesn't stop on SIGTERM, so its pods would keep the namespace terminating for their
+# whole grace period (textExtractor.terminationGracePeriodSeconds). Teardown drops their work anyway.
+- name: "app_edp | Stop the text extractor pods without their grace period"
+  kubernetes.core.k8s:
+    state: absent
+    api_version: v1
+    kind: Pod
+    namespace: "{{ edp_namespace }}"
+    label_selectors:
+      - "app.kubernetes.io/name=edp-text-extractor"
+      - "app.kubernetes.io/instance={{ edp_helm_release_name }}"
+    delete_options:
+      gracePeriodSeconds: 0
+  when: edp_enabled | default(false)
+
 - name: "app_edp | Delete EDP namespace"
   kubernetes.core.k8s:
     state: absent

@@ -1,15 +1,17 @@
-{{- if .Values.hpa_enabled }}
+{{- /* The text extractor's autoscaler with hpa_enabled: an HPA on the Prometheus Adapter's
+       metrics, or with hpaProvider keda a ScaledObject, from which KEDA makes the HPA. */}}
+{{- if and .Values.hpa_enabled (not (include "helm-edp.textExtractor.keda" .)) }}
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: {{ .Values.textExtractor.nameOverride | default (include "helm-edp.fullname" .) }}
+  name: {{ include "helm-edp.textExtractor.scaledName" . }}
   labels:
     {{- include "helm-edp.selectorLabels" . | nindent 4 }}
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: {{ .Values.textExtractor.nameOverride | default (include "helm-edp.fullname" .) }}
+    name: {{ include "helm-edp.textExtractor.scaledName" . }}
   minReplicas: {{ (((.Values).textExtractor).hpa).minReplicas | default 1 }}
   maxReplicas: {{ (((.Values).textExtractor).hpa).maxReplicas | default 4 }}
   metrics:
@@ -35,27 +37,53 @@ spec:
       target:
         type: Value
         value: {{ (((.Values).textExtractor).hpa).scaleDownTargetValue | default "500m" }}
-  {{- $hpaBehavior := (((.Values).textExtractor).hpa).behavior }}
-  {{- if $hpaBehavior }}
   behavior:
-    {{- toYaml $hpaBehavior | nindent 4 }}
-  {{- else }}
-  behavior:
-    scaleDown:
-      stabilizationWindowSeconds: 60
-      policies:
-      - type: Percent
-        value: 25
-        periodSeconds: 15
-      - type: Pods
-        value: 1
-        periodSeconds: 15
-    scaleUp:
-      selectPolicy: Max
-      stabilizationWindowSeconds: 0
-      policies:
-      - type: Pods
-        value: 1
-        periodSeconds: 15
-  {{- end }}
+    {{- include "helm-edp.textExtractor.hpaBehavior" . | nindent 4 }}
+{{- end }}
+{{- if include "helm-edp.textExtractor.keda" . }}
+{{- $name := include "helm-edp.textExtractor.scaledName" . }}
+{{- $hpa := .Values.textExtractor.hpa }}
+{{- $down := toString ($hpa.scaleDownTargetValue | default "500m") }}
+{{- if hasSuffix "m" $down }}{{ $down = toString (divf (trimSuffix "m" $down | float64) 1000) }}{{ end }}
+{{- /* The queues of the Prometheus Adapter rules (components/hpa/prometheus_adapter.yaml);
+       the HPA dashboard (gmc) plots the same queries. */}}
+{{- $triggers := list
+      (dict "name" "files-to-upload" "threshold" (toString ($hpa.scaleUpTargetValue | default 2))
+            "query" `sum(edp_files_uploaded_total{service="edp-backend"}) + sum(edp_links_uploaded_total{service="edp-backend"})`)
+      (dict "name" "files-active" "threshold" $down
+            "query" `sum(edp_files_uploaded_total{service="edp-backend"}) + sum(edp_files_text_extracting_total{service="edp-backend"}) + sum(edp_links_uploaded_total{service="edp-backend"}) + sum(edp_links_text_extracting_total{service="edp-backend"})`) }}
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- include "helm-edp.selectorLabels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ $name }}
+  minReplicaCount: {{ $hpa.minReplicas | default 1 }}
+  maxReplicaCount: {{ $hpa.maxReplicas | default 4 }}
+  advanced:
+    horizontalPodAutoscalerConfig:
+      behavior:
+        {{- include "helm-edp.textExtractor.hpaBehavior" . | nindent 8 }}
+  # metricType Value: the HPA scales on value / target times the current
+  # replicas, as for the Object metrics of the Prometheus Adapter.
+  triggers:
+    {{- range $triggers }}
+    - type: prometheus
+      name: {{ .name }}
+      metricType: Value
+      metadata:
+        serverAddress: {{ required "keda.prometheus.serverAddress is required with hpaProvider keda" $.Values.keda.prometheus.serverAddress | quote }}
+        namespace: {{ $.Release.Namespace }}
+        authModes: bearer
+        query: {{ .query }}
+        threshold: {{ .threshold | quote }}
+      authenticationRef:
+        name: {{ $name }}-prometheus
+    {{- end }}
 {{- end }}

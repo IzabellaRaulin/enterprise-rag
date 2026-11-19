@@ -30,6 +30,37 @@ Expand the name of the chart.
 {{- default .Chart.Name .Values.textExtractor.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
+{{- define "helm-edp.textExtractor.scaledName" -}}
+{{- .Values.textExtractor.nameOverride | default (include "helm-edp.fullname" .) }}
+{{- end }}
+
+{{- define "helm-edp.textExtractor.keda" -}}
+{{- if and .Values.hpa_enabled (eq .Values.hpaProvider "keda") }}true{{ end }}
+{{- end }}
+
+{{- define "helm-edp.textExtractor.hpaBehavior" -}}
+{{- with (((.Values).textExtractor).hpa).behavior }}
+{{- toYaml . }}
+{{- else }}
+scaleDown:
+  stabilizationWindowSeconds: 60
+  policies:
+  - type: Percent
+    value: 25
+    periodSeconds: 15
+  - type: Pods
+    value: 1
+    periodSeconds: 15
+scaleUp:
+  selectPolicy: Max
+  stabilizationWindowSeconds: 0
+  policies:
+  - type: Pods
+    value: 1
+    periodSeconds: 15
+{{- end }}
+{{- end }}
+
 {{- define "helm-edp.textCompression.name" -}}
 {{- default .Chart.Name .Values.textCompression.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}

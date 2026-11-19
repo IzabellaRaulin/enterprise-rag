@@ -491,7 +491,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "sum by(metric_name)(kube_horizontalpodautoscaler_status_target_metric{horizontalpodautoscaler=~\"$hpa\", service=\"kube-prometheus-stack-kube-state-metrics\"})",
+          "expr": "sum by(metric_name)(kube_horizontalpodautoscaler_status_target_metric{horizontalpodautoscaler=~\"$hpa\", horizontalpodautoscaler!=\"keda-hpa-edp-text-extractor\", service=~\"(kube-prometheus-stack-)?kube-state-metrics\"})",
           "instant": false,
           "legendFormat": "current_{{metric_name}}",
           "range": true,
@@ -503,11 +503,35 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "sum by(metric_name)(kube_horizontalpodautoscaler_spec_target_metric{horizontalpodautoscaler=~\"$hpa\", service=\"kube-prometheus-stack-kube-state-metrics\"})",
+          "expr": "sum by(metric_name)(kube_horizontalpodautoscaler_spec_target_metric{horizontalpodautoscaler=~\"$hpa\", horizontalpodautoscaler!=\"keda-hpa-edp-text-extractor\", service=~\"(kube-prometheus-stack-)?kube-state-metrics\"})",
           "instant": false,
           "legendFormat": "threshold_{{metric_name}}",
           "range": true,
           "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "(sum(edp_files_uploaded_total{service=\"edp-backend\"}) + sum(edp_links_uploaded_total{service=\"edp-backend\"})) and on() count(kube_horizontalpodautoscaler_info{horizontalpodautoscaler=~\"$hpa\", horizontalpodautoscaler=\"keda-hpa-edp-text-extractor\"})",
+          "instant": false,
+          "legendFormat": "current_edp_backend_files_to_upload",
+          "range": true,
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "(sum(edp_files_uploaded_total{service=\"edp-backend\"}) + sum(edp_files_text_extracting_total{service=\"edp-backend\"}) + sum(edp_links_uploaded_total{service=\"edp-backend\"}) + sum(edp_links_text_extracting_total{service=\"edp-backend\"})) and on() count(kube_horizontalpodautoscaler_info{horizontalpodautoscaler=~\"$hpa\", horizontalpodautoscaler=\"keda-hpa-edp-text-extractor\"})",
+          "instant": false,
+          "legendFormat": "current_edp_backend_files_active",
+          "range": true,
+          "refId": "D"
         }
       ],
       "title": "Metric Current Value vs Scaling Threshold",

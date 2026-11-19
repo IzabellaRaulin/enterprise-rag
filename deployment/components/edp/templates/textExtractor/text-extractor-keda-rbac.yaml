@@ -1,0 +1,64 @@
+{{- if include "helm-edp.textExtractor.keda" . }}
+{{- $name := include "helm-edp.textExtractor.scaledName" . }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ $name }}-keda
+  labels:
+    {{- include "helm-edp.selectorLabels" . | nindent 4 }}
+---
+# Thanos Querier's tenancy port serves a namespace's metrics to a token that can
+# get pods.metrics.k8s.io there.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ $name }}-keda-metrics
+  labels:
+    {{- include "helm-edp.selectorLabels" . | nindent 4 }}
+rules:
+  - apiGroups: [metrics.k8s.io]
+    resources: [pods]
+    verbs: [get]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ $name }}-keda-metrics
+  labels:
+    {{- include "helm-edp.selectorLabels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ $name }}-keda-metrics
+subjects:
+  - kind: ServiceAccount
+    name: {{ $name }}-keda
+    namespace: {{ .Release.Namespace }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ $name }}-keda-token
+  labels:
+    {{- include "helm-edp.selectorLabels" . | nindent 4 }}
+rules:
+  - apiGroups: [""]
+    resources: [serviceaccounts/token]
+    resourceNames: [{{ $name }}-keda]
+    verbs: [create]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ $name }}-keda-token
+  labels:
+    {{- include "helm-edp.selectorLabels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ $name }}-keda-token
+subjects:
+  - kind: ServiceAccount
+    name: keda-operator
+    namespace: {{ .Values.keda.operatorNamespace }}
+{{- end }}

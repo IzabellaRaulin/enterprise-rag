@@ -61,11 +61,10 @@ fingerprint:
     existingSecret: "{{ fingerprint_postgres_secret_name }}"
     secretKey: "{{ fingerprint_postgres_secret_key }}"
 
-{% if not _pipeline_hpa_supported | bool %}
-hpa_enabled: false
-{% elif hpa_enabled is defined %}
+{% if hpa_enabled is defined %}
 hpa_enabled: {{ hpa_enabled }}
 {% endif %}
+hpaProvider: {{ _pipeline_hpa_provider }}
 
 images:
   gmcManager:
