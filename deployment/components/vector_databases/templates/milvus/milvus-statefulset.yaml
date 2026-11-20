@@ -25,11 +25,22 @@ spec:
     spec:
       serviceAccountName: {{ .Values.milvus.serviceAccount.name }}
       securityContext:
-        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+        runAsNonRoot: true
+        runAsUser: 999
+        runAsGroup: 999
+        fsGroup: 999
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: milvus
           securityContext:
-            {{- toYaml .Values.securityContext | nindent 10 }}
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 999
           image: "{{ .Values.milvus.image.repository }}:{{ .Values.milvus.image.tag }}"
           imagePullPolicy: {{ .Values.milvus.image.pullPolicy | default "IfNotPresent" }}
           command: ["milvus", "run", "standalone"]
