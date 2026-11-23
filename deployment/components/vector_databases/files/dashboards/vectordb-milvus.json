@@ -842,7 +842,8 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unit": "KBs"
         }
       },
       "gridPos": {
@@ -879,7 +880,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(rate(milvus_proxy_restful_api_receive_bytes_count{namespace=~\"$namespace\", pod=~\"$instance\"}[$__rate_interval])) by(pod, node_id)",
+          "expr": "sum(rate(milvus_proxy_receive_bytes_count{pod=~\"$instance\", namespace=~\"$namespace\"}[1m])) by(pod, node_id)",
           "interval": "",
           "legendFormat": "{{pod}}-node{{node_id}}",
           "queryType": "randomWalk",
@@ -1404,7 +1405,7 @@
           "calcs": [],
           "displayMode": "list",
           "placement": "bottom",
-          "showLegend": true
+          "showLegend": false
         },
         "tooltip": {
           "hideZeros": false,
@@ -1421,15 +1422,15 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(increase(milvus_proxy_cache_hit_count{namespace=~\"$namespace\", pod=~\"$instance\", cache_state=\"hit\"}[2m])/120) by(cache_name, pod, node_id) / sum(increase(milvus_proxy_cache_hit_count{namespace=~\"$namespace\", pod=~\"$instance\"}[2m])/120) by(cache_name, pod, node_id)",
+          "expr": "sum(increase(milvus_proxy_cache_hit_count{namespace=~\"$namespace\", pod=~\"$instance\", cache_state=\"hit\"}[2m])/120) / sum(increase(milvus_proxy_cache_hit_count{namespace=~\"$namespace\", pod=~\"$instance\"}[2m])/120)",
           "interval": "",
-          "legendFormat": "{{pod}}-node{{node_id}}-{{cache_name}}",
+          "legendFormat": "hit_rate",
           "queryType": "randomWalk",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Cache Hit rate",
+      "title": "Cache Hit Rate",
       "type": "timeseries"
     },
     {
@@ -1491,7 +1492,7 @@
               }
             ]
           },
-          "unit": "KBs"
+          "unit": "binBps"
         }
       },
       "gridPos": {
@@ -1516,7 +1517,7 @@
         "tooltip": {
           "hideZeros": false,
           "mode": "multi",
-          "sort": "none"
+          "sort": "desc"
         }
       },
       "pluginVersion": "13.0.1+security-01",
@@ -1528,7 +1529,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "sum by (pod)(\r\n  rate(milvus_storage_filesystem_write_bytes{namespace=~\"$namespace\", pod=~\"$instance\"}[$__rate_interval])\r\n)\r\n/\r\nsum by (pod)(\r\n  rate(milvus_storage_filesystem_write_count{namespace=~\"$namespace\", pod=~\"$instance\"}[$__rate_interval])\r\n)",
+          "expr": "sum(rate(milvus_storage_filesystem_write_bytes{namespace=~\"$namespace\", pod=~\"$instance\"}[$__rate_interval]))",
           "interval": "",
           "legendFormat": "writes",
           "queryType": "randomWalk",
@@ -1541,7 +1542,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "sum by (pod)(\r\n  rate(milvus_storage_filesystem_read_bytes{namespace=~\"$namespace\", pod=~\"$instance\"}[$__rate_interval])\r\n)\r\n/\r\nsum by (pod)(\r\n  rate(milvus_storage_filesystem_read_count{namespace=~\"$namespace\", pod=~\"$instance\"}[$__rate_interval])\r\n)",
+          "expr": "sum(rate(milvus_storage_filesystem_read_bytes{namespace=~\"$namespace\", pod=~\"$instance\"}[$__rate_interval]))",
           "instant": false,
           "legendFormat": "reads",
           "range": true,
@@ -1687,6 +1688,6 @@
   },
   "timezone": "browser",
   "title": "Chatbot Toolkit / VectorDB / Milvus",
-  "version": 1,
-  "uid": "uLf5cJ3Gaa"
+  "version": 22,
+  "uid": "uLf5cJ3Gaa",
 }
