@@ -16,7 +16,7 @@
     ]
   },
   "description": "Milvus Dashboard",
-  "editable": true,
+  "editable": false,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
   "links": [
@@ -93,7 +93,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "max(time() - process_start_time_seconds{job=~\".*milvus.*\"})",
+          "expr": "max(time() - process_start_time_seconds{job=~\".*$app_name.*\"})",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
@@ -233,7 +233,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "100*sum(process_resident_memory_bytes{namespace=~\"$namespace\", pod=~\"$instance\"})/sum(kube_pod_container_resource_limits{namespace=~\"$namespace\", resource=\"memory\", unit=\"byte\", container=~\"milvus\", pod=~\"$instance\"})",
+          "expr": "100*sum(process_resident_memory_bytes{namespace=~\"$namespace\", pod=~\"$instance\"})/sum(kube_pod_container_resource_limits{namespace=~\"$namespace\", resource=\"memory\", unit=\"byte\", container=~\"$app_name\", pod=~\"$instance\"})",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
@@ -409,7 +409,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(increase(milvus_proxy_req_count{namespace=\"$namespace\", pod=~\"$instance\", db_name=~\"$db\", status=\"success\"}[1m])) by(function_name) ",
+          "expr": "sum(increase(milvus_proxy_req_count{namespace=~\"$namespace\", pod=~\"$instance\", db_name=~\"$db\", status=\"success\"}[1m])) by(function_name) ",
           "interval": "",
           "legendFormat": "{{function_name}}",
           "range": true,
@@ -515,7 +515,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "histogram_quantile(0.99, sum by (le,pod, node_id) (rate(milvus_proxy_sq_latency_bucket{namespace=~\"$namespace\", pod=~\"$instance\", db_name=~\"$db\", query_type=\"search\"}[2m])))",
+          "expr": "histogram_quantile(0.99, sum by (le,pod, node_id) (rate(milvus_proxy_sq_latency_bucket{namespace=~\"$namespace\", pod=~\"$instance\", db_name=~\"$db\", query_type=\"search\"}[$__rate_interval])))",
           "interval": "",
           "legendFormat": "p99-{{pod}}-node_{{node_id}}",
           "range": true,
@@ -528,7 +528,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(increase(milvus_proxy_sq_latency_sum{namespace=~\"$namespace\", pod=~\"$instance\",db_name=~\"$db\", query_type=\"search\"}[2m])) by (pod, node_id) / sum(increase(milvus_proxy_sq_latency_count{ namespace=~\"$namespace\", pod=~\"$instance\", db_name=~\"$db\", query_type=\"search\"}[2m])) by (pod, node_id)",
+          "expr": "sum(increase(milvus_proxy_sq_latency_sum{namespace=~\"$namespace\", pod=~\"$instance\",db_name=~\"$db\", query_type=\"search\"}[2m])) by (pod, node_id) / sum(increase(milvus_proxy_sq_latency_count{namespace=~\"$namespace\", pod=~\"$instance\", db_name=~\"$db\", query_type=\"search\"}[$__rate_interval])) by (pod, node_id)",
           "interval": "",
           "legendFormat": "avg-{{pod}}-node_{{node_id}}",
           "range": true,
@@ -540,7 +540,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "histogram_quantile(1, sum by (le,pod, node_id) (rate(milvus_proxy_sq_latency_bucket{namespace=~\"$namespace\", pod=~\"$instance\", db_name=~\"$db\", query_type=\"search\"}[2m])))",
+          "expr": "histogram_quantile(1, sum by (le,pod, node_id) (rate(milvus_proxy_sq_latency_bucket{namespace=~\"$namespace\", pod=~\"$instance\", db_name=~\"$db\", query_type=\"search\"}[$__rate_interval])))",
           "legendFormat": "max-{{pod}}-node_{{node_id}}",
           "range": true,
           "refId": "C"
@@ -751,7 +751,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "histogram_quantile(0.99, sum by (le) (rate(milvus_proxy_restful_api_req_latency_bucket{namespace=\"$namespace\", pod=\"$instance\"}[1m])))",
+          "expr": "histogram_quantile(0.99, sum by (le) (rate(milvus_proxy_restful_api_req_latency_bucket{namespace=~\"$namespace\", pod=~\"$instance\"}[$__rate_interval])))",
           "interval": "",
           "legendFormat": "p99-{{pod}}-node{{node_id}}",
           "range": true,
@@ -764,7 +764,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(increase(milvus_proxy_restful_api_req_latency_sum{namespace=\"$namespace\",pod=\"$instance\"}[2m])) by (pod, node_id) / sum(increase(milvus_proxy_restful_api_req_latency_count{namespace=\"$namespace\", pod=\"$instance\"}[2m])) by (pod, node_id)",
+          "expr": "sum(increase(milvus_proxy_restful_api_req_latency_sum{namespace=~\"$namespace\",pod=~\"$instance\"}[$__rate_interval])) by (pod, node_id) / sum(increase(milvus_proxy_restful_api_req_latency_count{namespace=~\"$namespace\", pod=~\"$instance\"}[$__rate_interval])) by (pod, node_id)",
           "interval": "",
           "legendFormat": "avg-{{pod}}-node{{node_id}}",
           "range": true,
@@ -776,7 +776,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "histogram_quantile(1, sum by (le, pod, node_id) (rate(milvus_proxy_restful_api_req_latency_bucket{namespace=\"$namespace\", pod=\"$instance\"}[2m])))",
+          "expr": "histogram_quantile(1, sum by (le, pod, node_id) (rate(milvus_proxy_restful_api_req_latency_bucket{namespace=~\"$namespace\", pod=~\"$instance\"}[$__rate_interval])))",
           "legendFormat": "max-{{pod}}-node{{node_id}}",
           "range": true,
           "refId": "C"
@@ -879,7 +879,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(rate(milvus_proxy_restful_api_receive_bytes_count{namespace=\"$namespace\", pod=\"$instance\"}[1m])) by(pod, node_id)",
+          "expr": "sum(rate(milvus_proxy_restful_api_receive_bytes_count{namespace=~\"$namespace\", pod=~\"$instance\"}[$__rate_interval])) by(pod, node_id)",
           "interval": "",
           "legendFormat": "{{pod}}-node{{node_id}}",
           "queryType": "randomWalk",
@@ -988,7 +988,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "increase(milvus_proxy_slow_query_count{namespace=\"$namespace\", pod=~\"$instance\", db_name=~\"$db\" }[1m])",
+          "expr": "increase(milvus_proxy_slow_query_count{namespace=~\"$namespace\", pod=~\"$instance\", db_name=~\"$db\" }[1m])",
           "interval": "",
           "intervalFactor": 2,
           "legendFormat": "{{pod}}-{{node_id}}-{{msg_type}}",
@@ -1096,7 +1096,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(rate(process_cpu_seconds_total{namespace=\"$namespace\",pod=~\"$instance\"}[1m])) by (pod)",
+          "expr": "sum(rate(process_cpu_seconds_total{namespace=~\"$namespace\",pod=~\"$instance\"}[$__rate_interval])) by (pod)",
           "interval": "",
           "intervalFactor": 1,
           "legendFormat": "{{pod}}",
@@ -1204,7 +1204,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "process_resident_memory_bytes{pod=~\"$instance\", namespace=\"$namespace\"}",
+          "expr": "process_resident_memory_bytes{namespace=~\"$namespace\", pod=~\"$instance\"}",
           "interval": "",
           "intervalFactor": 2,
           "legendFormat": "{{pod}}",
@@ -1310,7 +1310,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(milvus_querynode_disk_used_size{namespace=\"$namespace\",pod=~\"$instance\"} ) by(pod) ",
+          "expr": "sum(milvus_querynode_disk_used_size{namespace=~\"$namespace\",pod=~\"$instance\"} ) by(pod) ",
           "interval": "",
           "intervalFactor": 2,
           "legendFormat": "{{pod}}",
@@ -1421,7 +1421,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(increase(milvus_proxy_cache_hit_count{namespace=\"$namespace\", pod=\"$instance\", cache_state=\"hit\"}[2m])/120) by(cache_name, pod, node_id) / sum(increase(milvus_proxy_cache_hit_count{namespace=\"$namespace\", pod=\"$instance\"}[2m])/120) by(cache_name, pod, node_id)",
+          "expr": "sum(increase(milvus_proxy_cache_hit_count{namespace=~\"$namespace\", pod=~\"$instance\", cache_state=\"hit\"}[2m])/120) by(cache_name, pod, node_id) / sum(increase(milvus_proxy_cache_hit_count{namespace=~\"$namespace\", pod=~\"$instance\"}[2m])/120) by(cache_name, pod, node_id)",
           "interval": "",
           "legendFormat": "{{pod}}-node{{node_id}}-{{cache_name}}",
           "queryType": "randomWalk",
@@ -1555,10 +1555,14 @@
   "preload": false,
   "refresh": "",
   "schemaVersion": 42,
+  "tags": [
+    "chatbot",
+    "vectordb"
+  ],
   "templating": {
     "list": [
       {
-        "allowCustomValue": true,
+        "allowCustomValue": false,
         "current": {
           "text": "vdb",
           "value": "vdb"
@@ -1567,7 +1571,7 @@
           "type": "prometheus",
           "uid": "prometheus"
         },
-        "definition": "label_values(milvus_runtime_info{namespace=~\"vdb\"},namespace)",
+        "definition": "label_values(milvus_runtime_info{service=\"$app_name\"},namespace)",
         "hide": 0,
         "includeAll": false,
         "multi": false,
@@ -1575,7 +1579,7 @@
         "options": [],
         "query": {
           "qryType": 1,
-          "query": "label_values(milvus_runtime_info{namespace=~\"vdb\"},namespace)",
+          "query": "label_values(milvus_runtime_info{service=\"$app_name\"},namespace)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 1,
@@ -1619,7 +1623,7 @@
       },
       {
         "allValue": ".*",
-        "allowCustomValue": true,
+        "allowCustomValue": false,
         "current": {
           "text": [
             "vdb"
@@ -1632,7 +1636,7 @@
           "type": "prometheus",
           "uid": "prometheus"
         },
-        "definition": "label_values(milvus_proxy_req_count{namespace=\"$namespace\", pod=~\"$instance\"},db_name)",
+        "definition": "label_values(milvus_proxy_req_count{namespace=~\"$namespace\", pod=~\"$instance\"},db_name)",
         "hide": 0,
         "includeAll": true,
         "multi": true,
@@ -1640,7 +1644,7 @@
         "options": [],
         "query": {
           "qryType": 1,
-          "query": "label_values(milvus_proxy_req_count{namespace=\"$namespace\", pod=~\"$instance\"},db_name)",
+          "query": "label_values(milvus_proxy_req_count{namespace=~\"$namespace\", pod=~\"$instance\"},db_name)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 1,
@@ -1649,6 +1653,17 @@
         "skipUrlSync": false,
         "sort": 0,
         "type": "query"
+      },
+      {
+        "current": {
+          "text": "milvus",
+          "value": "milvus"
+        },
+        "hide": 2,
+        "name": "app_name",
+        "query": "milvus",
+        "skipUrlSync": true,
+        "type": "constant"
       }
     ]
   },
@@ -1671,10 +1686,6 @@
     ]
   },
   "timezone": "browser",
-  "tags": [
-    "chatbot",
-    "vectordb"
-  ],
   "title": "Chatbot Toolkit / VectorDB / Milvus",
   "version": 1,
   "uid": "uLf5cJ3Gaa"
