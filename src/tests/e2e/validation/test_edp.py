@@ -261,28 +261,31 @@ def test_edp_upload_nonexistent_link(edp_helper):
 
 
 @allure.testcase("DSPTV-T79")
-def test_edp_upload_link_that_redirects_to_another_site(edp_helper, chatqa_api_helper):
+def test_edp_upload_link_that_redirects_to_another_site(edp_helper):
     """
-    Upload a link that redirects to another site (HTTP to HTTPS).
-    Verify that the content from the redirected link is available in ChatQA.
+    Upload a link that redirects to another site: http://github.com/intel/chatbot-toolkit
+    answers 301 and sends the fetcher to the HTTPS URL.
+    Verify that the page behind the redirect is fetched, split into chunks and retrievable,
+    attributed to the link as it was uploaded.
     """
-    rag_question = "What is Intel® AI for Enterprise RAG powered by?"
+    link = "http://github.com/intel/chatbot-toolkit"
+    retrieval_query = "What is Intel® Chatbot Toolkit powered by?"
 
-    # Verify that ChatBot doesn't have the information from the link yet
-    response = chatqa_api_helper.call_chatqa(rag_question)
-    response_text = chatqa_api_helper.get_text(response)
-    logger.debug(f"Response: {response_text}")
-    assert "gaudi" not in response_text.lower()
-
-    # This link will be redirected to HTTPS one (https://github.com/intel/Enterprise-RAG)
-    link = "http://github.com/intel/Enterprise-RAG"
     try:
-        edp_helper.upload_links({"links": [link]})
+        response = edp_helper.upload_links({"links": [link]})
+        assert response.status_code == 200, f"Unexpected status code. Response: {response.text}"
         edp_helper.wait_for_link_upload(link, "ingested", timeout=120)
-        response = chatqa_api_helper.call_chatqa(rag_question)
-        response_text = chatqa_api_helper.get_text(response)
-        logger.debug(f"Response: {response_text}")
-        assert "gaudi" in response_text.lower()
+
+        record = edp_helper.link_record(link)
+        logger.debug(f"Link record: {record}")
+        assert record["chunks_total"] > 0, (
+            f"The redirect was followed but nothing was extracted from the page: {record}")
+
+        response = edp_helper.retrieve({"query": retrieval_query, "k": 20})
+        assert response.status_code == 200, f"Failed to retrieve documents. Response: {response.text}"
+        retrieved_links = {doc["metadata"].get("url") for doc in response.json()["docs"]["retrieved_docs"]}
+        assert link in retrieved_links, (
+            f"No chunk of the redirected page was retrieved. Retrieved from: {retrieved_links}")
     finally:
         edp_helper.delete_link_by_url(link)
 

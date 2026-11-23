@@ -466,10 +466,17 @@ def test_reupload(edp_helper, chatqa_api_helper, test_data):
 @allure.testcase("DSPTV-T39")
 def test_similarity_search_with_siblings(edp_helper, chatqa_api_helper, fingerprint_api_helper, test_data):
     """
-    Upload a file with a list of 20 elements.
-    Ask a question that requires the entire list to be included in the answer.
-    With retriever's search type set to 'similarity', expect the answer to be incomplete.
-    Change the retriever's search type to 'similarity_search_with_siblings' and expect the answer to be complete.
+    Upload a file with a list of 20 elements, split by the text splitter into several chunks.
+    Ask a question that needs the entire list, with the retriever's k one below the chunk
+    count the ingested file reports, so similarity search has to leave one chunk out.
+
+    With search_type='similarity', expect the answer to miss the element in the chunk left
+    out. With 'similarity_search_with_siblings', the neighbours of every hit are fetched as
+    well, which covers that chunk, so expect the answer to be complete.
+
+    search_by scopes retrieval to this file, but only files: the retriever ORs an
+    include-all-links expression onto it (generate_retrieve_filter_expression), so an
+    ingested link can still take a slot.
     """
     # Read the baseline from the same scope the test writes to, so the restore
     # cannot overwrite the chatqa retriever config with values from another scope.
@@ -487,25 +494,51 @@ def test_similarity_search_with_siblings(edp_helper, chatqa_api_helper, fingerpr
     expected_present = stage["questions"][0]["expected_present"]
 
     file_path = os.path.join(TEST_FILES_DIR, f"dataset_{test_data.language}", file_name)
-    edp_helper.upload_file_and_wait_for_ingestion(file_path)
+    record = edp_helper.upload_file_and_wait_for_ingestion(file_path)
+    chunk_count = record["chunks_total"]
+    logger.info(f"'{file_name}' was ingested as {chunk_count} chunks")
+    assert chunk_count > 1, (f"'{file_name}' was stored as {chunk_count} chunk(s). The file has to span "
+                             "several chunks for a sibling search to have anything to add")
+    partial_k = chunk_count - 1
+    object_name = record["object_name"]
+    scope = {"metadata": {"search_by": {"bucket_name": record.get("bucket_name") or edp_helper.default_bucket,
+                                        "object_name": object_name}}}
+
+    response = edp_helper.retrieve({"query": question, "k": partial_k, "search_type": "similarity",
+                                    "search_by": scope["metadata"]["search_by"]})
+    assert response.status_code == 200, f"Failed to retrieve documents. Response: {response.text}"
+    docs = response.json()["docs"]["retrieved_docs"]
+    own_chunks = [doc for doc in docs if doc["metadata"].get("object_name") == object_name]
+    strangers = [doc["metadata"] for doc in docs if doc not in own_chunks]
+    assert len(own_chunks) <= partial_k, (
+        f"A similarity search with k={partial_k} returned {len(own_chunks)} chunks of '{object_name}', "
+        "so the retriever does not honour k")
+    if len(own_chunks) < partial_k:
+        assert strangers and all(metadata.get("url") for metadata in strangers), (
+            f"A similarity search scoped to '{object_name}' with k={partial_k} returned only "
+            f"{len(own_chunks)} of its chunks, and what took the other slots is not a link: {strangers}")
+        pytest.skip(f"Links took {len(strangers)} of the {partial_k} slots, and search_by cannot exclude "
+                    "them. Nothing to demonstrate here")
+    if expected_absent in "\n".join(doc["text"] for doc in own_chunks):
+        pytest.skip(f"The {partial_k} chunks this environment ranks highest already hold "
+                    f"'{expected_absent}', so the sibling search has nothing left to add")
 
     try:
-        if original_search_type != "similarity":
-            fingerprint_api_helper.set_chatqa_component_parameters(
-                "retriever", search_type="similarity", k=original_k)
+        fingerprint_api_helper.set_chatqa_component_parameters(
+            "retriever", search_type="similarity", k=partial_k)
 
-        response = ask_question(chatqa_api_helper, question)
-        assert expected_absent not in response, (f"'{expected_absent}' is the last principle in the list. It should not be "
-                                               "included in the answer when search_type='similarity'")
+        response = ask_question(chatqa_api_helper, question, **scope)
+        assert expected_absent not in response, (
+            f"'{expected_absent}' is in the one chunk of {chunk_count} that similarity search with "
+            f"k={partial_k} leaves out, as the retrieval above confirmed. It should not be in the answer")
 
-        # Change search type to similarity_search_with_siblings. Expect the response to be longer
         fingerprint_api_helper.set_chatqa_component_parameters("retriever", search_type="similarity_search_with_siblings",
-                                                               k=original_k)
-        response = ask_question(chatqa_api_helper, question)
-        assert expected_present in response, \
-            "With similarity_search_with_siblings search type, the answer should be longer"
+                                                               k=partial_k)
+        response = ask_question(chatqa_api_helper, question, **scope)
+        assert expected_present in response, (
+            f"With search_type='similarity_search_with_siblings' and k={partial_k}, the siblings of the "
+            f"retrieved chunks should cover the whole list, including '{expected_present}'")
     finally:
-        # Restore default parameters
         fingerprint_api_helper.set_chatqa_component_parameters(
             "retriever", search_type=original_search_type, k=original_k)
 
@@ -616,9 +649,9 @@ def upload_and_ask_question(edp_helper, chatqa_api_helper, file, question=""):
     return ask_question(chatqa_api_helper, question)
 
 
-def ask_question(chatqa_api_helper, question=""):
+def ask_question(chatqa_api_helper, question="", **params):
     """Ask a question to the chatbot and return the response"""
-    response = chatqa_api_helper.call_chatqa(question)
+    response = chatqa_api_helper.call_chatqa(question, **params)
     assert response.status_code == 200, "Unexpected status code returned"
     response_text = chatqa_api_helper.get_text(response)
     logger.info(f"ChatQA response: {response_text}")
