@@ -1,5 +1,5 @@
 {{- if and (index .Values "milvus" "enabled") (index .Values "milvus" "metrics" "enabled") }}
-# Copyright (C) 2024-2026 Intel Corporation
+# Copyright (C) 2026 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
@@ -11,8 +11,6 @@ spec:
   namespaceSelector:
     matchNames:
     - {{ .Release.Namespace }}
-  # The dashboard selects on app_kubernetes_io_name / _instance, which only reach
-  # the metrics if Prometheus copies them off the pod.
   podTargetLabels:
     - app.kubernetes.io/name
     - app.kubernetes.io/instance

@@ -16,7 +16,7 @@
     ]
   },
   "description": "Milvus Dashboard",
-  "editable": false,
+  "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
   "links": [
@@ -99,7 +99,7 @@
           "refId": "A"
         }
       ],
-      "title": "Max Uptime",
+      "title": "Milvus Max Uptime",
       "type": "stat"
     },
     {
@@ -305,7 +305,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "sum(rate(milvus_proxy_rate_limit_req_count{pod=~\"$instance\"}[$__rate_interval])) by (msg_type)",
+          "expr": "sum(rate(milvus_proxy_rate_limit_req_count{namespace=\"$namespace\", pod=~\"$instance\"}[$__rate_interval])) by (msg_type)",
           "legendFormat": "{{msg_type}}",
           "range": true,
           "refId": "A"
@@ -1528,7 +1528,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "sum by (pod)(\r\n  rate(milvus_storage_filesystem_write_bytes[$__rate_interval])\r\n)\r\n/\r\nsum by (pod)(\r\n  rate(milvus_storage_filesystem_write_count[$__rate_interval])\r\n)",
+          "expr": "sum by (pod)(\r\n  rate(milvus_storage_filesystem_write_bytes{namespace=~\"$namespace\", pod=~\"$instance\"}[$__rate_interval])\r\n)\r\n/\r\nsum by (pod)(\r\n  rate(milvus_storage_filesystem_write_count{namespace=~\"$namespace\", pod=~\"$instance\"}[$__rate_interval])\r\n)",
           "interval": "",
           "legendFormat": "writes",
           "queryType": "randomWalk",
@@ -1541,7 +1541,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "sum by (pod)(\r\n  rate(milvus_storage_filesystem_read_bytes[$__rate_interval])\r\n)\r\n/\r\nsum by (pod)(\r\n  rate(milvus_storage_filesystem_read_count[$__rate_interval])\r\n)",
+          "expr": "sum by (pod)(\r\n  rate(milvus_storage_filesystem_read_bytes{namespace=~\"$namespace\", pod=~\"$instance\"}[$__rate_interval])\r\n)\r\n/\r\nsum by (pod)(\r\n  rate(milvus_storage_filesystem_read_count{namespace=~\"$namespace\", pod=~\"$instance\"}[$__rate_interval])\r\n)",
           "instant": false,
           "legendFormat": "reads",
           "range": true,
