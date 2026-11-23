@@ -122,7 +122,7 @@ def test_index_type_mapping(milvus_env, http, monkeypatch, algorithm, expected_i
 
 
 @pytest.mark.parametrize("metric", ["COSINE", "L2", "IP"])
-def test_metric_type_is_passed_to_index_and_search(milvus_env, monkeypatch, metric):
+def test_metric_type_uses_cosine_and_warns_for_others(milvus_env, monkeypatch, metric, caplog):
     monkeypatch.setenv("VECTOR_DISTANCE_METRIC", metric.lower())
     fake = FakeHttp({"/collections/has": {"has": False}})
     with mock.patch(
@@ -132,9 +132,11 @@ def test_metric_type_is_passed_to_index_and_search(milvus_env, monkeypatch, metr
         connector = ConnectorMilvus()
         asyncio.run(connector.similarity_search_by_vector("q", [0.1], k=10))
 
-    assert connector.metric_type == metric
-    assert fake.bodies("/collections/create")[0]["indexParams"][0]["metricType"] == metric
-    assert fake.bodies("/entities/search")[0]["searchParams"]["metricType"] == metric
+    assert connector.metric_type == "COSINE"
+    assert fake.bodies("/collections/create")[0]["indexParams"][0]["metricType"] == "COSINE"
+    assert fake.bodies("/entities/search")[0]["searchParams"]["metricType"] == "COSINE"
+    if metric != "COSINE":
+        assert f"VECTOR_DISTANCE_METRIC={metric} is ignored" in caplog.text
 
 
 def test_vector_schema_from_env(milvus_env, http, monkeypatch):
