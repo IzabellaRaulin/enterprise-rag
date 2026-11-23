@@ -47,6 +47,9 @@ components:
     layer: erag
     enabled: "{{ keycloak_enabled | default(true) | bool }}"
     depends_on: [app_pre_install]
+    # Created by the configurator Job (kubectl apply).
+    ownership_declared:
+      - {kind: Secret, name: erag-credentials}
 
   # --- Edge / API surface ---
   - name: app_apisix
@@ -83,6 +86,9 @@ components:
     layer: erag
     enabled: "{{ edp_enabled | default(false) | bool }}"
     depends_on: [app_vector_databases, app_apisix, app_hpa]
+    # Created by the Keycloak client-secret Job (kubectl apply).
+    ownership_declared:
+      - {kind: Secret, name: keycloak-minio-secret}
 
   - name: app_mcp_gateway
     layer: erag
