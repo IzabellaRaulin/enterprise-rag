@@ -13,7 +13,7 @@ import { ExternalLinkIcon } from "@intel-enterprise-rag-ui/icons";
 import { useRef } from "react";
 
 const SUPPORT_URL = "https://supporttickets.intel.com/s/supportrequest";
-const GITHUB_ISSUES_URL = "https://github.com/intel/enterprise-rag/issues";
+const GITHUB_ISSUES_URL = "https://github.com/intel/chatbot-toolkit/issues";
 
 interface AboutDialogProps {
   appName: string;

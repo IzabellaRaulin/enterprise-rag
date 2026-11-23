@@ -72,4 +72,4 @@ Users will be prompted to set up an OTP device the next time they log in. Follow
 | Topic | Link |
 |-------|------|
 | Single Sign-On with Microsoft Entra ID | [sharepoint.md](sharepoint.md) |
-| Toolkit Manager configuration | [`../../docs/customize/configuration.md`](https://github.com/intel/enterprise-ai-solutions/blob/main/docs/customize/configuration.md) |
+| Toolkit Manager configuration | [`../../docs/customize/configuration.md`](https://github.com/intel/toolkit-manager/blob/main/docs/customize/configuration.md) |

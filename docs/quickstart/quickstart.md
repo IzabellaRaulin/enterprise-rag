@@ -20,8 +20,8 @@ If the platform is already installed, skip to [Step 3](#step-3---initialize-the-
 Run from the Toolkit Manager repo root:
 
 ```bash
-git clone https://github.com/intel/enterprise-ai-solutions.git
-cd enterprise-ai-solutions
+git clone https://github.com/intel/toolkit-manager.git
+cd toolkit-manager
 ./es_auto_installer.sh configure
 ```
 
@@ -35,7 +35,7 @@ To stage the platform separately, for example to confirm model serving works bef
 ./es_auto_installer.sh install inference --env local
 ```
 
-For multi-node or bring-your-own-Kubernetes, see the [Platform Quickstart](https://github.com/intel/enterprise-ai-solutions/blob/main/docs/quickstart/quickstart.md).
+For multi-node or bring-your-own-Kubernetes, see the [Platform Quickstart](https://github.com/intel/toolkit-manager/blob/main/docs/quickstart/quickstart.md).
 
 ## Step 3 - Initialize the chatbot
 

@@ -6,7 +6,7 @@ through the platform's Velero-based backup mechanism. Opt-in and off by default.
 
 The platform provides the mechanism (Velero, CSI volume snapshots, the profile-driven engine). This
 toolkit declares what its own data is and drives that engine against it. See
-[Toolkit Manager](https://github.com/intel/enterprise-ai-solutions)'s
+[Toolkit Manager](https://github.com/intel/toolkit-manager)'s
 `docs/customize/configuration.md` for the platform settings (`velero_enabled`,
 `storage_backend`).
 

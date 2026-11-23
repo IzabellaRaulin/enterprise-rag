@@ -12,8 +12,8 @@ Toolkit Manager installs and operates Intel® Chatbot Toolkit on the platform. T
 
 > [!NOTE]
 > The platform prerequisites (OS, storage backends, node configuration, and SSH setup) are owned by Toolkit Manager. See:
-> - [Platform Prerequisites](https://github.com/intel/enterprise-ai-solutions/blob/main/docs/quickstart/prerequisites.md) for base requirements (OS, hardware, tooling, credentials)
-> - [Multi-Node & BYO Cluster](https://github.com/intel/enterprise-ai-solutions/blob/main/docs/deploy/topologies.md) for multi-node and bring-your-own-Kubernetes setups
+> - [Platform Prerequisites](https://github.com/intel/toolkit-manager/blob/main/docs/quickstart/prerequisites.md) for base requirements (OS, hardware, tooling, credentials)
+> - [Multi-Node & BYO Cluster](https://github.com/intel/toolkit-manager/blob/main/docs/deploy/topologies.md) for multi-node and bring-your-own-Kubernetes setups
 
 ---
 
@@ -44,7 +44,7 @@ The **limited single-user deployment** (32 cores / 64 GB RAM) is suitable only f
 
 - **Hugging Face model access:** Ensure you have the necessary access to download and use the models your deployment will serve. Gated models (Llama, Mistral, Gemma) require a [Hugging Face token](https://huggingface.co/settings/tokens) exported as `HF_TOKEN` before install.
 
-- **Multi-node clusters require ReadWriteMany (RWX) storage:** If deploying across multiple nodes, a CSI driver supporting `ReadWriteMany` access mode is required. Toolkit Manager can provision NFS (`storage_backend: nfs`) or NetApp Trident (`storage_backend: netapp-trident`). Single-node deployments use `local-path` by default. See [Platform Storage Documentation](https://github.com/intel/enterprise-ai-solutions/blob/main/docs/customize/configuration.md#storage) for configuration.
+- **Multi-node clusters require ReadWriteMany (RWX) storage:** If deploying across multiple nodes, a CSI driver supporting `ReadWriteMany` access mode is required. Toolkit Manager can provision NFS (`storage_backend: nfs`) or NetApp Trident (`storage_backend: netapp-trident`). Single-node deployments use `local-path` by default. See [Platform Storage Documentation](https://github.com/intel/toolkit-manager/blob/main/docs/customize/configuration.md#storage) for configuration.
 
 ---
 
@@ -53,10 +53,10 @@ The **limited single-user deployment** (32 cores / 64 GB RAM) is suitable only f
 Cluster provisioning, operating system requirements, Kubernetes versions, storage backends, and node topology are owned by **Toolkit Manager**.
 
 For those topics, see:
-- [Platform Prerequisites](https://github.com/intel/enterprise-ai-solutions/blob/main/docs/quickstart/prerequisites.md) - OS, tooling, hardware minimums for the platform
-- [Platform Quickstart](https://github.com/intel/enterprise-ai-solutions/blob/main/docs/quickstart/quickstart.md) - installing the cluster
-- [Multi-Node & BYO Cluster](https://github.com/intel/enterprise-ai-solutions/blob/main/docs/deploy/topologies.md) - multi-node and bring-your-own-Kubernetes setups
-- [Storage Configuration](https://github.com/intel/enterprise-ai-solutions/blob/main/docs/customize/configuration.md#storage) - NFS, Ceph, NetApp Trident
+- [Platform Prerequisites](https://github.com/intel/toolkit-manager/blob/main/docs/quickstart/prerequisites.md) - OS, tooling, hardware minimums for the platform
+- [Platform Quickstart](https://github.com/intel/toolkit-manager/blob/main/docs/quickstart/quickstart.md) - installing the cluster
+- [Multi-Node & BYO Cluster](https://github.com/intel/toolkit-manager/blob/main/docs/deploy/topologies.md) - multi-node and bring-your-own-Kubernetes setups
+- [Storage Configuration](https://github.com/intel/toolkit-manager/blob/main/docs/customize/configuration.md#storage) - NFS, Ceph, NetApp Trident
 
 ---
 

@@ -125,7 +125,7 @@ def _render(extra_vars):
 )
 def test_rendered_values_match_the_platform(extra_vars, domain, prefix):
     """Path mode: Keycloak on the base domain under keycloak_path (its http-relative-path);
-    subdomain mode: keycloak.<base> with no prefix (enterprise-ai-solutions roles/keycloak)."""
+    subdomain mode: keycloak.<base> with no prefix (toolkit-manager roles/keycloak)."""
     scope = _render(extra_vars)
     assert scope["erag_keycloak_domain_name"] == domain
     assert scope["erag_keycloak_path_prefix"] == prefix

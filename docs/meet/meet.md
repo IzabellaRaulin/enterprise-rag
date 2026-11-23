@@ -12,7 +12,7 @@ Intel® Chatbot Toolkit is a complete retrieval-augmented generation application
 
 It is not a library or a reference notebook. It is a running system: document ingestion, a vector database, the retrieval pipeline, guardrails, single sign-on, dashboards, and autoscaling, all deployed together by one command.
 
-[Toolkit Manager](https://github.com/intel/enterprise-ai-solutions) installs and operates it. The platform underneath provides Kubernetes, storage, service mesh, identity, and model serving through Intel® Inference Toolkit. This toolkit provides the RAG application on top. `erag` is the install target name.
+[Toolkit Manager](https://github.com/intel/toolkit-manager) installs and operates it. The platform underneath provides Kubernetes, storage, service mesh, identity, and model serving through Intel® Inference Toolkit. This toolkit provides the RAG application on top. `erag` is the install target name.
 
 ## Why it exists
 
@@ -35,7 +35,7 @@ This project is that plumbing, already assembled and tuned for Intel® Xeon® pr
 You clone **one** repository and run every command from its root. The installer clones the rest for you.
 
 ```
-github.com/intel/enterprise-ai-solutions      <- start here; run all commands from this root
+github.com/intel/toolkit-manager      <- start here; run all commands from this root
   |
   |-- es_auto_installer.sh      the single entry point (configure / init / install / teardown)
   |-- env/<name>/               your configuration, kubeconfig, credentials, and logs

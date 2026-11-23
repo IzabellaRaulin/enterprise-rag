@@ -3,7 +3,7 @@
 
 apiVersion: v2
 name: mcp-gateway
-description: MCP Gateway - exposes Intel AI for Enterprise RAG as MCP tools for AI agents
+description: MCP Gateway - exposes Intel® Chatbot Toolkit as MCP tools for AI agents
 type: application
 version: 0.1.0
 appVersion: "3.0.0"

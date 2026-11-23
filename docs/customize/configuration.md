@@ -260,4 +260,4 @@ Precedence: CLI `-e` > `global_config.yaml` > `config.erag.yaml` > role defaults
 
 ## Related docs
 
-[models.md](models.md) (models, multilingual, tuning), [auth.md](auth.md)/[sharepoint.md](sharepoint.md) (SSO, MFA, AD), [mcp.md](mcp.md) (MCP gateway), [object_store.md](object_store.md) (ONTAP S3), [images.md](images.md) (build images), [pipelines.md](../deploy/pipelines.md) (variants), [performance.md](../operate/performance.md) (tuning), [backup.md](../operate/backup.md) (backup and restore), [platform config](https://github.com/intel/enterprise-ai-solutions/blob/main/docs/customize/configuration.md).
+[models.md](models.md) (models, multilingual, tuning), [auth.md](auth.md)/[sharepoint.md](sharepoint.md) (SSO, MFA, AD), [mcp.md](mcp.md) (MCP gateway), [object_store.md](object_store.md) (ONTAP S3), [images.md](images.md) (build images), [pipelines.md](../deploy/pipelines.md) (variants), [performance.md](../operate/performance.md) (tuning), [backup.md](../operate/backup.md) (backup and restore), [platform config](https://github.com/intel/toolkit-manager/blob/main/docs/customize/configuration.md).

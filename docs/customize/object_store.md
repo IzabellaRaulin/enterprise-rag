@@ -191,5 +191,5 @@ The scheduled task polls buckets for changes at the specified interval and inges
 |-------|------|
 | AWS S3 and SQS setup with the AWS CLI | [aws_s3.md](aws_s3.md) |
 | SharePoint integration (another EDP storage source) | [sharepoint.md](sharepoint.md) |
-| NetApp ONTAP persistent volumes | [NetApp ONTAP and Trident](https://github.com/intel/enterprise-ai-solutions/blob/main/docs/deploy/netapp_ontap.md) |
+| NetApp ONTAP persistent volumes | [NetApp ONTAP and Trident](https://github.com/intel/toolkit-manager/blob/main/docs/deploy/netapp_ontap.md) |
 | EDP source code and detailed settings | [`src/edp/README.md`](../../src/edp/README.md) |

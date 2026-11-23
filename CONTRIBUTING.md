@@ -15,7 +15,7 @@ We welcome community contributions to Intel® Chatbot Toolkit.
 - [Coding guidelines](#coding-guidelines)
 - [Commits guidelines](#commits-guidelines)
 - [Pull request guidelines](#pull-request-guidelines)
-- [Contributing across the AI Solutions portfolio](#contributing-across-the-ai-solutions-portfolio)
+- [Contributing across the toolkit repositories](#contributing-across-the-toolkit-repositories)
 - [Pull request activity and review process](#pull-request-activity-and-review-process)
 
 
@@ -91,7 +91,7 @@ Your pull request will be automatically tested by pre-commit and marked as "gree
 If any checks fail and the status is marked as red, review the console logs and fix the reported issues. Any change to the pull request branch will automatically trigger a new set of checks.
 
 > [!NOTE]
-> Include links to related pull requests in other repositories when applicable. See [Contributing across the AI Solutions portfolio](#contributing-across-the-ai-solutions-portfolio) for guidance on coordinating changes across repositories.
+> Include links to related pull requests in other repositories when applicable. See [Contributing across the toolkit repositories](#contributing-across-the-toolkit-repositories) for guidance on coordinating changes across repositories.
 
 
 We'll make sure to review your Pull Request as soon as possible and provide you with our feedback. You can expect a merge once your changes are validated with automatic tests and approved by maintainers.
@@ -100,7 +100,7 @@ We'll make sure to review your Pull Request as soon as possible and provide you 
 
 ### Copyright headers
 
-All source files must carry the standard AI Solutions copyright header. For new files, use the current year.
+All source files must carry the standard Intel copyright header. For new files, use the current year.
 
 Python (`.py`):
 ```python
@@ -187,33 +187,33 @@ When a repository provides a pull request template, follow its structure and com
 
 Include additional context that may help reviewers assess the change, when applicable:
 
- - Related pull requests in other repositories, including any required merge order. See [Contributing across the AI Solutions portfolio](#contributing-across-the-ai-solutions-portfolio) for guidance.
+ - Related pull requests in other repositories, including any required merge order. See [Contributing across the toolkit repositories](#contributing-across-the-toolkit-repositories) for guidance.
  - User-visible behavior, configuration changes, upgrade or migration steps, and compatibility impact.
  - Security considerations, known limitations, and follow-up work.
  - Documentation updates, relevant logs, screenshots, or before-and-after examples.
  - Any other information requested by the repository's pull request template.
 
 
-## Contributing across the AI Solutions portfolio
+## Contributing across the toolkit repositories
 
-AI Solutions is delivered as a portfolio of related projects maintained across multiple repositories. Each repository owns a specific layer or capability, while [`enterprise-ai-solutions`][ai-solutions] serves as the parent integration repository that assembles and releases the complete solution.
+The toolkits are related projects maintained across multiple repositories. Each repository owns a specific layer or capability, while [`toolkit-manager`][ai-solutions] serves as the parent integration repository that assembles and releases the complete solution.
 
 Intel® Chatbot Toolkit is one of the solutions within this portfolio. It uses the shared layers that Toolkit Manager installs, as well as capabilities from other portfolio solutions, such as [Intel® Inference Toolkit][ai-inference], which provides inference and model-serving functionality.
 
 
 Repositories relevant to Intel® Chatbot Toolkit include:
-- [`enterprise-ai-solutions`][ai-solutions] - Toolkit Manager, which installs and operates Intel® Chatbot Toolkit
-- [`enterprise-inference`][ai-inference] - Intel® Inference Toolkit, the inference service used by Intel® Chatbot Toolkit.
+- [`toolkit-manager`][ai-solutions] - installs and operates Intel® Chatbot Toolkit
+- [`inference-toolkit`][ai-inference] - the inference service used by Intel® Chatbot Toolkit.
 
 
 When implementing a feature or a fix, contributors should make changes in the repository that owns the functionality:
   - changes to Intel® Chatbot Toolkit functionality belong to this repository.
-  - If the change requires adjustments in Intel® Inference Toolkit, which Intel® Chatbot Toolkit consumes, the corresponding changes must also be made in [`enterprise-inference`][ai-inference].
-  - If the change affects the integration layer provided by [`enterprise-ai-solutions`][ai-solutions], the corresponding changes must also be applied in that repository.
+  - If the change requires adjustments in Intel® Inference Toolkit, which Intel® Chatbot Toolkit consumes, the corresponding changes must also be made in [`inference-toolkit`][ai-inference].
+  - If the change affects the integration layer provided by [`toolkit-manager`][ai-solutions], the corresponding changes must also be applied in that repository.
 
 
 This may involve:
-- updating the component revision reference in configs/repos (required only in the parent repository,[`enterprise-ai-solutions`][ai-solutions])
+- updating the component revision reference in configs/repos (required only in the parent repository,[`toolkit-manager`][ai-solutions])
 - adjusting solution or deployment configuration when required,
 - updating documentation,
 - updating tests and validation assets when applicable.
@@ -224,10 +224,10 @@ When a contribution spans multiple repositories:
 1. Create a separate pull request for each affected repository.
 2. Link the related pull requests.
 4. Complete review and CI validation for every pull request.
-5. Merge the AI Solutions integration change only after the required component changes are available.
+5. Merge the Toolkit Manager integration change only after the required component changes are available.
 
 
-A contribution is considered complete only when all affected repositories are updated and the change is fully integrated into the parent repository, [`enterprise-ai-solutions`][ai-solutions].
+A contribution is considered complete only when all affected repositories are updated and the change is fully integrated into the parent repository, [`toolkit-manager`][ai-solutions].
 
 
 ## Pull request activity and review process
@@ -293,7 +293,7 @@ To avoid losing valuable contributions:
 
 In such cases, credit to the original author will be preserved.
 
-[ai-solutions]: https://github.com/intel/enterprise-ai-solutions
-[ai-inference]: https://github.com/intel/enterprise-inference
-[ai-erag-issues]: https://github.com/intel/enterprise-rag/issues
-[ai-erag-pulls]: https://github.com/intel/enterprise-rag/pulls
+[ai-solutions]: https://github.com/intel/toolkit-manager
+[ai-inference]: https://github.com/intel/inference-toolkit
+[ai-erag-issues]: https://github.com/intel/chatbot-toolkit/issues
+[ai-erag-pulls]: https://github.com/intel/chatbot-toolkit/pulls

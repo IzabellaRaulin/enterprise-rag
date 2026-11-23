@@ -10,11 +10,11 @@ Short answers with links to the full detail. New here? Read [Meet Intel® Chatbo
 
 ### What is Intel® Chatbot Toolkit?
 
-A complete retrieval-augmented generation application you deploy on your own hardware: document ingestion, vector search, retrieval pipelines, guardrails, chat UI, single sign-on, and dashboards. [Toolkit Manager](https://github.com/intel/enterprise-ai-solutions) installs and operates it. The install target is `erag`. See [Meet](meet/meet.md).
+A complete retrieval-augmented generation application you deploy on your own hardware: document ingestion, vector search, retrieval pipelines, guardrails, chat UI, single sign-on, and dashboards. [Toolkit Manager](https://github.com/intel/toolkit-manager) installs and operates it. The install target is `erag`. See [Meet](meet/meet.md).
 
 ### Which repository do I clone?
 
-Clone `github.com/intel/enterprise-ai-solutions` and run every command from its root. `init erag` clones this repository into `ext/enterprise.ai-erag` at a pinned revision. You never clone this repository directly to deploy it.
+Clone `github.com/intel/toolkit-manager` and run every command from its root. `init erag` clones this repository into `ext/enterprise.ai-erag` at a pinned revision. You never clone this repository directly to deploy it.
 
 ### Do I have to install the platform before Intel® Chatbot Toolkit?
 

@@ -10,7 +10,7 @@ One command installs: model servers, vector database, NATS, Enhanced Data Prepar
 
 ## Prerequisites
 
-The platform and Intel® Inference Toolkit must be installed first: [Platform Quickstart](https://github.com/intel/enterprise-ai-solutions/blob/main/docs/quickstart/quickstart.md). Hardware: [Prerequisites](../quickstart/prerequisites.md).
+The platform and Intel® Inference Toolkit must be installed first: [Platform Quickstart](https://github.com/intel/toolkit-manager/blob/main/docs/quickstart/quickstart.md). Hardware: [Prerequisites](../quickstart/prerequisites.md).
 
 ## Deployment workflow
 
@@ -154,4 +154,4 @@ Removes components in reverse order; models undeployed automatically.
 
 ## Related documentation
 
-[Prerequisites](../quickstart/prerequisites.md), [Quickstart](../quickstart/quickstart.md), [Pipeline Configuration](pipelines.md), [Configuration Reference](../customize/configuration.md), [Platform Documentation](https://github.com/intel/enterprise-ai-solutions/blob/main/docs/README.md).
+[Prerequisites](../quickstart/prerequisites.md), [Quickstart](../quickstart/quickstart.md), [Pipeline Configuration](pipelines.md), [Configuration Reference](../customize/configuration.md), [Platform Documentation](https://github.com/intel/toolkit-manager/blob/main/docs/README.md).

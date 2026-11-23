@@ -73,8 +73,8 @@ Install the following tools on your deployment machine (the VM you will be runni
 SSH into one of the VMs (for example vm3), clone Toolkit Manager, and let it prepare the machine. `configure` installs Python 3.11+, yq, kubectl, helm, and builds the Ansible virtual environment, so there is no per-repo venv to create.
 
 ```bash
-git clone https://github.com/intel/enterprise-ai-solutions.git
-cd enterprise-ai-solutions
+git clone https://github.com/intel/toolkit-manager.git
+cd toolkit-manager
 
 ./es_auto_installer.sh configure
 ./es_auto_installer.sh init erag
@@ -84,7 +84,7 @@ cd enterprise-ai-solutions
 
 ### 2. Deploy the Kubernetes cluster on vSphere
 
-Describe the VMs in `env/local/nodes.yaml` and `env/local/inventory/hosts.yaml`, then let the installer provision the cluster. See the Toolkit Manager [Multi-Node and BYO Cluster guide](https://github.com/intel/enterprise-ai-solutions/blob/main/docs/deploy/topologies.md).
+Describe the VMs in `env/local/nodes.yaml` and `env/local/inventory/hosts.yaml`, then let the installer provision the cluster. See the Toolkit Manager [Multi-Node and BYO Cluster guide](https://github.com/intel/toolkit-manager/blob/main/docs/deploy/topologies.md).
 
 If vSphere already provides the cluster, set `existing_kubernetes` in `env/local/global_config.yaml` to its kubeconfig path instead.
 

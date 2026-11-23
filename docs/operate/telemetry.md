@@ -109,4 +109,4 @@ For more on using this feature see [Grafana Logs Drilldown documentation](https:
 
 Grafana itself, Prometheus, Loki, and Tempo are deployed by the **platform** (`roles/observability/`). For login setup, data retention, and platform dashboards see the Toolkit Manager observability documentation:
 
-- [Toolkit Manager documentation](https://github.com/intel/enterprise-ai-solutions/blob/main/docs/README.md)
+- [Toolkit Manager documentation](https://github.com/intel/toolkit-manager/blob/main/docs/README.md)

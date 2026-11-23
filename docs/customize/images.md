@@ -124,4 +124,4 @@ This uploads all built images to the registry specified during setup.
 | Topic | Link |
 |-------|------|
 | Image registry map and Dockerfiles | `deployment/images.yaml` |
-| Toolkit Manager configuration | [`../../docs/customize/configuration.md`](https://github.com/intel/enterprise-ai-solutions/blob/main/docs/customize/configuration.md) |
+| Toolkit Manager configuration | [`../../docs/customize/configuration.md`](https://github.com/intel/toolkit-manager/blob/main/docs/customize/configuration.md) |

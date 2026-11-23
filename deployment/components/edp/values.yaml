@@ -13,7 +13,7 @@ global:
 
 pipelineNamespace: "chatqna"
 
-# Replica count of the embedding model served by Enterprise Inference. Supplied
+# Replica count of the embedding model served by Intel® Inference Toolkit. Supplied
 # by the app_edp role; drives MAX_NEW_WORKERS and CELERY_BATCH_SIZE.
 embeddingReplicas: 1
 
@@ -761,8 +761,8 @@ embedding:
     connector: "langchain"
     modelName: "nomic-ai/nomic-embed-text-v1"
     modelServer: "vllm"
-    # Model servers live outside this namespace (deployed by Enterprise
-    # Inference), so there is no usable default. Supply it when enabling this.
+    # Model servers live outside this namespace (deployed by Intel®
+    # Inference Toolkit), so there is no usable default. Supply it when enabling this.
     modelServerEndpoint: ""
     timeout: "120"
     eragLoggerLevel: "INFO"

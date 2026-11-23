@@ -1,7 +1,7 @@
 # Copyright (C) 2026 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-# Dev-only local container registry for Intel AI for Enterprise RAG.
+# Dev-only local container registry for Intel® Chatbot Toolkit.
 # Installed and enabled by 'update_images.sh --setup-registry' when the host
 # container runtime is nerdctl (containerd has no daemon to keep containers
 # running across restarts, so systemd owns the lifecycle instead).
@@ -20,7 +20,7 @@
 # is given so other cluster nodes can reach it (multi-node).
 
 [Unit]
-Description=Local container registry for Intel AI for Enterprise RAG (dev-only)
+Description=Local container registry for Intel® Chatbot Toolkit (dev-only)
 Requires=containerd.service
 After=containerd.service network-online.target
 Wants=network-online.target

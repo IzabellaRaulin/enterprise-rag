@@ -200,7 +200,7 @@ Run `./model-manager --help` for the full list of flags and environment variable
 
 | Topic | Link |
 |-------|------|
-| Model catalog structure and runtime settings | [`ext/enterprise.ai-inference/docs/customize/catalog.md`](https://github.com/intel/enterprise-inference/blob/main/docs/customize/catalog.md) |
-| Supported serving runtimes (vLLM, OpenVINO) | [`ext/enterprise.ai-inference/docs/customize/runtimes.md`](https://github.com/intel/enterprise-inference/blob/main/docs/customize/runtimes.md) |
+| Model catalog structure and runtime settings | [`ext/enterprise.ai-inference/docs/customize/catalog.md`](https://github.com/intel/inference-toolkit/blob/main/docs/customize/catalog.md) |
+| Supported serving runtimes (vLLM, OpenVINO) | [`ext/enterprise.ai-inference/docs/customize/runtimes.md`](https://github.com/intel/inference-toolkit/blob/main/docs/customize/runtimes.md) |
 | Performance tuning and sizing | [`../operate/performance.md`](../operate/performance.md) |
 | Pipeline variants and flavours | [`../deploy/pipelines.md`](../deploy/pipelines.md) |

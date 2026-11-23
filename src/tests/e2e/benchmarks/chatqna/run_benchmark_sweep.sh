@@ -2,7 +2,7 @@
 # Copyright (C) 2025 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-# Enterprise RAG ChatQA – Benchmark parameter sweep
+# Chatbot Toolkit ChatQnA – Benchmark parameter sweep
 #
 # Usage:
 #   ./run_benchmark_sweep.sh [--dry-run] [--skip-vectors]
@@ -1110,7 +1110,7 @@ run_sweep() {
 main() {
     echo -e "${BOLD}"
     echo "======================================================"
-    echo " Enterprise RAG ChatQA – Benchmark Sweep"
+    echo " Chatbot Toolkit ChatQnA – Benchmark Sweep"
     echo " $(date)"
     if [[ $DRY_RUN -eq 1 ]]; then
         echo " *** DRY-RUN MODE – no commands will be executed ***"

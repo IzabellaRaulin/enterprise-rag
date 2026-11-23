@@ -218,7 +218,7 @@ edp:
     bucketNameRegexFilter: ".*"
 ```
 
-Then run deployment as usual, an example for installation from the Enterprise AI Solution installer root:
+Then run deployment as usual, an example for installation from the Toolkit Manager root:
 ```bash
 ./es_auto_installer.sh install erag --env <name>
 ```

@@ -138,9 +138,9 @@ istioctl zc log <ztunnel-pod-name> --level=info,access=debug
 
 For Istio installation, version, and cluster-wide configuration see the Toolkit Manager Istio documentation:
 
-- [Namespace Security Labels](https://github.com/intel/enterprise-ai-solutions/blob/main/docs/reference/labels.md)
-- [Platform Architecture](https://github.com/intel/enterprise-ai-solutions/blob/main/docs/reference/architecture.md)
-- [Network Architecture](https://github.com/intel/enterprise-ai-solutions/blob/main/docs/deploy/networking.md)
+- [Namespace Security Labels](https://github.com/intel/toolkit-manager/blob/main/docs/reference/labels.md)
+- [Platform Architecture](https://github.com/intel/toolkit-manager/blob/main/docs/reference/architecture.md)
+- [Network Architecture](https://github.com/intel/toolkit-manager/blob/main/docs/deploy/networking.md)
 
 Istio troubleshooting guides:
 - https://istio.io/latest/docs/ambient/usage/troubleshoot-ztunnel/

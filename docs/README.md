@@ -5,7 +5,7 @@ what and why, **Get started** to stand it up, **Deploy** to choose a pipeline an
 further, then customize, operate, and look things up as needed.
 
 > [!IMPORTANT]
-> [Toolkit Manager](https://github.com/intel/enterprise-ai-solutions) installs and operates this toolkit. Clone **that** repository, run every command from its root, and `init erag` will fetch this one into `ext/` for you. See [Meet](meet/meet.md#where-the-pieces-live).
+> [Toolkit Manager](https://github.com/intel/toolkit-manager) installs and operates this toolkit. Clone **that** repository, run every command from its root, and `init erag` will fetch this one into `ext/` for you. See [Meet](meet/meet.md#where-the-pieces-live).
 
 ## Meet
 

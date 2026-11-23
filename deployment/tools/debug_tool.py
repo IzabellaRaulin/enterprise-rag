@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 """
-Intel® AI for Enterprise RAG Debug Tool
+Intel® Chatbot Toolkit Debug Tool
 Collects comprehensive diagnostic information from a Kubernetes cluster including pod logs,
 resource descriptions, version info, and deployment configuration (with sensitive data redacted).
 """
@@ -587,7 +587,7 @@ class EnterpriseRAGDebugger:
         """Execute all debug collection steps and produce the final archive."""
         self.setup_logging()
 
-        self._log_section("Intel® AI for Enterprise RAG Debug Tool")
+        self._log_section("Intel® Chatbot Toolkit Debug Tool")
 
         self.setup_workspace()
         self.collect_config()
@@ -609,7 +609,7 @@ class EnterpriseRAGDebugger:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Enterprise RAG Debug Tool - Collect comprehensive diagnostic information"
+        description="Chatbot Toolkit Debug Tool - Collect comprehensive diagnostic information"
     )
     parser.add_argument(
         "--output-dir",

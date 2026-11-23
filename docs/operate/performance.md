@@ -291,7 +291,7 @@ kubernetes_cpu_policy: nri-balloons  # Options: nri-balloons | kubelet-static | 
 
 `nri-balloons` (default) provides NUMA-aware pinning via the NRI plugin. The installer generates per-node `BalloonsPolicy` CRs based on the topology.
 
-For configuration details see [NRI CPU Balloons](https://github.com/intel/enterprise-ai-solutions/blob/main/docs/customize/nri_cpu_balloons.md) in Toolkit Manager docs.
+For configuration details see [NRI CPU Balloons](https://github.com/intel/toolkit-manager/blob/main/docs/customize/nri_cpu_balloons.md) in Toolkit Manager docs.
 
 ## Monitoring and Validation
 

@@ -3,8 +3,8 @@
 
 # Modular pipelines - reference guide
 
-This directory holds the **modular pipeline definitions** for Intel AI for Enterprise
-RAG. A pipeline describes a GenAI Microservices Connector (GMC) service graph as a set
+This directory holds the **modular pipeline definitions** for Intel® Chatbot
+Toolkit. A pipeline describes a GenAI Microservices Connector (GMC) service graph as a set
 of small, composable files. At install time the composer
 (`../scripts/compose_pipeline.py`) assembles those files into a single `GMConnector`
 custom resource plus a matching Helm resources overlay, and the `app_pipeline` role

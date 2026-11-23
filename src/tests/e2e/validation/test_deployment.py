@@ -3,7 +3,7 @@
 # Copyright (C) 2024-2026 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-"""E2E tests validating Enterprise RAG deployment invariants.
+"""E2E tests validating Intel® Chatbot Toolkit deployment invariants.
 
 Groups deployment-level checks that inspect the live cluster: NRI balloon CPU
 policy for inference pods, and cluster-wide Pod Security Standards labelling of

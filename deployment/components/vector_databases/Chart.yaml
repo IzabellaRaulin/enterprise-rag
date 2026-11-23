@@ -1,6 +1,6 @@
 apiVersion: v2
 name: vector_databases
-description: Vector databases for Enterprise RAG solution
+description: Vector databases for Intel® Chatbot Toolkit
 type: application
 version: 2.0.6
 appVersion: "3.0.0"

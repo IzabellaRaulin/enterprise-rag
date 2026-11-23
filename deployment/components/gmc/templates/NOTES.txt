@@ -1,2 +1,2 @@
-Please checkout src/gmc/usage_guide.md in the Intel® AI for Enterprise RAG repository for the usage guide.
+Please checkout src/gmc/usage_guide.md in the Intel® Chatbot Toolkit repository for the usage guide.
 

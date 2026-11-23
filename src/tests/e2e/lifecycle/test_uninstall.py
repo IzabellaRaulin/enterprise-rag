@@ -20,7 +20,7 @@ _BASE_NAMESPACES = ["default", "kube-system", "kube-public", "kube-node-lease", 
 # Secrets that legitimately exist in any namespace and are not application leftovers.
 _INFRA_SECRET_TYPES = {"kubernetes.io/service-account-token", "helm.sh/release.v1"}
 _INFRA_SECRET_PREFIXES = ("default-token", "sh.helm.release")
-# Platform gateway (enterprise-ai-solutions roles/gateway): path-mode apex grants, one key
+# Platform gateway (toolkit-manager roles/gateway): path-mode apex grants, one key
 # per path ('_root' is '/', 'a.b' is '/a/b'), each mapped to the namespace that owns it.
 _GATEWAY_NAMESPACE = "envoy-gateway-system"
 _PATH_GRANTS_CONFIGMAP = "gateway-path-grants"
