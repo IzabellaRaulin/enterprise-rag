@@ -68,6 +68,7 @@ class MilvusFilter:
     def __str__(self) -> str:
         return self.expression
 
+
 class ConnectorMilvus(VectorStoreConnector):
     """Talks to Milvus over its RESTful v2 API, served on the same port as gRPC."""
 
@@ -97,7 +98,7 @@ class ConnectorMilvus(VectorStoreConnector):
             "algorithm": str(sanitize_env(os.getenv("VECTOR_ALGORITHM", "FLAT"))).upper(),
             "dims": int(sanitize_env(str(os.getenv("VECTOR_DIMS", 768)))),
             "datatype": _SUPPORTED_DATATYPE,
-            "distance_metric": "COSINE",
+            "distance_metric": str(sanitize_env(os.getenv("VECTOR_DISTANCE_METRIC", "COSINE"))).upper(),
         }
         if vector_schema["algorithm"] not in {"FLAT", "HNSW", "IVF_FLAT", "AUTOINDEX"}:
             vector_schema["algorithm"] = "AUTOINDEX"

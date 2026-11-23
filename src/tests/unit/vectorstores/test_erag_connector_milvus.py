@@ -121,16 +121,27 @@ def test_index_type_mapping(milvus_env, http, monkeypatch, algorithm, expected_i
     assert ConnectorMilvus().index_type == expected_index
 
 
-def test_metric_type_is_always_cosine(milvus_env, http, monkeypatch):
-    monkeypatch.setenv("VECTOR_DISTANCE_METRIC", "L2")
-    assert ConnectorMilvus().metric_type == "COSINE"
+@pytest.mark.parametrize("metric", ["COSINE", "L2", "IP"])
+def test_metric_type_is_passed_to_index_and_search(milvus_env, monkeypatch, metric):
+    monkeypatch.setenv("VECTOR_DISTANCE_METRIC", metric.lower())
+    fake = FakeHttp({"/collections/has": {"has": False}})
+    with mock.patch(
+        "comps.vectorstores.utils.connectors.connector_milvus.urllib3.PoolManager",
+        return_value=fake,
+    ):
+        connector = ConnectorMilvus()
+        asyncio.run(connector.similarity_search_by_vector("q", [0.1], k=10))
+
+    assert connector.metric_type == metric
+    assert fake.bodies("/collections/create")[0]["indexParams"][0]["metricType"] == metric
+    assert fake.bodies("/entities/search")[0]["searchParams"]["metricType"] == metric
 
 
 def test_vector_schema_from_env(milvus_env, http, monkeypatch):
     monkeypatch.setenv("VECTOR_ALGORITHM", "hnsw")
     monkeypatch.setenv("VECTOR_DIMS", "1024")
-    monkeypatch.setenv("VECTOR_DATATYPE", "FLOAT16")
-    monkeypatch.setenv("VECTOR_DISTANCE_METRIC", "L2")
+    monkeypatch.setenv("VECTOR_DATATYPE", "FLOAT32")
+    monkeypatch.setenv("VECTOR_DISTANCE_METRIC", "COSINE")
 
     assert ConnectorMilvus()._vector_schema_from_env() == {
         "algorithm": "HNSW",
