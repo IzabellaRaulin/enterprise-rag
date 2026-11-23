@@ -91,7 +91,7 @@ See [models.md](models.md).
 | `vector_databases_vector_datatype` | `FLOAT32` | |
 | `vector_databases_vector_dims` | `768` | Auto-detected; override if detection fails |
 
-Backends: **redis-cluster** (production, 1M+ vectors, HA, scalable), **mssql** (SQL Server; RBAC unsupported; EULA prompt on deploy), **pgvector** (PostgreSQL), **milvus** (purpose-built vector database, standalone with embedded etcd and local storage; RBAC unsupported).
+Backends: **redis-cluster** (production, 1M+ vectors, HA, scalable), **mssql** (SQL Server; RBAC unsupported; EULA prompt on deploy), **pgvector** (PostgreSQL), **milvus**.
 
 Storage defaults: redis-cluster 8Gi per node (set `vector_databases_stores.redis-cluster.persistence.size` in `config.erag.yaml`), mssql, pgvector and milvus 10Gi (`deployment/components/vector_databases/values.yaml`). Vector store needs more storage than file storage (text + embeddings).
 

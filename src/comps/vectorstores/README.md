@@ -71,7 +71,6 @@ cd impl/milvus
 MILVUS_PASSWORD='<your-password>' docker compose up -d
 ```
 
-
 To configure VectorStore to use Milvus, please refer to [ConnectorMilvus](#ConnectorMilvus).
 
 #### Microsoft SQL Server
@@ -113,7 +112,6 @@ Or use more specific configuration for endpoint URL:
 | REDIS_USERNAME       | Not set       | Database username (Optional)                                                |
 | REDIS_PASSWORD       | Not set       | Database password (Optional)                                                |
 
-
 #### ConnectorMilvus
 
 Configure the full endpoint URL:
@@ -129,9 +127,8 @@ Or use more specific configuration for endpoint URL:
 | MILVUS_HOST               | localhost     | Hostname or IP Address of the Milvus endpoint                               |
 | MILVUS_PORT               | 19530         | Port of the Milvus endpoint                                                 |
 | MILVUS_SSL                | false         | Schema to use, if `true` is passed, `https://` schema is used               |
-| MILVUS_USERNAME           | Not set       | Database username (Optional)                                                |
-| MILVUS_PASSWORD           | Not set       | Database password (Optional)                                                |
-
+| MILVUS_USERNAME           | root          | Database username                                                           |
+| MILVUS_PASSWORD           | Not set       | Database password (Required)                                                |
 
 #### ConnectorMssql
 
@@ -151,7 +148,6 @@ Or use more specific configuration for endpoint URL:
 | MSSQL_USER           | 'edp'         | Database username |
 | MSSQL_PASSWORD       | Not set       | Database password |
 
-
 #### ConnectorPgVector
 
 Configure the full endpoint URL:
@@ -169,7 +165,6 @@ Or use more specific configuration for endpoint URL:
 | POSTGRES_DB             | 'vdb'         | Default database name |
 | POSTGRES_USERNAME       | 'edp'         | Database username |
 | POSTGRES_PASSWORD       | Not set       | Database password |
-
 
 ### Example usage
 
