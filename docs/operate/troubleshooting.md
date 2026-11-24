@@ -51,7 +51,7 @@ Common symptoms, causes, and fixes for Intel® Chatbot Toolkit deployments.
 | UI returns 401 Unauthorized | Missing or expired JWT. Keycloak token expires in 15 minutes by default. Re-login or generate a new token: `source .../get-keycloak-token.sh`. |
 | UI returns 503 Service Unavailable | Router service or one of its backend steps is unhealthy. Check: `kubectl get pods -n <pipeline-namespace>`. |
 | APISIX returns 404 | Route not configured. Verify ApisixRoute resources exist: `kubectl get apisixroute -n <pipeline-namespace>`. Check APISIX logs: `kubectl logs -n <pipeline-namespace> -l app.kubernetes.io/name=apisix`. |
-| TLS certificate warnings from browser | Self-signed CA. Import the CA cert into your trust store: `env/<env>/logs/ai-solutions-ca.crt`. |
+| TLS certificate warnings from browser | Self-signed CA. Import the CA cert into your trust store: `env/<env>/logs/toolkit-manager-ca.crt`. |
 
 ## Vector Database Issues
 
