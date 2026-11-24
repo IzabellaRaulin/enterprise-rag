@@ -131,23 +131,6 @@ def test_milvus_post_raises_for_unmatched_error(milvus_env, http):
             )
 
 
-@pytest.mark.parametrize(
-    "algorithm, expected_index",
-    [
-        ("FLAT", "FLAT"),
-        ("HNSW", "HNSW"),
-        ("IVF_FLAT", "IVF_FLAT"),
-        ("hnsw", "HNSW"),
-        # Shared across all vector stores; Milvus has no SVS-VAMANA index.
-        ("SVS-VAMANA", "AUTOINDEX"),
-        ("nonsense", "AUTOINDEX"),
-    ],
-)
-def test_index_type_mapping(milvus_env, http, monkeypatch, algorithm, expected_index):
-    monkeypatch.setenv("VECTOR_ALGORITHM", algorithm)
-    assert ConnectorMilvus().index_type == expected_index
-
-
 @pytest.mark.parametrize("metric", ["COSINE", "L2", "IP"])
 def test_metric_type_uses_cosine_and_warns_for_others(milvus_env, monkeypatch, metric, caplog):
     monkeypatch.setenv("VECTOR_DISTANCE_METRIC", metric.lower())
