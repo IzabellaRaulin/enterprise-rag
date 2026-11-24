@@ -104,6 +104,33 @@ def test_milvus_error_code_raises(milvus_env, monkeypatch):
             ConnectorMilvus()
 
 
+def test_milvus_post_tolerates_matching_error(milvus_env, http):
+    connector = ConnectorMilvus()
+    with mock.patch.object(
+        http,
+        "request",
+        return_value=FakeResponse({"code": 1100, "message": "database already exists"}),
+    ):
+        result = connector._post(
+            "/databases/create", {"dbName": "vdb"}, tolerate="already exist"
+        )
+
+    assert result is None
+
+
+def test_milvus_post_raises_for_unmatched_error(milvus_env, http):
+    connector = ConnectorMilvus()
+    with mock.patch.object(
+        http,
+        "request",
+        return_value=FakeResponse({"code": 1100, "message": "permission denied"}),
+    ):
+        with pytest.raises(RuntimeError, match="permission denied"):
+            connector._post(
+                "/databases/create", {"dbName": "vdb"}, tolerate="already exist"
+            )
+
+
 @pytest.mark.parametrize(
     "algorithm, expected_index",
     [

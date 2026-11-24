@@ -101,7 +101,9 @@ class ConnectorMilvus(VectorStoreConnector):
             "distance_metric": str(sanitize_env(os.getenv("VECTOR_DISTANCE_METRIC", "COSINE"))).upper(),
         }
         if vector_schema["algorithm"] not in {"FLAT", "HNSW", "IVF_FLAT", "AUTOINDEX"}:
-            vector_schema["algorithm"] = "AUTOINDEX"
+            logger.warning(
+                f"VECTOR_ALGORITHM={vector_schema['algorithm']} may not be supported by Milvus"
+            )
 
         if vector_schema["distance_metric"] != "COSINE":
             logger.warning(
