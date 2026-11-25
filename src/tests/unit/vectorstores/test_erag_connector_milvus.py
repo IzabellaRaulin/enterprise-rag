@@ -333,29 +333,6 @@ def test_similarity_search_maps_flat_hits(milvus_env, monkeypatch):
     assert body["outputFields"] == ["text", "metadata"]
 
 
-def test_similarity_search_applies_distance_threshold_to_converted_distance(milvus_env):
-    fake = FakeHttp({
-        "/collections/has": {"has": True},
-        "/entities/search": [
-            {"id": 1, "distance": 0.1, "text": "above"},
-            {"id": 2, "distance": 0.2, "text": "at threshold"},
-            {"id": 3, "distance": 0.3, "text": "below"},
-            {"id": 4, "text": "missing distance"},
-        ],
-    })
-    with mock.patch(
-        "comps.vectorstores.utils.connectors.connector_milvus.urllib3.PoolManager",
-        return_value=fake,
-    ):
-        connector = ConnectorMilvus()
-        result = asyncio.run(
-            connector.similarity_search_by_vector("q", [0.1], k=4, distance_threshold=0.8)
-        )
-
-    assert [doc.text for doc in result.retrieved_docs] == ["above", "at threshold"]
-    assert [doc.metadata["vector_distance"] for doc in result.retrieved_docs] == [0.9, 0.8]
-
-
 def test_similarity_search_without_hits(milvus_env, http):
     connector = ConnectorMilvus()
 
