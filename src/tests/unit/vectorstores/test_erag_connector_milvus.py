@@ -85,6 +85,15 @@ def test_requests_carry_auth_and_scope(milvus_env, http):
     assert call["body"] == {"dbName": "default", "collectionName": "vdb"}
 
 
+def test_missing_milvus_password_raises_before_request(milvus_env, http, monkeypatch):
+    monkeypatch.delenv("MILVUS_PASSWORD")
+
+    with pytest.raises(ValueError, match="MILVUS_PASSWORD is required"):
+        ConnectorMilvus()
+
+    assert http.calls == []
+
+
 def test_missing_url_falls_back_to_host_and_port(milvus_env, http, monkeypatch):
     monkeypatch.delenv("MILVUS_URL", raising=False)
     monkeypatch.setenv("MILVUS_HOST", "milvus.vdb.svc")

@@ -159,6 +159,8 @@ class ConnectorMilvus(VectorStoreConnector):
     def _headers(self) -> Dict[str, str]:
         user = sanitize_env(os.getenv("MILVUS_USERNAME", "root"))
         password = sanitize_env(os.getenv("MILVUS_PASSWORD", None))
+        if not password:
+            raise ValueError("MILVUS_PASSWORD is required")
         return {"Authorization": f"Bearer {user}:{password}", "Accept": "application/json"}
 
     def _post(self, path: str, body: Dict[str, Any], tolerate: Optional[str] = None) -> Any:
