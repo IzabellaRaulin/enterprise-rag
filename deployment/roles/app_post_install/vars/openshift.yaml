@@ -18,6 +18,10 @@ _post_install_metrics_exceptions:
     namespace: "{{ nats_namespace }}"
     pods: {app.kubernetes.io/name: nats, app.kubernetes.io/instance: nats}
     port: 7777
+  - name: milvus
+    namespace: "{{ vector_databases_namespace }}"
+    pods: {app.kubernetes.io/name: milvus, app.kubernetes.io/instance: milvus}
+    port: 9091
   - name: redis-cluster
     namespace: "{{ vector_databases_namespace }}"
     pods: {app.kubernetes.io/name: redis-cluster, app.kubernetes.io/instance: vdb}

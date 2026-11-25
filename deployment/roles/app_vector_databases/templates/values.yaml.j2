@@ -24,6 +24,10 @@ milvus:
   persistence:
     storageClass: "{{ milvus.persistence.storageClass | default('') }}"
     size: "{{ milvus.persistence.size | default('10Gi') }}"
+{% if not _vector_databases_fixed_uids | bool %}
+  # The image's files are 999:999 with no access for others; the SCC's UID gets in through the group.
+  supplementalGroups: [999]
+{% endif %}
 {% endif %}
 
 {% if vector_databases_vector_store == "mssql" %}

@@ -29,6 +29,9 @@ spec:
         runAsUser: 999
         runAsGroup: 999
         fsGroup: 999
+        {{- with .Values.milvus.supplementalGroups }}
+        supplementalGroups: {{ toJson . }}
+        {{- end }}
         seccompProfile:
           type: RuntimeDefault
       containers:

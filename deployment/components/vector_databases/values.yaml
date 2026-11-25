@@ -32,6 +32,8 @@ milvus:
     pullPolicy: "IfNotPresent"
   serviceAccount:
     name: milvus
+  # Extra groups for the pod; set on OpenShift, where the UID is not 999.
+  supplementalGroups: []
   config:
     authorizationEnabled: true
   # Merged verbatim into /milvus/configs/user.yaml, which overrides milvus.yaml.
