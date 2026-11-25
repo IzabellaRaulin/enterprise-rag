@@ -136,7 +136,8 @@ Alternatively, you can pass multiple docs but this will limit the retrieval only
     -H 'Content-Type: application/json'
 ```
 
-[!NOTE] The examples above use a short embedding vector for readability. This works with Redis-based vector stores, but Milvus validates the vector dimension against the target collection schema and rejects vectors whose length does not match the configured VECTOR_DIMS value.
+> [!NOTE]
+> The examples above use a short embedding vector for readability. This works with Redis-based vector stores, but Milvus validates the vector dimension against the target collection schema and rejects vectors whose length does not match the configured VECTOR_DIMS value.
 
 For example, if the collection dimension is 768, the request must contain an embedding vector with exactly 768 values. A valid request could look as follows:
 
