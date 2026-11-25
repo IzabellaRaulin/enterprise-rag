@@ -18,7 +18,7 @@ services:
       COMMON_SECURITY_DEFAULTROOTPASSWORD: ${MILVUS_PASSWORD:-Milvus}
       HTTP_PROXY: ""
       HTTPS_PROXY: ""
-      NO_PROXY: "localhost,127.0.0.1,172.22.0.0/16"
+      NO_PROXY: "localhost,127.0.0.1,172.17.0.0/16"
     volumes:
       - ./embedEtcd.yaml:/milvus/configs/embedEtcd.yaml:ro
       - ./user.yaml:/milvus/configs/user.yaml:ro
