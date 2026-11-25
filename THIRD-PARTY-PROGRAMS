@@ -7589,94 +7589,22 @@
 
 # Kind: datasets
 
-* Component: Truthful_QA
+* Component: Matthijs/cmu-arctic-xvectors
     * Origin: hugging face
-    * License: apache 2.0
-
-* Component: explodinggradients/prompt-engineering-guide-papers
-    * Origin: hugging face
-    * License: apache 2.0
-
-* Component: explodinggradients/fiqa
-    * Origin: hugging face
-    * License: creative commons 4.0
-
-* Component: PatronusAI/financebench
-    * Origin: hugging face
-    * License: creative commons 4.0
-
-* Component: KG-RAG-datasets
-    * Origin: github
-    * License: mit license
-
-* Component: squad_v2
-    * Origin: hugging face
-    * License: creative commons 4.0
-
-* Component: lmsys/mt_bench_human_judgments
-    * Origin: hugging face
-    * License: creative commons 4.0
+    * License: mit
 
 # Kind: helm charts
 
-* Component: base
-    * Origin: istio-release.storage.googleapis.com
-    * License: apache 2.0
-
-* Component: istiod
-    * Origin: istio-release.storage.googleapis.com
-    * License: apache 2.0
-
-* Component: cni
-    * Origin: istio-release.storage.googleapis.com
-    * License: apache 2.0
-
-* Component: ztunnel
-    * Origin: istio-release.storage.googleapis.com
-    * License: apache 2.0
-
-* Component: loki
-    * Origin: grafana.github.io
-    * License: apache 2.0
-
-* Component: opentelemetry-collector
-    * Origin: open-telemetry.github.io
-    * License: apache 2.0
-
-* Component: tempo
-    * Origin: grafana.github.io
-    * License: apache 2.0
-
-* Component: opentelemetry-operator
-    * Origin: open-telemetry.github.io
-    * License: apache 2.0
-
-* Component: kube-prometheus-stack
-    * Origin: prometheus-community.github.io
-    * License: apache 2.0
-
-* Component: prometheus-redis-exporter
-    * Origin: prometheus-community.github.io
-    * License: apache 2.0
-
-* Component: keycloakx
-    * Origin: codecentric.github.io
-    * License: apache 2.0
-
-* Component: minio
-    * Origin: charts.bitnami.com
-    * License: gnu agpl v3.0
-
-* Component: velero
-    * Origin: vmware-tanzu.github.io
-    * License: apache 2.0
-
-* Component: ingress-nginx
-    * Origin: kubernetes.github.io
-    * License: apache 2.0
-
 * Component: apisix
     * Origin: charts.apiseven.com
+    * License: apache 2.0
+
+* Component: prometheus-adapter
+    * Origin: prometheus-community.github.io
+    * License: apache 2.0
+
+* Component: seaweedfs
+    * Origin: seaweedfs.github.io
     * License: apache 2.0
 
 # Kind: external image
@@ -7693,11 +7621,11 @@
     * Origin: dockerhub
     * License: collection of licenses
 
-* Component: bats/bats
+* Component: awaragi/prometheus-mssql-exporter
     * Origin: dockerhub
     * License: collection of licenses
 
-* Component: bitnamilegacy/minio
+* Component: bitnamilegacy/postgresql
     * Origin: dockerhub
     * License: collection of licenses
 
@@ -7705,55 +7633,31 @@
     * Origin: dockerhub
     * License: collection of licenses
 
-* Component: grafana/grafana
+* Component: chrislusf/seaweedfs
     * Origin: dockerhub
     * License: collection of licenses
 
-* Component: grafana/loki
+* Component: curlimages/curl
     * Origin: dockerhub
     * License: collection of licenses
 
-* Component: grafana/loki-canary
+* Component: intel/vllm
     * Origin: dockerhub
     * License: collection of licenses
 
-* Component: grafana/loki-helm-test
+* Component: nats
     * Origin: dockerhub
     * License: collection of licenses
 
-* Component: grafana/tempo
+* Component: natsio/nats-box
     * Origin: dockerhub
     * License: collection of licenses
 
-* Component: istio/install-cni
-    * Origin: dockerhub
-    * License: collection of licenses
-
-* Component: istio/pilot
-    * Origin: dockerhub
-    * License: collection of licenses
-
-* Component: istio/ztunnel
-    * Origin: dockerhub
-    * License: collection of licenses
-
-* Component: kiwigrid/k8s-sidecar
-    * Origin: dockerhub
-    * License: collection of licenses
-
-* Component: memcached
-    * Origin: dockerhub
-    * License: collection of licenses
-
-* Component: nginxinc/nginx-unprivileged
+* Component: natsio/prometheus-nats-exporter
     * Origin: dockerhub
     * License: collection of licenses
 
 * Component: oliver006/redis_exporter
-    * Origin: dockerhub
-    * License: collection of licenses
-
-* Component: otel/opentelemetry-collector-contrib
     * Origin: dockerhub
     * License: collection of licenses
 
@@ -7765,12 +7669,16 @@
     * Origin: dockerhub
     * License: collection of licenses
 
-* Component: prom/memcached-exporter
+* Component: redis
     * Origin: dockerhub
     * License: collection of licenses
 
-* Component: redis
+* Component: vllm/vllm-openai-cpu
     * Origin: dockerhub
+    * License: collection of licenses
+
+* Component: api7/adc
+    * Origin: ghcr.io
     * License: collection of licenses
 
 * Component: ferretdb/ferretdb
@@ -7781,79 +7689,15 @@
     * Origin: ghcr.io
     * License: collection of licenses
 
-* Component: open-telemetry/opentelemetry-operator/opentelemetry-operator
-    * Origin: ghcr.io
-    * License: collection of licenses
+* Component: mssql/server
+    * Origin: mcr.microsoft.com
+    * License: microsoft sql server eula (proprietary)
 
 * Component: coreos/etcd
     * Origin: quay.io
     * License: collection of licenses
 
-* Component: keycloak/keycloak
-    * Origin: quay.io
-    * License: collection of licenses
-
-* Component: kiwigrid/k8s-sidecar
-    * Origin: quay.io
-    * License: collection of licenses
-
-* Component: minio/mc
-    * Origin: quay.io
-    * License: collection of licenses
-
-* Component: minio/minio
-    * Origin: quay.io
-    * License: collection of licenses
-
-* Component: prometheus-operator/prometheus-operator
-    * Origin: quay.io
-    * License: collection of licenses
-
-* Component: prometheus/alertmanager
-    * Origin: quay.io
-    * License: collection of licenses
-
-* Component: prometheus/node-exporter
-    * Origin: quay.io
-    * License: collection of licenses
-
-* Component: prometheus/prometheus
-    * Origin: quay.io
-    * License: collection of licenses
-
-* Component: ingress-nginx/kube-webhook-certgen
-    * Origin: registry.k8s.io
-    * License: collection of licenses
-
-* Component: kube-state-metrics/kube-state-metrics
-    * Origin: registry.k8s.io
-    * License: collection of licenses
-
 # Kind: deployment prepare
-
-* Component: ansible
-    * Origin: pypi
-    * License: gpl-3.0-or-later
-
-* Component: kubernetes
-    * Origin: pypi
-    * License: apache 2.0
-
-* Component: cryptography
-    * Origin: pypi
-    * License: apache-2.0 or bsd-3-clause
-
-* Component: jmespath
-    * Origin: pypi
-    * License: mit
-
-* Component: netaddr
-    * Origin: pypi
-    * License: bsd license
-
-* Component: distlib
-    * Origin: pypi
-    * License: python software foundation license (psf-2.0)
 
 * Component: community.general
     * Origin: ansible galaxy
@@ -7863,14 +7707,6 @@
     * Origin: ansible galaxy
     * License: gpl-3.0-or-later
 
-* Component: kubernetes-sigs/kubespray
-    * Origin: github
-    * License: apache 2.0
-
-* Component: ansible.utils
-    * Origin: ansible galaxy
-    * License: gpl-3.0
-
-* Component: intel-innersource/applications.ai.enterprise.ai-inference
+* Component: intel/inference-toolkit
     * Origin: github
     * License: apache 2.0
