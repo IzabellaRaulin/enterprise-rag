@@ -21,7 +21,7 @@ Common symptoms, causes, and fixes for Intel® Chatbot Toolkit deployments.
 | Model requests fail with "model not found" | The `model` field in the request must match the deploy **name**, not the Hugging Face `model_id`. List registered models: `kubectl get llminferenceservice -n llm-inference`. |
 | Embedding/reranking requests return errors | Verify the model endpoint is healthy: `kubectl get llminferenceservice,inferenceservice -n llm-inference`. Check that `inference_models` in `config.erag.yaml` lists the right models with `role: embedding` and `role: reranking`. |
 | Download Job fails with "permission denied" | The downloader runs non-root; ensure the PVC is writable. The Job sets `HOME` and cache paths to writable locations. |
-| Model "gated" error | Set `HF_TOKEN` in the catalog and re-deploy: `./model-manager deploy <name> --wait`. See [Gated models](https://github.com/intel/inference-toolkit/blob/main/docs/deploy/deploy_models.md#gated-models-hugging-face-token). |
+| Model "gated" error | Set `HF_TOKEN` in the catalog and re-deploy: `./model-manager deploy <name> --wait`. See [Gated models](https://github.com/intel/inference-toolkit/blob/main/docs/getting-started/deploy-models.md#gated-models-hugging-face-token). |
 | Download fails behind a corporate proxy | Set `http_proxy` / `https_proxy` / `no_proxy` in the catalog's `network:` section, or via `MM_HTTP_PROXY` / `MM_HTTPS_PROXY` / `MM_NO_PROXY`. |
 
 ## Pipeline and GMC Issues
