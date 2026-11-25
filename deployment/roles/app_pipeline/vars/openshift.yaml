@@ -5,3 +5,6 @@ _pipeline_post_renderer: "{{ role_path }}/../../scripts/openshift_post_renderer.
 _pipeline_fixed_uids: false
 _pipeline_hpa_provider: keda
 _pipeline_service_ca: "/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt"
+# The GMC controller's ports called from outside the mesh: the apiserver calls the
+# admission webhook, the user-workload Prometheus scrapes the metrics.
+_pipeline_gmc_out_of_mesh_ports: [9443, 8080]

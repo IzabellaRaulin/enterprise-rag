@@ -1,0 +1,76 @@
+# Copyright (C) 2026 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+---
+# Metrics ports opened by tasks/mesh_metrics.yaml.
+# The GMC controller's metrics port is opened by app_pipeline, with its webhook.
+# Workloads not listed (audio, MSSQL) are not scraped under STRICT yet. edp-backend's
+# monitor also selects edp-celery, which serves nothing on 5000.
+_post_install_metrics_exceptions:
+  - name: chat-history
+    namespace: "{{ chat_history_namespace }}"
+    pods: {app.kubernetes.io/name: chat-history, app.kubernetes.io/instance: chat-history}
+    port: 6012
+  - name: fingerprint
+    namespace: "{{ fingerprint_namespace }}"
+    pods: {app.kubernetes.io/name: fingerprint, app.kubernetes.io/instance: fingerprint}
+    port: 6012
+  - name: nats
+    namespace: "{{ nats_namespace }}"
+    pods: {app.kubernetes.io/name: nats, app.kubernetes.io/instance: nats}
+    port: 7777
+  - name: redis-cluster
+    namespace: "{{ vector_databases_namespace }}"
+    pods: {app.kubernetes.io/name: redis-cluster, app.kubernetes.io/instance: vdb}
+    port: 9121
+  - name: router-service
+    namespace: "{{ pipeline_namespace }}"
+    pods: {app: router-service}
+    port: 8080
+  - name: embedding-usvc
+    namespace: "{{ pipeline_namespace }}"
+    pods: {app: embedding-svc}
+    port: 6000
+  - name: in-guard-usvc
+    namespace: "{{ pipeline_namespace }}"
+    pods: {app: input-scan-svc}
+    port: 8050
+  - name: llm-usvc
+    namespace: "{{ pipeline_namespace }}"
+    pods: {app: llm-svc}
+    port: 9000
+  - name: prompt-template-usvc
+    namespace: "{{ pipeline_namespace }}"
+    pods: {app: prompt-template-svc}
+    port: 7900
+  - name: reranking-usvc
+    namespace: "{{ pipeline_namespace }}"
+    pods: {app: reranking-svc}
+    port: 8000
+  - name: retriever-usvc
+    namespace: "{{ pipeline_namespace }}"
+    pods: {app: retriever-svc}
+    port: 6620
+  - name: edp-backend
+    namespace: "{{ edp_namespace }}"
+    pods: {app.kubernetes.io/name: edp-backend, app.kubernetes.io/instance: edp}
+    port: 5000
+  - name: edp-flower
+    namespace: "{{ edp_namespace }}"
+    pods: {app.kubernetes.io/name: edp-flower, app.kubernetes.io/instance: edp}
+    port: 5555
+  - name: edp-ingestion
+    namespace: "{{ edp_namespace }}"
+    pods: {app.kubernetes.io/name: edp-ingestion, app.kubernetes.io/instance: edp}
+    port: 6120
+  - name: edp-text-compression
+    namespace: "{{ edp_namespace }}"
+    pods: {app.kubernetes.io/name: edp-text-compression, app.kubernetes.io/instance: edp}
+    port: 9397
+  - name: edp-text-extractor
+    namespace: "{{ edp_namespace }}"
+    pods: {app.kubernetes.io/name: edp-text-extractor, app.kubernetes.io/instance: edp}
+    port: 9398
+  - name: edp-text-splitter
+    namespace: "{{ edp_namespace }}"
+    pods: {app.kubernetes.io/name: edp-text-splitter, app.kubernetes.io/instance: edp}
+    port: 9399

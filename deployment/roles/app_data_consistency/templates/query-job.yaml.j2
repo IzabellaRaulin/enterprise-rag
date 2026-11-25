@@ -43,7 +43,8 @@ spec:
         app.kubernetes.io/name: {{ data_consistency_job_label }}
         app.kubernetes.io/component: {{ dcj_label }}
     spec:
-      restartPolicy: Never
+      # Retry in the same pod: under ambient on OpenShift ztunnel captures it only once it runs.
+      restartPolicy: OnFailure
       securityContext:
         runAsNonRoot: true
 {% if _data_consistency_fixed_uids | bool %}

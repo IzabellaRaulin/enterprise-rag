@@ -259,24 +259,16 @@
         labels: "{{ istio_namespace_labels | default({'istio.io/dataplane-mode': 'ambient'}) | combine({'erag-istio-protected': 'true'}) }}"
   when: istio_enabled | default(false) | bool
 
-# Host-network apiserver (no mesh identity) can't reach the GMC controller's
-# admission webhook under STRICT; open only its port, rest stays STRICT.
-- name: "app_pipeline | Allow apiserver to reach GMC webhook (port-level mTLS)"
-  kubernetes.core.k8s:
-    state: present
-    definition:
-      apiVersion: security.istio.io/v1
-      kind: PeerAuthentication
-      metadata:
-        name: allow-webhook
-        namespace: "{{ gmc_namespace }}"
-      spec:
-        selector:
-          matchLabels:
-            control-plane: gmc-controller
-        mtls:
-          mode: STRICT
-        portLevelMtls: "{{ {'9443': {'mode': 'PERMISSIVE'}} }}"
+- name: "app_pipeline | Open the GMC controller's ports to its out-of-mesh callers"
+  ansible.builtin.include_role:
+    name: istio
+    tasks_from: out_of_mesh_exception.yaml
+  vars:
+    istio_out_of_mesh_exception_namespace: "{{ gmc_namespace }}"
+    istio_out_of_mesh_exception_workloads:
+      - name: allow-webhook
+        selector: {control-plane: gmc-controller}
+        ports: "{{ _pipeline_gmc_out_of_mesh_ports }}"
   when: istio_enabled | default(false) | bool
 
 - name: "app_pipeline | Label GMC namespace - PSS"

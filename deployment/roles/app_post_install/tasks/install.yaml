@@ -9,6 +9,13 @@
     check_pods_no_fail: "{{ post_install_no_fail }}"
     check_pods_store_result: "{{ post_install_store_result }}"
 
+# After the health check, so the pods it checks the exceptions against exist.
+- name: "app_post_install | Open the metrics ports to the OpenShift Prometheus"
+  ansible.builtin.include_tasks: mesh_metrics.yaml
+  when:
+    - istio_enabled | default(false) | bool
+    - _post_install_metrics_exceptions | length > 0
+
 - name: "app_post_install | Print deployment summary"
   ansible.builtin.debug:
     msg: |

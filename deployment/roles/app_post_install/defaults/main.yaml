@@ -27,3 +27,9 @@ erag_keycloak_path_prefix: "{{ erag_keycloak_default_path_prefix if (routing_mod
 ui_domain_name: "{{ base_domain_name | default('solutions.ai') }}"  # app_ui
 rag_tmp_dir: "{{ tmp_dir }}/rag"          # app_pre_install (derived from tmp_dir)
 rag_log_dir: "{{ log_dir }}/rag"
+chat_history_namespace: "chat-history"                       # app_chat_history
+edp_namespace: "edp"                                         # app_edp
+fingerprint_namespace: "fingerprint"                         # app_fingerprint
+nats_namespace: "nats"                                       # app_nats
+pipeline_namespace: "{{ pipeline_type | default('chatqna') }}" # app_pipeline
+vector_databases_namespace: "vdb"                            # app_vector_databases

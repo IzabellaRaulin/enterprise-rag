@@ -1,3 +1,6 @@
 ---
+- name: "app_post_install | dispatch | Load {{ cluster_distribution }} values"
+  ansible.builtin.include_vars: "{{ role_path }}/vars/{{ cluster_distribution }}.yaml"
+
 - name: "app_post_install | Dispatch action: {{ component_action }}"
   ansible.builtin.include_tasks: "{{ component_action }}.yaml"
