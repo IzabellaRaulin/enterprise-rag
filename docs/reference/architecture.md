@@ -56,7 +56,7 @@ The **Enabled** column is the fallback in `components.yaml`, used only when noth
 |-----------|-------------------|------------|---------|
 | `app_inference_models` | Yes | - | Deploys LLM/embedding/reranking models via `model-manager`, waits for readiness |
 | `app_pre_install` | Yes | `app_inference_models` | Creates namespaces, configures RBAC, provisions shared secrets |
-| `app_vector_databases` | No (on in every flavour) | `app_pre_install` | Deploys Redis/MSSQL/pgvector vector store |
+| `app_vector_databases` | No (on in every flavour) | `app_pre_install` | Deploys Redis/MSSQL/Milvus vector store |
 | `app_keycloak_config` | Yes (unless `keycloak_enabled=false`) | `app_pre_install` | Creates Keycloak realm, clients, role mappings for RAG services |
 | `app_apisix` | Yes | `app_pre_install` | Deploys APISIX API gateway, provisions ClusterRole for ApisixRoute watchers |
 | `app_chat_history` | No (on in every flavour) | `app_pre_install`, `app_apisix` | Chat conversation history service |
@@ -182,7 +182,7 @@ Enabled via `mcp_enabled: true` in `config.erag.yaml`. Requires `app_edp` and `a
 |-----------|-------|---------|
 | `chatqna` (or flavour-specific) | Intel® Chatbot Toolkit | Pipeline microservices, GMC router |
 | `edp` | Intel® Chatbot Toolkit | EDP API, Celery workers, PostgreSQL |
-| `vdb` | Intel® Chatbot Toolkit | Vector database (Redis/MSSQL/pgvector) |
+| `vdb` | Intel® Chatbot Toolkit | Vector database (Redis/MSSQL/Milvus) |
 | `llm-inference` | Intel® Inference Toolkit | vLLM/OVMS model pods, KServe controller |
 | `envoy-gateway-system` | Platform | Envoy Gateway, AI Gateway |
 | `keycloak` | Platform | Keycloak |
@@ -226,7 +226,7 @@ At `install erag`:
 
 1. **app_inference_models**: Deploys embedding, reranking, LLM models via `model-manager`, waits for `Ready`
 2. **app_pre_install**: Creates namespaces, RBAC, secrets, labels namespaces for Istio
-3. **app_vector_databases** (if enabled): Deploys Redis cluster / MSSQL / pgvector
+3. **app_vector_databases** (if enabled): Deploys Redis cluster / MSSQL / Milvus
 4. **app_keycloak_config** (if enabled): Creates RAG realm, clients, groups in Keycloak
 5. **app_apisix**: Deploys APISIX gateway, provisions ClusterRole for watchers
 6. **app_nats**: Deploys NATS JetStream with NKey auth
